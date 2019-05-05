@@ -1,11 +1,11 @@
 "use strict";
 
-import basicVertexSource from "../Shaders/basic-vertex.glsl";
-import defaultVertexSource from "../Shaders/default-vertex.glsl";
-import flatColourFragmentSource from "../Shaders/flat-colour-fragment.glsl";
+import basicVsSource from "../Shaders/basic-vs.glsl";
+import defaultVsSource from "../Shaders/default-vs.glsl";
+import flatColourFsSource from "../Shaders/flat-colour-fs.glsl";
 import Matrix4 from "./Matrix4";
-import renderFragmentSource from "../Shaders/render-fragment.glsl";
-import timestepFragmentSource from "../Shaders/timestep-fragment.glsl";
+import renderFsSource from "../Shaders/render-fs.glsl";
+import timestepFsSource from "../Shaders/timestep-fs.glsl";
 import Vector3 from "./Vector3";
 
 function lerp(a, b, t) {
@@ -27,11 +27,11 @@ class App {
 
     this.checkCompatibility();
 
-    const basicVertexShader = this.createShader(gl.VERTEX_SHADER, basicVertexSource);
-    const vertexShader = this.createShader(gl.VERTEX_SHADER, defaultVertexSource);
-    const flatColourShader = this.createShader(gl.FRAGMENT_SHADER, flatColourFragmentSource);
-    const timestepShader = this.createShader(gl.FRAGMENT_SHADER, timestepFragmentSource);
-    const renderShader = this.createShader(gl.FRAGMENT_SHADER, renderFragmentSource);
+    const basicVertexShader = this.createShader(gl.VERTEX_SHADER, basicVsSource);
+    const vertexShader = this.createShader(gl.VERTEX_SHADER, defaultVsSource);
+    const flatColourShader = this.createShader(gl.FRAGMENT_SHADER, flatColourFsSource);
+    const timestepShader = this.createShader(gl.FRAGMENT_SHADER, timestepFsSource);
+    const renderShader = this.createShader(gl.FRAGMENT_SHADER, renderFsSource);
 
     const flatColourProgram = this.createAndLinkProgram(basicVertexShader, flatColourShader);
     const timestepProgram = this.createAndLinkProgram(vertexShader, timestepShader);
@@ -61,11 +61,10 @@ class App {
     if (status !== gl.FRAMEBUFFER_COMPLETE) {
       throw new Error("Cannot render to framebuffer: " + status);
     }
-
-    const translation = Matrix4.translate(new Vector3(-16, 32, 0));
-    const dilation = Matrix4.dilate(new Vector3(16, 16, 0));
-    const model = Matrix4.multiply(translation, dilation);
     
+    this.brush = {
+      position: new Vector3(-16, 32, 0),
+    };
     this.camera = {
       projection: Matrix4.orthographicProjection(width, height, -1, 1),
     };
@@ -79,7 +78,6 @@ class App {
     this.update = {
       feedRate: this.feedRate,
       killRate: this.killRate,
-      modelViewProjection: Matrix4.multiply(this.camera.projection, model),
     };
   }
 
@@ -194,11 +192,18 @@ class App {
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
   }
 
-  moveBoy(position) {
-    const translation = Matrix4.translate(position);
-    const dilation = Matrix4.dilate(new Vector3(16, 16, 1));
-    const model = Matrix4.multiply(translation, dilation);
-    this.update.modelViewProjection = Matrix4.multiply(this.camera.projection, model);
+  setBrushPosition(position) {
+    this.brush.position = position;
+  }
+
+  setFeedRate(rate) {
+    this.feedRate = rate;
+    this.updateRates();
+  }
+
+  setKillRate(rate) {
+    this.killRate = rate;
+    this.updateRates();
   }
 
   start() {
@@ -217,6 +222,18 @@ class App {
     const textures = this.textures;
     const timestepProgram = this.timestepProgram;
 
+    // Edit Phase
+    const translation = Matrix4.translate(this.brush.position);
+    const dilation = Matrix4.dilate(new Vector3(16, 16, 1));
+    const model = Matrix4.multiply(translation, dilation);
+    const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[0]);
+    gl.useProgram(flatColourProgram);
+    gl.uniformMatrix4fv(gl.getUniformLocation(flatColourProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    // Timestep Phase
     gl.useProgram(timestepProgram);
 
     gl.uniform1f(gl.getUniformLocation(timestepProgram, "feed_rate"), this.update.feedRate);
@@ -228,24 +245,19 @@ class App {
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
+    // Render Phase
     gl.useProgram(renderProgram);
     gl.bindTexture(gl.TEXTURE_2D, textures[0]);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
+    // UI Phase
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     gl.useProgram(flatColourProgram);
-    gl.uniformMatrix4fv(gl.getUniformLocation(flatColourProgram, "model_view_projection"), false, this.update.modelViewProjection.transpose.float32Array);
+    gl.uniformMatrix4fv(gl.getUniformLocation(flatColourProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-  }
-
-  setFeedRate(rate) {
-    this.feedRate = rate;
-    this.updateRates();
-  }
-
-  setKillRate(rate) {
-    this.killRate = rate;
-    this.updateRates();
+    gl.disable(gl.BLEND);
   }
 
   updateRates() {
