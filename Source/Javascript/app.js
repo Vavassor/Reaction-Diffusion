@@ -61,7 +61,14 @@ class App {
     if (status !== gl.FRAMEBUFFER_COMPLETE) {
       throw new Error("Cannot render to framebuffer: " + status);
     }
+
+    const translation = Matrix4.translate(new Vector3(-16, 32, 0));
+    const dilation = Matrix4.dilate(new Vector3(16, 16, 0));
+    const model = Matrix4.multiply(translation, dilation);
     
+    this.camera = {
+      projection: Matrix4.orthographicProjection(width, height, -1, 1),
+    };
     this.feedRate = 0.0545;
     this.flatColourProgram = flatColourProgram;
     this.framebuffers = framebuffers;
@@ -72,7 +79,7 @@ class App {
     this.update = {
       feedRate: this.feedRate,
       killRate: this.killRate,
-      modelViewProjection: Matrix4.translate(new Vector3(0.5, 0.5, 0)),
+      modelViewProjection: Matrix4.multiply(this.camera.projection, model),
     };
   }
 
@@ -185,6 +192,13 @@ class App {
     const position = gl.getAttribLocation(program, "position");
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+  }
+
+  moveBoy(position) {
+    const translation = Matrix4.translate(position);
+    const dilation = Matrix4.dilate(new Vector3(16, 16, 1));
+    const model = Matrix4.multiply(translation, dilation);
+    this.update.modelViewProjection = Matrix4.multiply(this.camera.projection, model);
   }
 
   start() {

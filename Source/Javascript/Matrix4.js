@@ -21,6 +21,15 @@ class Matrix4 {
     ]);
   }
 
+  static dilate(dilation) {
+    return new Matrix4([
+      dilation.x, 0, 0, 0,
+      0, dilation.y, 0, 0,
+      0, 0, dilation.z, 0,
+      0, 0, 0, 1,
+    ]);
+  }
+
   static identity() {
     return new Matrix4([
       1, 0, 0, 0,
