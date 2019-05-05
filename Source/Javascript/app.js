@@ -1,8 +1,12 @@
 "use strict";
 
+import basicVertexSource from "../Shaders/basic-vertex.glsl";
 import defaultVertexSource from "../Shaders/default-vertex.glsl";
+import flatColourFragmentSource from "../Shaders/flat-colour-fragment.glsl";
+import Matrix4 from "./Matrix4";
 import renderFragmentSource from "../Shaders/render-fragment.glsl";
 import timestepFragmentSource from "../Shaders/timestep-fragment.glsl";
+import Vector3 from "./Vector3";
 
 function lerp(a, b, t) {
   return ((1.0 - t) * a) + (t * b);
@@ -23,10 +27,13 @@ class App {
 
     this.checkCompatibility();
 
+    const basicVertexShader = this.createShader(gl.VERTEX_SHADER, basicVertexSource);
     const vertexShader = this.createShader(gl.VERTEX_SHADER, defaultVertexSource);
+    const flatColourShader = this.createShader(gl.FRAGMENT_SHADER, flatColourFragmentSource);
     const timestepShader = this.createShader(gl.FRAGMENT_SHADER, timestepFragmentSource);
     const renderShader = this.createShader(gl.FRAGMENT_SHADER, renderFragmentSource);
 
+    const flatColourProgram = this.createAndLinkProgram(basicVertexShader, flatColourShader);
     const timestepProgram = this.createAndLinkProgram(vertexShader, timestepShader);
     const renderProgram = this.createAndLinkProgram(vertexShader, renderShader);
 
@@ -56,6 +63,7 @@ class App {
     }
     
     this.feedRate = 0.0545;
+    this.flatColourProgram = flatColourProgram;
     this.framebuffers = framebuffers;
     this.killRate = 0.062;
     this.renderProgram = renderProgram;
@@ -64,6 +72,7 @@ class App {
     this.update = {
       feedRate: this.feedRate,
       killRate: this.killRate,
+      modelViewProjection: Matrix4.translate(new Vector3(0.5, 0.5, 0)),
     };
   }
 
@@ -187,11 +196,12 @@ class App {
   }
 
   step() {
+    const flatColourProgram = this.flatColourProgram;
+    const framebuffers = this.framebuffers;
     const gl = this.gl;
-    const timestepProgram = this.timestepProgram;
     const renderProgram = this.renderProgram;
     const textures = this.textures;
-    const framebuffers = this.framebuffers;
+    const timestepProgram = this.timestepProgram;
 
     gl.useProgram(timestepProgram);
 
@@ -207,6 +217,10 @@ class App {
     gl.useProgram(renderProgram);
     gl.bindTexture(gl.TEXTURE_2D, textures[0]);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    gl.useProgram(flatColourProgram);
+    gl.uniformMatrix4fv(gl.getUniformLocation(flatColourProgram, "model_view_projection"), false, this.update.modelViewProjection.transpose.float32Array);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
