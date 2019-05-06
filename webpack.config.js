@@ -6,6 +6,13 @@ module.exports = {
         loader: "webpack-glsl-loader",
         test: /\.glsl$/,
       },
+      {
+        loaders: [
+          "style-loader",
+          "css-loader",
+        ],
+        test: /\.css$/,
+      },
     ],
   },
   output: {
