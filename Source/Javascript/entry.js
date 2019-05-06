@@ -56,8 +56,8 @@ function onPointerMove(event) {
   y = clamp(y, 0, boundsRect.height);
   knob.style.left = (x - (knobRect.width / 2)) + "px";
   knob.style.top = (y - (knobRect.height / 2)) + "px";
-  const feedRate = lerp(0.01, 0.1, x / boundsRect.width);
-  const killRate = lerp(0.045, 0.07, y / boundsRect.height);
+  const killRate = lerp(0.045, 0.07, x / boundsRect.width);
+  const feedRate = lerp(0.01, 0.1, 1 - y / boundsRect.height);
   app.setFeedRate(feedRate);
   app.setKillRate(killRate);
 }
@@ -112,18 +112,6 @@ function ongoingTouchIndexById(id) {
 canvas = document.getElementById("canvas");
 app = new App(canvas, 256, 256);
 app.start();
-
-document
-  .getElementById("feed-rate")
-  .addEventListener("input", (event) => {
-    app.setFeedRate(event.currentTarget.value);
-  });
-
-document
-  .getElementById("kill-rate")
-  .addEventListener("input", (event) => {
-    app.setKillRate(event.currentTarget.value);
-  });
 
 canvas.addEventListener("mousemove", onMouseMove);
 canvas.addEventListener("touchcancel", onTouchCancel);
