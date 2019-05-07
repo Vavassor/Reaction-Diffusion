@@ -1,3 +1,22 @@
+.button-control {
+  background-color: #ff3434;
+  border: none;
+  border-radius: .25rem;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: .375rem .75rem;
+}
+
+.control-label {
+  margin-bottom: .5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
 .range-2d {
   border: 1px solid black;
   height: 200px;
