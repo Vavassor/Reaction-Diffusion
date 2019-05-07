@@ -157,6 +157,18 @@ patternPicker.addEventListener("pointerup", (event) => {
 patternPicker.addEventListener("pointermove", onPointerMove);
 
 document
+  .getElementById("flow-rate")
+  .addEventListener("input", (event) => {
+    app.setFlowRate(event.currentTarget.value);
+  });
+
+document
+  .getElementById("iteration-count")
+  .addEventListener("input", (event) => {
+    app.setIterationCount(event.currentTarget.value);
+  });
+
+document
   .getElementById("clear")
   .addEventListener("click", (event) => {
     app.clear();
