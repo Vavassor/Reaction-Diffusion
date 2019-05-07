@@ -4,17 +4,10 @@ import basicVsSource from "../Shaders/basic-vs.glsl";
 import defaultVsSource from "../Shaders/default-vs.glsl";
 import flatColourFsSource from "../Shaders/flat-colour-fs.glsl";
 import Matrix4 from "./Matrix4";
+import Range from "./range";
 import renderFsSource from "../Shaders/render-fs.glsl";
 import timestepFsSource from "../Shaders/timestep-fs.glsl";
 import Vector3 from "./Vector3";
-
-function lerp(a, b, t) {
-  return ((1.0 - t) * a) + (t * b);
-}
-
-function unlerp(a, b, t) {
-  return (t - a) / (b - a);
-}
 
 class App {
   constructor(canvas, width, height) {
@@ -63,21 +56,20 @@ class App {
     }
     
     this.brush = {
+      down: false,
       position: new Vector3(-16, 32, 0),
     };
     this.camera = {
       projection: Matrix4.orthographicProjection(width, height, -1, 1),
     };
-    this.feedRate = 0.0545;
     this.flatColourProgram = flatColourProgram;
     this.framebuffers = framebuffers;
-    this.killRate = 0.062;
     this.renderProgram = renderProgram;
     this.textures = textures;
     this.timestepProgram = timestepProgram;
     this.update = {
-      feedRate: this.feedRate,
-      killRate: this.killRate,
+      feedRate: 0.0545,
+      killRate: 0.062,
     };
   }
 
@@ -98,6 +90,10 @@ class App {
     if (maxTextureSize < requiredTextureSize) {
       throw new Error(`WebGL texture sizes of at least ${requiredTextureSize}x${requiredTextureSize} are required, but only ${maxTextureSize}x${maxTextureSize} are supported.`);
     }
+  }
+
+  clear() {
+    this.clearNextStep = true;
   }
 
   createAndLinkProgram(vertexShader, fragmentShader) {
@@ -196,16 +192,6 @@ class App {
     this.brush.position = position;
   }
 
-  setFeedRate(rate) {
-    this.feedRate = rate;
-    this.updateRates();
-  }
-
-  setKillRate(rate) {
-    this.killRate = rate;
-    this.updateRates();
-  }
-
   start() {
     const frame = () => {
       this.step();
@@ -229,9 +215,17 @@ class App {
     const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[0]);
-    gl.useProgram(flatColourProgram);
-    gl.uniformMatrix4fv(gl.getUniformLocation(flatColourProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+    if (this.clearNextStep) {
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      this.clearNextStep = false;
+    }
+
+    if (this.brush.down) {
+      gl.useProgram(flatColourProgram);
+      gl.uniformMatrix4fv(gl.getUniformLocation(flatColourProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
 
     // Timestep Phase
     gl.useProgram(timestepProgram);
@@ -260,9 +254,13 @@ class App {
     gl.disable(gl.BLEND);
   }
 
-  updateRates() {
-    const x = this.feedRate;
-    const y = this.killRate;
+  setBrushDown(down) {
+    this.brush.down = down;
+  }
+
+  setRates(killRate, feedRate) {
+    const x = feedRate;
+    const y = killRate;
 
     // Many combinations of feed and kill rates result in a uniform, blank
     // solution. To avoid this, remap the parameters into the "interesting"
@@ -274,7 +272,7 @@ class App {
       (51.6043 * x3) - (15.1554 * x2) + (1.2813 * x) + 0.02777,
       (63.7108 * x3) - (17.505 * x2) + (1.3261 * x) + 0.03793,
     ];
-    this.update.killRate = lerp(t[0], t[1], unlerp(0.01, 0.1, y));
+    this.update.killRate = Range.remap(t[0], t[1], 0.01, 0.1, y);
     this.update.feedRate = x;
   }
 }
