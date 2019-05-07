@@ -1,3 +1,18 @@
+body, html {
+  padding: 0;
+  margin: 0;
+}
+
+main {
+  display: grid;
+  grid-template-areas:
+    "canvas"
+    "controls";
+  grid-template-columns: 1fr;
+  row-gap: 1em;
+}
+
+
 .button-control {
   background-color: #ff3434;
   border: none;
@@ -9,12 +24,29 @@
   padding: .375rem .75rem;
 }
 
+.canvas-panel {
+  grid-area: canvas;
+  padding: 1em;
+}
+
 .control-label {
   margin-bottom: .5rem;
 }
 
+.control-panel {
+  border-top: .1em solid #000000;
+  grid-area: controls;
+  padding: 1em;
+}
+
 .form-group {
   margin-bottom: 1rem;
+}
+
+.paint-canvas {
+  border: .1em solid #000000;
+  display: block;
+  margin: auto;
 }
 
 .range-2d {
@@ -45,4 +77,31 @@
   height: 2em;
   position: relative;
   width: 2em;
+}
+
+
+@media (min-width: 600px) {
+  main {
+    grid-template-areas:
+      ". canvas ."
+      ". controls .";
+    grid-template-columns: auto 600px auto;
+  }
+
+  .control-panel {
+    border: .1em solid #000000;
+  }
+}
+
+
+@media (min-width: 900px) {
+  main {
+    grid-template-areas:
+      ". canvas controls .";
+    grid-template-columns: auto 600px 300px auto;
+  }
+
+  .control-panel {
+    border: .1em solid #000000;
+  }
 }
