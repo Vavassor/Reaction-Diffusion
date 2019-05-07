@@ -64,6 +64,7 @@ class App {
     };
     this.flatColourProgram = flatColourProgram;
     this.framebuffers = framebuffers;
+    this.iterationCount = 4;
     this.renderProgram = renderProgram;
     this.textures = textures;
     this.timestepProgram = timestepProgram;
@@ -235,7 +236,7 @@ class App {
     gl.uniform1f(gl.getUniformLocation(timestepProgram, "flow_rate"), this.update.flowRate);
     gl.uniform1f(gl.getUniformLocation(timestepProgram, "kill_rate"), this.update.killRate);
 
-    for (let i = 0; i <= this.iterations; i++) {
+    for (let i = 0; i <= this.iterationCount; i++) {
       gl.bindTexture(gl.TEXTURE_2D, textures[i % 2]);
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[(i % 2) ^ 1]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -265,7 +266,7 @@ class App {
   }
 
   setIterationCount(iterationCount) {
-    this.iterations = iterationCount;
+    this.iterationCount = iterationCount;
   }
 
   setRates(killRate, feedRate) {
