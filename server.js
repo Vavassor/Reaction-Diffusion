@@ -8,7 +8,7 @@ app.use("/dist", express.static(path.join(__dirname, "app/dist")));
 app.use("/assets", express.static(path.join(__dirname, "app/assets")));
 
 router.get("/", (request, response) => {
-  response.sendFile(path.join(__dirname, "index.html"));
+  response.sendFile(path.join(__dirname, "app/index.html"));
 });
 
 app.use("/", router);

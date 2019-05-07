@@ -24,7 +24,9 @@ function getPositionInCanvas(pageX, pageY) {
   const rect = canvas.getBoundingClientRect();
   const x = pageX - rect.left - (rect.width / 2);
   const y = rect.top - (pageY - (rect.height / 2));
-  return new Vector3(x, y, 0);
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return new Vector3(scaleX * x, scaleY * y, 0);
 }
 
 function onMouseDown(event) {

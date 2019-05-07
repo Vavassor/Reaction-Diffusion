@@ -46,7 +46,11 @@ main {
 .paint-canvas {
   border: .1em solid #000000;
   display: block;
+  height: auto;
   margin: auto;
+  max-height: 90vh;
+  max-width: 90vh;
+  width: 100%;
 }
 
 .range-2d {
