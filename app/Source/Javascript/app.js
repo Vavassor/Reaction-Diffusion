@@ -69,6 +69,7 @@ class App {
     this.timestepProgram = timestepProgram;
     this.update = {
       feedRate: 0.0545,
+      flowRate: 1,
       killRate: 0.062,
     };
   }
@@ -231,9 +232,10 @@ class App {
     gl.useProgram(timestepProgram);
 
     gl.uniform1f(gl.getUniformLocation(timestepProgram, "feed_rate"), this.update.feedRate);
+    gl.uniform1f(gl.getUniformLocation(timestepProgram, "flow_rate"), this.update.flowRate);
     gl.uniform1f(gl.getUniformLocation(timestepProgram, "kill_rate"), this.update.killRate);
 
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i <= this.iterations; i++) {
       gl.bindTexture(gl.TEXTURE_2D, textures[i % 2]);
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[(i % 2) ^ 1]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -256,6 +258,14 @@ class App {
 
   setBrushDown(down) {
     this.brush.down = down;
+  }
+
+  setFlowRate(flowRate) {
+    this.update.flowRate = flowRate;
+  }
+
+  setIterationCount(iterationCount) {
+    this.iterations = iterationCount;
   }
 
   setRates(killRate, feedRate) {

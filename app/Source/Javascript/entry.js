@@ -24,7 +24,9 @@ function getPositionInCanvas(pageX, pageY) {
   const rect = canvas.getBoundingClientRect();
   const x = pageX - rect.left - (rect.width / 2);
   const y = rect.top - (pageY - (rect.height / 2));
-  return new Vector3(x, y, 0);
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  return new Vector3(scaleX * x, scaleY * y, 0);
 }
 
 function onMouseDown(event) {
@@ -116,6 +118,10 @@ function onTouchStart(event) {
 
   for (const touch of event.changedTouches) {
     ongoingTouches.push(copyTouch(touch));
+    if (ongoingTouches.length) {
+      app.setBrushPosition(getPositionInCanvas(touch.pageX, touch.pageY));
+      app.setBrushDown(true);
+    }
   }
 }
 
@@ -149,6 +155,18 @@ patternPicker.addEventListener("pointerup", (event) => {
 });
 
 patternPicker.addEventListener("pointermove", onPointerMove);
+
+document
+  .getElementById("flow-rate")
+  .addEventListener("input", (event) => {
+    app.setFlowRate(event.currentTarget.value);
+  });
+
+document
+  .getElementById("iteration-count")
+  .addEventListener("input", (event) => {
+    app.setIterationCount(event.currentTarget.value);
+  });
 
 document
   .getElementById("clear")

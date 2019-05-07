@@ -3,6 +3,7 @@ precision mediump float;
 uniform sampler2D state;
 uniform vec2 state_size;
 uniform float feed_rate;
+uniform float flow_rate;
 uniform float kill_rate;
 
 const vec2 diffusion = vec2(1.0, 0.5);
@@ -22,14 +23,14 @@ void main()
     vec2 northwest = center + vec2(-1.0, 1.0);
 
     vec2 value = texture2D(state, center / state_size).xy;
-    vec2 laplacian = 0.05 * (texture2D(state, northeast / state_size).xy
-            + texture2D(state, southeast / state_size).xy
-            + texture2D(state, southwest / state_size).xy
-            + texture2D(state, northwest / state_size).xy)
-            + 0.2 * (texture2D(state, north / state_size).xy
-            + texture2D(state, east / state_size).xy
-            + texture2D(state, south / state_size).xy
-            + texture2D(state, west / state_size).xy)
+    vec2 laplacian = 0.05 * flow_rate * (texture2D(state, northeast / state_size).xy
+            + flow_rate * texture2D(state, southeast / state_size).xy
+            + flow_rate * texture2D(state, southwest / state_size).xy
+            + flow_rate * texture2D(state, northwest / state_size).xy)
+            + 0.2 * flow_rate * (texture2D(state, north / state_size).xy
+            + flow_rate * texture2D(state, east / state_size).xy
+            + flow_rate * texture2D(state, south / state_size).xy
+            + flow_rate * texture2D(state, west / state_size).xy)
             - value;
     float reaction = value.x * value.y * value.y;
 
