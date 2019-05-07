@@ -118,6 +118,10 @@ function onTouchStart(event) {
 
   for (const touch of event.changedTouches) {
     ongoingTouches.push(copyTouch(touch));
+    if (ongoingTouches.length) {
+      app.setBrushPosition(getPositionInCanvas(touch.pageX, touch.pageY));
+      app.setBrushDown(true);
+    }
   }
 }
 
