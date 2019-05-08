@@ -14,8 +14,12 @@ class App {
     canvas.width = width;
     canvas.height = height;
 
-    const gl = canvas.getContext("webgl")
-        || canvas.getContext("experimental-webgl");
+    const attributes = {
+      premultipliedAlpha: false,
+      preserveDrawingBuffer: true,
+    };
+    const gl = canvas.getContext("webgl", attributes)
+        || canvas.getContext("experimental-webgl", attributes);
     this.gl = gl;
 
     this.checkCompatibility();

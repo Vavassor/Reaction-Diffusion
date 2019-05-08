@@ -1,6 +1,7 @@
 "use strict";
 
 import App from "./app";
+import FileSaver from "file-saver";
 import Range from "./range";
 import Vector3 from "./Vector3";
 
@@ -194,6 +195,14 @@ document
   .getElementById("clear")
   .addEventListener("click", (event) => {
     app.clear();
+  });
+
+document
+  .getElementById("download")
+  .addEventListener("click", (event) => {
+    canvas.toBlob((blob) => {
+      FileSaver.saveAs(blob, "Untitled.png");
+    }, "image/png");
   });
 
 document
