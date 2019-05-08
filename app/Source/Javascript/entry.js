@@ -1,6 +1,7 @@
 "use strict";
 
 import App from "./app";
+import FileSaver from "file-saver";
 import Range from "./range";
 import Vector3 from "./Vector3";
 
@@ -35,8 +36,13 @@ function onMouseDown(event) {
   }
 }
 
+function onMouseEnter(event) {
+  app.setBrushHovering(true);
+}
+
 function onMouseLeave(event) {
   app.setBrushDown(false);
+  app.setBrushHovering(false);
 }
 
 function onMouseMove(event) {
@@ -109,6 +115,7 @@ function onTouchEnd(event) {
       ongoingTouches.splice(index, 1);
       if (!ongoingTouches.length) {
         app.setBrushDown(false);
+        app.setBrushHovering(false);
       }
     }
   }
@@ -135,6 +142,7 @@ function onTouchStart(event) {
     if (ongoingTouches.length) {
       app.setBrushPosition(getPositionInCanvas(touch.pageX, touch.pageY));
       app.setBrushDown(true);
+      app.setBrushHovering(true);
     }
   }
 }
@@ -149,6 +157,7 @@ app = new App(canvas, 256, 256);
 app.start();
 
 canvas.addEventListener("mousedown", onMouseDown);
+canvas.addEventListener("mouseenter", onMouseEnter);
 canvas.addEventListener("mouseleave", onMouseLeave);
 canvas.addEventListener("mousemove", onMouseMove);
 canvas.addEventListener("mouseup", onMouseUp);
@@ -186,6 +195,14 @@ document
   .getElementById("clear")
   .addEventListener("click", (event) => {
     app.clear();
+  });
+
+document
+  .getElementById("download")
+  .addEventListener("click", (event) => {
+    canvas.toBlob((blob) => {
+      FileSaver.saveAs(blob, "Untitled.png");
+    }, "image/png");
   });
 
 document
