@@ -35,8 +35,13 @@ function onMouseDown(event) {
   }
 }
 
+function onMouseEnter(event) {
+  app.setBrushHovering(true);
+}
+
 function onMouseLeave(event) {
   app.setBrushDown(false);
+  app.setBrushHovering(false);
 }
 
 function onMouseMove(event) {
@@ -109,6 +114,7 @@ function onTouchEnd(event) {
       ongoingTouches.splice(index, 1);
       if (!ongoingTouches.length) {
         app.setBrushDown(false);
+        app.setBrushHovering(false);
       }
     }
   }
@@ -135,6 +141,7 @@ function onTouchStart(event) {
     if (ongoingTouches.length) {
       app.setBrushPosition(getPositionInCanvas(touch.pageX, touch.pageY));
       app.setBrushDown(true);
+      app.setBrushHovering(true);
     }
   }
 }
@@ -149,6 +156,7 @@ app = new App(canvas, 256, 256);
 app.start();
 
 canvas.addEventListener("mousedown", onMouseDown);
+canvas.addEventListener("mouseenter", onMouseEnter);
 canvas.addEventListener("mouseleave", onMouseLeave);
 canvas.addEventListener("mousemove", onMouseMove);
 canvas.addEventListener("mouseup", onMouseUp);

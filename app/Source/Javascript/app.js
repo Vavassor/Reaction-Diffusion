@@ -57,6 +57,7 @@ class App {
     
     this.brush = {
       down: false,
+      hovering: false,
       position: new Vector3(-16, 32, 0),
     };
     this.camera = {
@@ -191,8 +192,42 @@ class App {
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
   }
 
+  setBrushDown(down) {
+    this.brush.down = down;
+  }
+
+  setBrushHovering(hovering) {
+    this.brush.hovering = hovering;
+  }
+
   setBrushPosition(position) {
     this.brush.position = position;
+  }
+
+  setFlowRate(flowRate) {
+    this.update.flowRate = flowRate;
+  }
+
+  setIterationsPerFrame(iterationsPerFrame) {
+    this.iterationsPerFrame = iterationsPerFrame;
+  }
+
+  setRates(killRate, feedRate) {
+    const x = feedRate;
+    const y = killRate;
+
+    // Many combinations of feed and kill rates result in a uniform, blank
+    // solution. To avoid this, remap the parameters into the "interesting"
+    // region. This is defined here by two arbitrary polynomials, which
+    // serve as the region's upper and lower bounds.
+    const x2 = x * x;
+    const x3 = x2 * x;
+    const t = [
+      (51.6043 * x3) - (15.1554 * x2) + (1.2813 * x) + 0.02777,
+      (63.7108 * x3) - (17.505 * x2) + (1.3261 * x) + 0.03793,
+    ];
+    this.update.killRate = Range.remap(t[0], t[1], 0.01, 0.1, y);
+    this.update.feedRate = x;
   }
 
   start() {
@@ -252,42 +287,14 @@ class App {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     // UI Phase
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    gl.useProgram(flatColourProgram);
-    gl.uniformMatrix4fv(gl.getUniformLocation(flatColourProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    gl.disable(gl.BLEND);
-  }
-
-  setBrushDown(down) {
-    this.brush.down = down;
-  }
-
-  setFlowRate(flowRate) {
-    this.update.flowRate = flowRate;
-  }
-
-  setIterationsPerFrame(iterationsPerFrame) {
-    this.iterationsPerFrame = iterationsPerFrame;
-  }
-
-  setRates(killRate, feedRate) {
-    const x = feedRate;
-    const y = killRate;
-
-    // Many combinations of feed and kill rates result in a uniform, blank
-    // solution. To avoid this, remap the parameters into the "interesting"
-    // region. This is defined here by two arbitrary polynomials, which
-    // serve as the region's upper and lower bounds.
-    const x2 = x * x;
-    const x3 = x2 * x;
-    const t = [
-      (51.6043 * x3) - (15.1554 * x2) + (1.2813 * x) + 0.02777,
-      (63.7108 * x3) - (17.505 * x2) + (1.3261 * x) + 0.03793,
-    ];
-    this.update.killRate = Range.remap(t[0], t[1], 0.01, 0.1, y);
-    this.update.feedRate = x;
+    if (this.brush.hovering) {
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.useProgram(flatColourProgram);
+      gl.uniformMatrix4fv(gl.getUniformLocation(flatColourProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.disable(gl.BLEND);
+    }
   }
 
   togglePause() {
