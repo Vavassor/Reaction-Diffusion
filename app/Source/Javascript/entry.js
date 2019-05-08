@@ -49,6 +49,20 @@ function onMouseUp(event) {
   }
 }
 
+function onPauseClick(event) {
+  app.togglePause();
+
+  const button = event.currentTarget;
+  const pause = (button.getAttribute("aria-label") === "pause");
+  if (pause) {
+    button.setAttribute("aria-label", "play");
+    button.textContent = "▶";
+  } else {
+    button.setAttribute("aria-label", "pause");
+    button.textContent = "❙❙";
+  }
+}
+
 function onPointerMove(event) {
   if (!event.pressure) {
     return;
@@ -163,9 +177,9 @@ document
   });
 
 document
-  .getElementById("iteration-count")
+  .getElementById("iterations-per-frame")
   .addEventListener("input", (event) => {
-    app.setIterationCount(event.currentTarget.value);
+    app.setIterationsPerFrame(event.currentTarget.value);
   });
 
 document
@@ -173,3 +187,7 @@ document
   .addEventListener("click", (event) => {
     app.clear();
   });
+
+document
+  .getElementById("pause")
+  .addEventListener("click", onPauseClick);

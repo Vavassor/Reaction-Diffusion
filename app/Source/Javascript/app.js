@@ -64,7 +64,8 @@ class App {
     };
     this.flatColourProgram = flatColourProgram;
     this.framebuffers = framebuffers;
-    this.iterationCount = 4;
+    this.iterationsPerFrame = 4;
+    this.paused = false;
     this.renderProgram = renderProgram;
     this.textures = textures;
     this.timestepProgram = timestepProgram;
@@ -230,16 +231,18 @@ class App {
     }
 
     // Timestep Phase
-    gl.useProgram(timestepProgram);
+    if (!this.paused) {
+      gl.useProgram(timestepProgram);
 
-    gl.uniform1f(gl.getUniformLocation(timestepProgram, "feed_rate"), this.update.feedRate);
-    gl.uniform1f(gl.getUniformLocation(timestepProgram, "flow_rate"), this.update.flowRate);
-    gl.uniform1f(gl.getUniformLocation(timestepProgram, "kill_rate"), this.update.killRate);
-
-    for (let i = 0; i <= this.iterationCount; i++) {
-      gl.bindTexture(gl.TEXTURE_2D, textures[i % 2]);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[(i % 2) ^ 1]);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.uniform1f(gl.getUniformLocation(timestepProgram, "feed_rate"), this.update.feedRate);
+      gl.uniform1f(gl.getUniformLocation(timestepProgram, "flow_rate"), this.update.flowRate);
+      gl.uniform1f(gl.getUniformLocation(timestepProgram, "kill_rate"), this.update.killRate);
+    
+      for (let i = 0; i <= this.iterationsPerFrame; i++) {
+        gl.bindTexture(gl.TEXTURE_2D, textures[i % 2]);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[(i % 2) ^ 1]);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
     }
 
     // Render Phase
@@ -265,8 +268,8 @@ class App {
     this.update.flowRate = flowRate;
   }
 
-  setIterationCount(iterationCount) {
-    this.iterationCount = iterationCount;
+  setIterationsPerFrame(iterationsPerFrame) {
+    this.iterationsPerFrame = iterationsPerFrame;
   }
 
   setRates(killRate, feedRate) {
@@ -285,6 +288,10 @@ class App {
     ];
     this.update.killRate = Range.remap(t[0], t[1], 0.01, 0.1, y);
     this.update.feedRate = x;
+  }
+
+  togglePause() {
+    this.paused = !this.paused;
   }
 }
 
