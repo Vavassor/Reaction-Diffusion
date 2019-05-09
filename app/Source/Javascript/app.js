@@ -9,6 +9,12 @@ import renderFsSource from "../Shaders/render-fs.glsl";
 import timestepFsSource from "../Shaders/timestep-fs.glsl";
 import Vector3 from "./Vector3";
 
+const brushState = {
+  UP: 0,
+  HOVERING: 1,
+  DOWN: 2,
+};
+
 class App {
   constructor(canvas, width, height) {
     canvas.width = width;
@@ -60,8 +66,7 @@ class App {
     }
     
     this.brush = {
-      down: false,
-      hovering: false,
+      state: brushState.UP,
       position: new Vector3(-16, 32, 0),
     };
     this.camera = {
@@ -196,16 +201,12 @@ class App {
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
   }
 
-  setBrushDown(down) {
-    this.brush.down = down;
-  }
-
-  setBrushHovering(hovering) {
-    this.brush.hovering = hovering;
-  }
-
   setBrushPosition(position) {
     this.brush.position = position;
+  }
+
+  setBrushState(state) {
+    this.brush.state = state;
   }
 
   setFlowRate(flowRate) {
@@ -263,7 +264,7 @@ class App {
       this.clearNextStep = false;
     }
 
-    if (this.brush.down) {
+    if (this.brush.state === brushState.DOWN) {
       gl.useProgram(flatColourProgram);
       gl.uniformMatrix4fv(gl.getUniformLocation(flatColourProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -291,7 +292,8 @@ class App {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
     // UI Phase
-    if (this.brush.hovering) {
+    if (this.brush.state === brushState.DOWN
+        || this.brush.state === brushState.HOVERING) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       gl.useProgram(flatColourProgram);
@@ -306,4 +308,5 @@ class App {
   }
 }
 
+export { brushState };
 export default App;
