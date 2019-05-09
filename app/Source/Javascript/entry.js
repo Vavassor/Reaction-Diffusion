@@ -1,6 +1,6 @@
 "use strict";
 
-import App from "./app";
+import App, {brushState} from "./app";
 import FileSaver from "file-saver";
 import Range from "./range";
 import Vector3 from "./Vector3";
@@ -15,9 +15,9 @@ let patternPicker;
 
 function copyTouch(touch) {
   return {
-    identifier: touch.identifier,
-    pageX: touch.pageX,
-    pageY: touch.pageY,
+    identifier: touch.pointerId,
+    pageX: touch.clientX,
+    pageY: touch.clientY,
   };
 }
 
@@ -28,31 +28,6 @@ function getPositionInCanvas(pageX, pageY) {
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
   return new Vector3(scaleX * x, scaleY * y, 0);
-}
-
-function onMouseDown(event) {
-  if (event.button === 0) {
-    app.setBrushDown(true);
-  }
-}
-
-function onMouseEnter(event) {
-  app.setBrushHovering(true);
-}
-
-function onMouseLeave(event) {
-  app.setBrushDown(false);
-  app.setBrushHovering(false);
-}
-
-function onMouseMove(event) {
-  app.setBrushPosition(getPositionInCanvas(event.clientX, event.clientY));
-}
-
-function onMouseUp(event) {
-  if (event.button === 0) {
-    app.setBrushDown(false);
-  }
 }
 
 function onPauseClick(event) {
@@ -69,7 +44,7 @@ function onPauseClick(event) {
   }
 }
 
-function onPointerMove(event) {
+function onPickerPointerMove(event) {
   if (!event.pressure) {
     return;
   }
@@ -92,59 +67,47 @@ function onPointerMove(event) {
   app.setRates(killRate, feedRate);
 }
 
-function onTouchCancel(event) {
-  event.preventDefault();
-
-  for (const touch of event.changedTouches) {
-    const index = ongoingTouchIndexById(touch.identifier);
-    if (index >= 0) {
-      ongoingTouches.splice(index, 1);
-      if (!ongoingTouches.length) {
-        app.setBrushDown(false);
-      }
+function onPointerCancel(event) {
+  const index = ongoingTouchIndexById(event.pointerId);
+  if (index >= 0) {
+    ongoingTouches.splice(index, 1);
+    if (!ongoingTouches.length) {
+      app.setBrushState(brushState.UP);
     }
   }
 }
 
-function onTouchEnd(event) {
-  event.preventDefault();
+function onPointerDown(event) {
+  app.setBrushPosition(getPositionInCanvas(event.clientX, event.clientY));
+  app.setBrushState(brushState.DOWN);
+  canvas.setPointerCapture(event.pointerId);
+}
 
-  for (const touch of event.changedTouches) {
-    const index = ongoingTouchIndexById(touch.identifier);
-    if (index >= 0) {
-      ongoingTouches.splice(index, 1);
-      if (!ongoingTouches.length) {
-        app.setBrushDown(false);
-        app.setBrushHovering(false);
-      }
-    }
+function onPointerEnter(event) {
+  ongoingTouches.push(copyTouch(event));
+  app.setBrushState(brushState.HOVERING);
+}
+
+function onPointerMove(event) {
+  const index = ongoingTouchIndexById(event.pointerId);
+  if (index >= 0) {
+    ongoingTouches.splice(index, 1, copyTouch(event));
+  }
+  app.setBrushState(event.pressure > 0 ? brushState.DOWN : brushState.HOVERING);
+  app.setBrushPosition(getPositionInCanvas(event.clientX, event.clientY));
+}
+
+function onPointerOut(event) {
+  const index = ongoingTouchIndexById(event.pointerId);
+  if (index >= 0) {
+    ongoingTouches.splice(index, 1);
+    app.setBrushState(brushState.UP);
   }
 }
 
-function onTouchMove(event) {
-  event.preventDefault();
-
-  for (const touch of event.changedTouches) {
-    const index = ongoingTouchIndexById(touch.identifier);
-    if (index >= 0) {
-      app.setBrushPosition(getPositionInCanvas(touch.pageX, touch.pageY));
-      app.setBrushDown(true);
-      ongoingTouches.splice(index, 1, copyTouch(touch));
-    }
-  }
-}
-
-function onTouchStart(event) {
-  event.preventDefault();
-
-  for (const touch of event.changedTouches) {
-    ongoingTouches.push(copyTouch(touch));
-    if (ongoingTouches.length) {
-      app.setBrushPosition(getPositionInCanvas(touch.pageX, touch.pageY));
-      app.setBrushDown(true);
-      app.setBrushHovering(true);
-    }
-  }
+function onPointerUp(event) {
+  app.setBrushState(brushState.HOVERING);
+  canvas.releasePointerCapture(event.pointerId);
 }
 
 function ongoingTouchIndexById(id) {
@@ -156,20 +119,18 @@ canvas = document.getElementById("canvas");
 app = new App(canvas, 256, 256);
 app.start();
 
-canvas.addEventListener("mousedown", onMouseDown);
-canvas.addEventListener("mouseenter", onMouseEnter);
-canvas.addEventListener("mouseleave", onMouseLeave);
-canvas.addEventListener("mousemove", onMouseMove);
-canvas.addEventListener("mouseup", onMouseUp);
-canvas.addEventListener("touchcancel", onTouchCancel);
-canvas.addEventListener("touchend", onTouchEnd);
-canvas.addEventListener("touchmove", onTouchMove);
-canvas.addEventListener("touchstart", onTouchStart);
+canvas.addEventListener("pointercancel", onPointerCancel);
+canvas.addEventListener("pointerdown", onPointerDown);
+canvas.addEventListener("pointerenter", onPointerEnter);
+canvas.addEventListener("pointermove", onPointerMove);
+canvas.addEventListener("pointerout", onPointerOut);
+canvas.addEventListener("pointerup", onPointerUp);
+
 
 patternPicker = document.getElementById("pattern-picker");
 
 patternPicker.addEventListener("pointerdown", (event) => {
-  onPointerMove(event);
+  onPickerPointerMove(event);
   patternPicker.setPointerCapture(event.pointerId);
 });
 
@@ -177,7 +138,7 @@ patternPicker.addEventListener("pointerup", (event) => {
   patternPicker.releasePointerCapture(event.pointerId);
 });
 
-patternPicker.addEventListener("pointermove", onPointerMove);
+patternPicker.addEventListener("pointermove", onPickerPointerMove);
 
 document
   .getElementById("flow-rate")
