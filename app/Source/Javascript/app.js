@@ -74,7 +74,7 @@ class App {
     };
     this.flatColourProgram = flatColourProgram;
     this.framebuffers = framebuffers;
-    this.iterationsPerFrame = 4;
+    this.iterationsPerFrame = 15;
     this.paused = false;
     this.renderProgram = renderProgram;
     this.textures = textures;
