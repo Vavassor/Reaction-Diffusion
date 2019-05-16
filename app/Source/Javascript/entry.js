@@ -116,7 +116,7 @@ function ongoingTouchIndexById(id) {
 
 
 canvas = document.getElementById("canvas");
-app = new App(canvas, 256, 256);
+app = new App(canvas, 512, 512);
 app.start();
 
 canvas.addEventListener("pointercancel", onPointerCancel);
