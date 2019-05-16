@@ -52,6 +52,7 @@ class App {
     const textures = [
       this.createTexture(width, height, initialState),
       this.createTexture(width, height, null),
+      this.createTexture(width, height, null),
     ];
     const framebuffers = [
       this.createFramebuffer(textures[0]),
@@ -74,7 +75,7 @@ class App {
     };
     this.flatColourProgram = flatColourProgram;
     this.framebuffers = framebuffers;
-    this.iterationsPerFrame = 15;
+    this.iterationsPerFrame = 16;
     this.paused = false;
     this.renderProgram = renderProgram;
     this.textures = textures;
@@ -165,6 +166,13 @@ class App {
   }
 
   getInitialState(width, height) {
+    const pattern = new Array(width * height);
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        pattern[(width * y) + x] = Math.random() < 0.3;
+      }
+    }
+
     const state = new Float32Array(4 * width * height);
     const squareSide = 10;
   
@@ -172,12 +180,7 @@ class App {
       for (let x = 0; x < width; x++) {
         const i = 4 * ((width * y) + x);
         
-        const withinSquare = x > (height / 2) - squareSide
-            && x < (width / 2) + squareSide
-            && y > (height / 2) - squareSide
-            && y < (height / 2) + squareSide;
-  
-        if (withinSquare) {
+        if (pattern[Math.floor(y / squareSide) * width + Math.floor(x / squareSide)]) {
           state[i] = 0.5 + Math.random() * 0.02 - 0.01;
           state[i + 1] = 0.25 + Math.random() * 0.02 - 0.01;
         } else {
