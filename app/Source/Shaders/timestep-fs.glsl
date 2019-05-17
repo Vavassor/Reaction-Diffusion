@@ -1,10 +1,10 @@
 precision mediump float;
 
+uniform sampler2D pattern;
 uniform sampler2D state;
 uniform vec2 state_size;
 uniform float feed_rate;
 uniform float flow_rate;
-uniform float kill_rate;
 
 const vec2 diffusion = vec2(1.0, 0.5);
 const float tau = 6.28318530718;
@@ -21,6 +21,8 @@ void main()
     vec2 southwest = center + vec2(-1.0, -1.0);
     vec2 west = center + vec2(-1.0, 0.0);
     vec2 northwest = center + vec2(-1.0, 1.0);
+
+    float kill_rate = (0.09 * texture2D(pattern, center / state_size).r) + 0.01;
 
     vec2 value = texture2D(state, center / state_size).xy;
     vec2 laplacian = 0.05 * flow_rate * (texture2D(state, northeast / state_size).xy

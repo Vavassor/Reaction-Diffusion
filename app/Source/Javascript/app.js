@@ -9,6 +9,22 @@ import renderFsSource from "../Shaders/render-fs.glsl";
 import timestepFsSource from "../Shaders/timestep-fs.glsl";
 import Vector3 from "./Vector3";
 
+function createPattern(width, height) {
+  const pattern = new Uint8Array(width * height);
+  const side = 10;
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const patternX = x / side;
+      const patternY = y / side;
+      const wave = 0.25 * (Math.sin(Math.PI * patternX) + Math.sin(Math.PI * patternY)) + 0.5;
+      pattern[(width * y) + x] = Math.floor(255 * wave);
+    }
+  }
+
+  return pattern;
+}
+
 const brushState = {
   UP: 0,
   HOVERING: 1,
@@ -47,11 +63,19 @@ class App {
     gl.useProgram(timestepProgram);
     this.loadVertexData(timestepProgram);
     gl.uniform2f(gl.getUniformLocation(timestepProgram, "state_size"), width, height);
+    gl.uniform1i(gl.getUniformLocation(timestepProgram, "state"), 0);
+    gl.uniform1i(gl.getUniformLocation(timestepProgram, "pattern"), 1);
 
     const initialState = this.getInitialState(width, height);
+    const patternSpec = {
+      format: gl.LUMINANCE,
+      internalFormat: gl.LUMINANCE,
+      type: gl.UNSIGNED_BYTE,
+    };
     const textures = [
       this.createTexture(width, height, initialState),
       this.createTexture(width, height, null),
+      this.createTexture(width, height, createPattern(width, height), patternSpec),
     ];
     const framebuffers = [
       this.createFramebuffer(textures[0]),
@@ -70,7 +94,9 @@ class App {
       position: new Vector3(-16, 32, 0),
     };
     this.camera = {
+      height: height,
       projection: Matrix4.orthographicProjection(width, height, -1, 1),
+      width: width,
     };
     this.flatColourProgram = flatColourProgram;
     this.framebuffers = framebuffers;
@@ -150,8 +176,16 @@ class App {
     return shader;
   }
 
-  createTexture(width, height, contents) {
+  createTexture(width, height, contents, spec) {
     const gl = this.gl;
+
+    if (!spec) {
+      spec = {
+        format: gl.RGBA,
+        internalFormat: gl.RGBA,
+        type: gl.FLOAT,
+      };
+    }
 
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -159,7 +193,7 @@ class App {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.FLOAT, contents);
+    gl.texImage2D(gl.TEXTURE_2D, 0, spec.internalFormat, width, height, 0, spec.format, spec.type, contents);
   
     return texture;
   }
@@ -281,7 +315,10 @@ class App {
       gl.uniform1f(gl.getUniformLocation(timestepProgram, "kill_rate"), this.update.killRate);
     
       for (let i = 0; i <= this.iterationsPerFrame; i++) {
+        gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, textures[i % 2]);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, textures[2]);
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[(i % 2) ^ 1]);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
@@ -289,6 +326,7 @@ class App {
 
     // Render Phase
     gl.useProgram(renderProgram);
+    gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, textures[0]);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
