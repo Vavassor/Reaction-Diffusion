@@ -52,7 +52,6 @@ class App {
     const textures = [
       this.createTexture(width, height, initialState),
       this.createTexture(width, height, null),
-      this.createTexture(width, height, null),
     ];
     const framebuffers = [
       this.createFramebuffer(textures[0]),
