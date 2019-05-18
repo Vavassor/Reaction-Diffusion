@@ -130,15 +130,23 @@ canvas.addEventListener("pointerup", onPointerUp);
 patternPicker = document.getElementById("pattern-picker");
 
 patternPicker.addEventListener("pointerdown", (event) => {
-  onPickerPointerMove(event);
-  patternPicker.setPointerCapture(event.pointerId);
+  if (patternPicker.getAttribute("aria-disabled") != "true") {
+    onPickerPointerMove(event);
+    patternPicker.setPointerCapture(event.pointerId);
+  }
 });
 
 patternPicker.addEventListener("pointerup", (event) => {
-  patternPicker.releasePointerCapture(event.pointerId);
+  if (patternPicker.getAttribute("aria-disabled") != "true") {
+    patternPicker.releasePointerCapture(event.pointerId);
+  }
 });
 
-patternPicker.addEventListener("pointermove", onPickerPointerMove);
+patternPicker.addEventListener("pointermove", (event) => {
+  if (patternPicker.getAttribute("aria-disabled") != "true") {
+    onPickerPointerMove(event);
+  }
+});
 
 document
   .getElementById("flow-rate")
@@ -156,8 +164,9 @@ document
   .getElementById("apply-style-map")
   .addEventListener("click", (event) => {
     const toggle = event.currentTarget;
-    const checked = toggle.getAttribute("aria-checked") !== "true";
+    const checked = toggle.getAttribute("aria-checked") != "true";
     toggle.setAttribute("aria-checked", checked);
+    patternPicker.setAttribute("aria-disabled", checked);
     app.setApplyStyleMap(checked);
   });
 
