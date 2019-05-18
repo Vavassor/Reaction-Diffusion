@@ -89,6 +89,35 @@ main {
   width: 2em;
 }
 
+.switch {
+  background: #bfbfbf;
+  border: none;
+  border-radius: 1.5em;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: .375rem;
+  transition-duration: .25s;
+  transition-property: background-color;
+}
+
+.switch[aria-checked="true"] {
+  background: #00ff00;
+}
+
+.switch[aria-checked="false"] :first-child,
+.switch[aria-checked="true"] :last-child {
+  background: #ffffff;
+}
+
+.switch span {
+  border-radius: 1em;
+  box-sizing: border-box;
+  display: inline-block;
+  height: 100%;
+  padding: 0 .5rem;
+}
+
 
 @media (min-width: 600px) {
   main {

@@ -1,9 +1,12 @@
 precision mediump float;
 
-uniform sampler2D pattern;
 uniform sampler2D state;
+uniform sampler2D style_map;
 uniform vec2 state_size;
+uniform float canvas_feed_rate;
+uniform float canvas_kill_rate;
 uniform float flow_rate;
+uniform bool apply_style_map;
 
 const vec2 diffusion = vec2(1.0, 0.5);
 const float tau = 6.28318530718;
@@ -21,9 +24,19 @@ void main()
     vec2 west = center + vec2(-1.0, 0.0);
     vec2 northwest = center + vec2(-1.0, 1.0);
 
-    vec2 rates = texture2D(pattern, center / state_size).xy;
-    float kill_rate = (0.09 * rates.x) + 0.01;
-    float feed_rate = (0.025 * rates.y) + 0.045;
+    float feed_rate;
+    float kill_rate;
+    if(apply_style_map)
+    {
+        vec2 rates = texture2D(style_map, center / state_size).xy;
+        kill_rate = (0.09 * rates.x) + 0.01;
+        feed_rate = (0.025 * rates.y) + 0.045;
+    }
+    else
+    {
+        feed_rate = canvas_feed_rate;
+        kill_rate = canvas_kill_rate;
+    }
 
     vec2 value = texture2D(state, center / state_size).xy;
     vec2 laplacian = 0.05 * flow_rate * (texture2D(state, northeast / state_size).xy

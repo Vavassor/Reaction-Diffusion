@@ -153,6 +153,15 @@ document
   });
 
 document
+  .getElementById("apply-style-map")
+  .addEventListener("click", (event) => {
+    const toggle = event.currentTarget;
+    const checked = toggle.getAttribute("aria-checked") !== "true";
+    toggle.setAttribute("aria-checked", checked);
+    app.setApplyStyleMap(checked);
+  });
+
+document
   .getElementById("clear")
   .addEventListener("click", (event) => {
     app.clear();

@@ -67,10 +67,10 @@ class App {
     this.loadVertexData(timestepProgram);
     gl.uniform2f(gl.getUniformLocation(timestepProgram, "state_size"), width, height);
     gl.uniform1i(gl.getUniformLocation(timestepProgram, "state"), 0);
-    gl.uniform1i(gl.getUniformLocation(timestepProgram, "pattern"), 1);
+    gl.uniform1i(gl.getUniformLocation(timestepProgram, "style_map"), 1);
 
     const initialState = this.getInitialState(width, height);
-    const patternSpec = {
+    const styleMapSpec = {
       format: gl.RGB,
       internalFormat: gl.RGB,
       type: gl.UNSIGNED_BYTE,
@@ -78,7 +78,7 @@ class App {
     const textures = [
       this.createTexture(width, height, initialState),
       this.createTexture(width, height, null),
-      this.createTexture(width, height, createPattern(width, height), patternSpec),
+      this.createTexture(width, height, createPattern(width, height), styleMapSpec),
     ];
     const framebuffers = [
       this.createFramebuffer(textures[0]),
@@ -109,6 +109,7 @@ class App {
     this.textures = textures;
     this.timestepProgram = timestepProgram;
     this.update = {
+      applyStyleMap: false,
       feedRate: 0.0545,
       flowRate: 1,
       killRate: 0.062,
@@ -240,6 +241,10 @@ class App {
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
   }
 
+  setApplyStyleMap(applyStyleMap) {
+    this.update.applyStyleMap = applyStyleMap;
+  }
+
   setBrushPosition(position) {
     this.brush.position = position;
   }
@@ -313,9 +318,10 @@ class App {
     if (!this.paused) {
       gl.useProgram(timestepProgram);
 
-      gl.uniform1f(gl.getUniformLocation(timestepProgram, "feed_rate"), this.update.feedRate);
+      gl.uniform1f(gl.getUniformLocation(timestepProgram, "canvas_feed_rate"), this.update.feedRate);
       gl.uniform1f(gl.getUniformLocation(timestepProgram, "flow_rate"), this.update.flowRate);
-      gl.uniform1f(gl.getUniformLocation(timestepProgram, "kill_rate"), this.update.killRate);
+      gl.uniform1f(gl.getUniformLocation(timestepProgram, "canvas_kill_rate"), this.update.killRate);
+      gl.uniform1i(gl.getUniformLocation(timestepProgram, "apply_style_map"), this.update.applyStyleMap);
     
       for (let i = 0; i <= this.iterationsPerFrame; i++) {
         gl.activeTexture(gl.TEXTURE0);
