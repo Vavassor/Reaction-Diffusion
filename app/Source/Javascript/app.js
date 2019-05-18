@@ -10,22 +10,25 @@ import timestepFsSource from "../Shaders/timestep-fs.glsl";
 import Vector3 from "./Vector3";
 
 function createPattern(width, height) {
-  const pattern = new Uint8Array(width * height);
-  const side = 10;
+  const pattern = new Uint8Array(3 * width * height);
+  const side = 50;
   
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
+      const pixelIndex = 3 * ((width * y) + x);
       const patternX = x / side;
       const patternY = y / side;
-      const wave = 0.25 * (Math.sin(Math.PI * patternX) + Math.sin(Math.PI * patternY)) + 0.5;
-      pattern[(width * y) + x] = Math.floor(255 * wave);
+      const waveA = 0.25 * (Math.sin(Math.PI * patternX) + Math.sin(Math.PI * patternY)) + 0.5;
+      const waveB = 0.25 * (Math.sin(Math.PI * 6.7 * patternX) + Math.sin(Math.PI * 6.7 * patternY)) + 0.5;
+      pattern[pixelIndex] = Math.floor(Range.remap(120, 160, 0, 1, waveA));
+      pattern[pixelIndex + 1] = Math.floor(255 * waveB);
     }
   }
 
   return pattern;
 }
 
-const brushState = {
+const brushState = { 
   UP: 0,
   HOVERING: 1,
   DOWN: 2,
@@ -68,8 +71,8 @@ class App {
 
     const initialState = this.getInitialState(width, height);
     const patternSpec = {
-      format: gl.LUMINANCE,
-      internalFormat: gl.LUMINANCE,
+      format: gl.RGB,
+      internalFormat: gl.RGB,
       type: gl.UNSIGNED_BYTE,
     };
     const textures = [
