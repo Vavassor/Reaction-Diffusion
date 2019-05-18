@@ -116,7 +116,7 @@ function ongoingTouchIndexById(id) {
 
 
 canvas = document.getElementById("canvas");
-app = new App(canvas, 512, 512);
+app = new App(canvas, 256, 256);
 app.start();
 
 canvas.addEventListener("pointercancel", onPointerCancel);
@@ -150,6 +150,15 @@ document
   .getElementById("iterations-per-frame")
   .addEventListener("input", (event) => {
     app.setIterationsPerFrame(event.currentTarget.value);
+  });
+
+document
+  .getElementById("apply-style-map")
+  .addEventListener("click", (event) => {
+    const toggle = event.currentTarget;
+    const checked = toggle.getAttribute("aria-checked") !== "true";
+    toggle.setAttribute("aria-checked", checked);
+    app.setApplyStyleMap(checked);
   });
 
 document
