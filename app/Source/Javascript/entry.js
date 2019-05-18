@@ -10,7 +10,7 @@ import "../Stylesheets/main.css";
 let app;
 let canvas;
 let ongoingTouches = [];
-let patternPicker;
+let stylePicker;
 
 
 function copyTouch(touch) {
@@ -49,10 +49,10 @@ function onPickerPointerMove(event) {
     return;
   }
 
-  const rect = patternPicker.getBoundingClientRect();
-  const bounds = document.getElementById("pattern-picker-bounds");
+  const rect = stylePicker.getBoundingClientRect();
+  const bounds = document.getElementById("style-picker-bounds");
   const boundsRect = bounds.getBoundingClientRect();
-  const knob = document.getElementById("pattern-picker-knob");
+  const knob = document.getElementById("style-picker-knob");
   const knobRect = knob.getBoundingClientRect();
   const paddingLeft = boundsRect.left - rect.left;
   const paddingTop = boundsRect.top - rect.top;
@@ -127,18 +127,26 @@ canvas.addEventListener("pointerout", onPointerOut);
 canvas.addEventListener("pointerup", onPointerUp);
 
 
-patternPicker = document.getElementById("pattern-picker");
+stylePicker = document.getElementById("style-picker");
 
-patternPicker.addEventListener("pointerdown", (event) => {
-  onPickerPointerMove(event);
-  patternPicker.setPointerCapture(event.pointerId);
+stylePicker.addEventListener("pointerdown", (event) => {
+  if (stylePicker.getAttribute("aria-disabled") != "true") {
+    onPickerPointerMove(event);
+    stylePicker.setPointerCapture(event.pointerId);
+  }
 });
 
-patternPicker.addEventListener("pointerup", (event) => {
-  patternPicker.releasePointerCapture(event.pointerId);
+stylePicker.addEventListener("pointerup", (event) => {
+  if (stylePicker.getAttribute("aria-disabled") != "true") {
+    stylePicker.releasePointerCapture(event.pointerId);
+  }
 });
 
-patternPicker.addEventListener("pointermove", onPickerPointerMove);
+stylePicker.addEventListener("pointermove", (event) => {
+  if (stylePicker.getAttribute("aria-disabled") != "true") {
+    onPickerPointerMove(event);
+  }
+});
 
 document
   .getElementById("flow-rate")
@@ -156,8 +164,9 @@ document
   .getElementById("apply-style-map")
   .addEventListener("click", (event) => {
     const toggle = event.currentTarget;
-    const checked = toggle.getAttribute("aria-checked") !== "true";
+    const checked = toggle.getAttribute("aria-checked") != "true";
     toggle.setAttribute("aria-checked", checked);
+    stylePicker.setAttribute("aria-disabled", checked);
     app.setApplyStyleMap(checked);
   });
 

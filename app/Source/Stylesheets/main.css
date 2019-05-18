@@ -67,6 +67,10 @@ main {
   width: 200px;
 }
 
+.range-2d[aria-disabled="true"] {
+  background-color: #bfbfbf;
+}
+
 .range-2d-box {
   margin: auto;
   position: relative;
@@ -81,12 +85,20 @@ main {
   width: 200px;
 }
 
+.range-2d[aria-disabled="true"] .range-2d-box {
+  opacity: 0.25;
+}
+
 .range-2d-knob {
   background-color: rgb(187, 3, 3);
   border-radius: 100px;
   height: 2em;
   position: relative;
   width: 2em;
+}
+
+.range-2d[aria-disabled="true"] .range-2d-knob {
+  background-color: #000000;
 }
 
 .switch {
@@ -102,7 +114,7 @@ main {
 }
 
 .switch[aria-checked="true"] {
-  background: #00ff00;
+  background: #28b9ff;
 }
 
 .switch[aria-checked="false"] :first-child,
