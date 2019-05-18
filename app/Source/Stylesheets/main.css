@@ -114,7 +114,7 @@ main {
 }
 
 .switch[aria-checked="true"] {
-  background: #00ff00;
+  background: #28b9ff;
 }
 
 .switch[aria-checked="false"] :first-child,
