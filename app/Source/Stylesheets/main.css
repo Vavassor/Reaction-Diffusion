@@ -106,7 +106,7 @@ main {
   opacity: 0.25;
 }
 
-.range-2d-knob {
+.range-2d-selector {
   background-color: rgb(187, 3, 3);
   border-radius: 100px;
   height: 2em;
@@ -114,7 +114,7 @@ main {
   width: 2em;
 }
 
-.range-2d[aria-disabled="true"] .range-2d-knob {
+.range-2d[aria-disabled="true"] .range-2d-selector {
   background-color: #000000;
 }
 
@@ -155,7 +155,11 @@ main {
 }
 
 
-#sb-picker-bounds {
+#style-picker-bounds {
+  background-image: url("/assets/pattern.png");
+}
+
+#sv-picker-bounds {
   background: linear-gradient(
     to bottom,
     hsl(0, 0%, 100%) 0%,
@@ -167,10 +171,6 @@ main {
       hsl(0, 0%, 50%) 0%,
       hsla(0, 0%, 50%, 0) 100%
     ), #ff0000;
-}
-
-#style-picker-bounds {
-  background-image: url("/assets/pattern.png");
 }
 
 
