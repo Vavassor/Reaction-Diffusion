@@ -22,7 +22,6 @@
                 <div id="style-picker-knob" class="range-2d-knob" tabindex="0"></div>
               </div>
             </div>
-            <div class="range-2d-overlay"></div>
           </div>
         </div>
 
@@ -54,8 +53,7 @@
 
         <div class="form-group">
           <button id="apply-style-map" class="switch" type="button" role="switch" aria-checked="false">
-            <span>Off</span>
-            <span>On</span>
+            <div class="switch-selector"></div>
           </button>
           <label class="control-label" for="apply-style-map">Apply Style Map</label>
         </div>
@@ -64,6 +62,18 @@
         <button id="pause" class="button-control" type="button" aria-label="pause">❙❙</button>
         <button id="download" class="button-control" type="button">Download</button>
       </form>
+
+      <div class="popup">
+        <div id="sb-picker" class="range-2d">
+          <div class="range-2d-box">
+            <div id="sb-picker-bounds" class="range-2d-bounds">
+              <div id="sb-picker-knob" class="range-2d-knob" tabindex="0"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hue-slider"></div>
+      </div>
     </div>
   </main>
 </body>
