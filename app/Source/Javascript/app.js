@@ -1,6 +1,7 @@
 "use strict";
 
 import basicVsSource from "../Shaders/basic-vs.glsl";
+import Color from "./Color";
 import defaultVsSource from "../Shaders/default-vs.glsl";
 import flatColourFsSource from "../Shaders/flat-colour-fs.glsl";
 import Matrix4 from "./Matrix4";
@@ -110,6 +111,7 @@ class App {
     this.timestepProgram = timestepProgram;
     this.update = {
       applyStyleMap: false,
+      colorA: Color.black(),
       feedRate: 0.0545,
       flowRate: 1,
       killRate: 0.062,
@@ -253,6 +255,10 @@ class App {
     this.brush.state = state;
   }
 
+  setColorA(color) {
+    this.update.colorA = color;
+  }
+
   setFlowRate(flowRate) {
     this.update.flowRate = flowRate;
   }
@@ -335,6 +341,7 @@ class App {
 
     // Render Phase
     gl.useProgram(renderProgram);
+    gl.uniform3fv(gl.getUniformLocation(renderProgram, "color_a"), this.update.colorA.toArray());
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, textures[0]);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);

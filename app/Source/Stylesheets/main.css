@@ -71,7 +71,7 @@ main {
 .hue-slider::-webkit-slider-thumb {
   background-color: #dfdfdf;
   border: 1px solid #8f8f8f;
-  border-radius: 1rem;
+  border-radius: .25rem;
   height: 1.5rem;
   margin-top: -.25rem;
   width: .75rem;

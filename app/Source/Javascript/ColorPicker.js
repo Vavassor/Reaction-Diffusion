@@ -25,7 +25,6 @@ export default class ColorPicker {
     const hue = x;
     this.hue = hue;
     const svColor = Color.fromHsv(hue, 1, 1);
-    console.log(hue);
     this.svPicker.setBackgroundColor(svColor);
     const color = Color.fromHsv(hue, this.saturation, this.value);
     this.svPicker.setSelectorColor(color);

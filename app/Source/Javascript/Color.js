@@ -5,6 +5,10 @@ export default class Color {
     this.b = b;
   }
 
+  toArray() {
+    return [this.r, this.g, this.b];
+  }
+
   toHex() {
     const r = Math.floor(255 * this.r);
     const g = Math.floor(255 * this.g);

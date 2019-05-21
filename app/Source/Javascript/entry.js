@@ -117,7 +117,7 @@ const stylePicker = new Range2d(
 
 const colorPickerSpec = {
   onInputChange: (color) => {
-    console.log(color);
+    app.setColorA(color);
   },
   svPicker: {
     boundsId: "sv-picker-bounds",
