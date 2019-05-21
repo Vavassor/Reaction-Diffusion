@@ -29,6 +29,23 @@ main {
   padding: 1em;
 }
 
+.color-control {
+  background-color: #000000;
+  border: none;
+  border-radius: .25rem;
+  font-size: 1rem;
+  font-weight: 400;
+  height: 2.25rem;
+  line-height: 1.5;
+  padding: .375rem .75rem;
+  width: 3rem;
+}
+
+.color-control-container {
+  display: inline-block;
+  position: relative;
+}
+
 .control-label {
   margin-bottom: .5rem;
 }
@@ -48,6 +65,35 @@ main {
   margin-bottom: 1rem;
 }
 
+.hue-slider {
+  height: 1.5rem;
+  -webkit-appearance: none;
+}
+
+.hue-slider::-webkit-slider-runnable-track {
+  background: linear-gradient(
+    to right,
+    #ff0000 0%,
+    #ffff00 16.66%,
+    #00ff00 33.33%,
+    #00ffff 50%,
+    #0000ff 66.66%,
+    #ff00ff 83.33%,
+    #ff0000 100%
+  );
+  height: 1rem;
+}
+
+.hue-slider::-webkit-slider-thumb {
+  background-color: #dfdfdf;
+  border: 1px solid #8f8f8f;
+  border-radius: .25rem;
+  height: 1.5rem;
+  margin-top: -.25rem;
+  width: .75rem;
+  -webkit-appearance: none;
+}
+
 .paint-canvas {
   border: .1em solid #000000;
   display: block;
@@ -56,7 +102,18 @@ main {
   max-height: 90vh;
   max-width: 90vh;
   touch-action: none;
+  user-select: none;
   width: 100%;
+}
+
+.popover {
+  background-color: #ffffff;
+  box-shadow: .125rem .125rem .5rem #0000008f;
+  bottom: 2.25rem;
+  left: 0;
+  padding: 1rem;
+  position: absolute;
+  z-index: 1;
 }
 
 .range-2d {
@@ -64,6 +121,7 @@ main {
   height: 200px;
   padding: 1em;
   touch-action: none;
+  user-select: none;
   width: 200px;
 }
 
@@ -74,14 +132,17 @@ main {
 .range-2d-box {
   margin: auto;
   position: relative;
+  touch-action: inherit;
+  user-select: inherit;
 }
 
 .range-2d-bounds {
-  background: url("/assets/pattern.png");
   background-size: 100% 100%;
   height: 200px;
   margin: auto;
   position: absolute;
+  touch-action: inherit;
+  user-select: inherit;
   width: 200px;
 }
 
@@ -89,16 +150,39 @@ main {
   opacity: 0.25;
 }
 
-.range-2d-knob {
-  background-color: rgb(187, 3, 3);
-  border-radius: 100px;
+.range-2d-selector {
+  border: 2px solid #000000;
+  border-radius: 2em;
+  bottom: -1em;
+  box-sizing: border-box;
   height: 2em;
-  position: relative;
+  left: -1em;
+  position: absolute;
+  touch-action: inherit;
+  user-select: inherit;
   width: 2em;
 }
 
-.range-2d[aria-disabled="true"] .range-2d-knob {
+.range-2d-selector::before {
+  border: 1px solid #ffffff;
+  border-radius: 2em;
+  bottom: 0;
+  content: "";
+  left: 0;
+  right: 0;
+  position: absolute;
+  top: 0;
+}
+
+.range-2d[aria-disabled="true"] .range-2d-selector {
   background-color: #000000;
+}
+
+.sv-picker-bounds {
+  background:
+    linear-gradient(to bottom,#00000000 0%, #000000ff 100%),
+    linear-gradient(to right,#ffffffff 0%,#ffffff00 100%),
+    #ff0000;
 }
 
 .switch {
@@ -117,17 +201,29 @@ main {
   background: #28b9ff;
 }
 
-.switch[aria-checked="false"] :first-child,
-.switch[aria-checked="true"] :last-child {
-  background: #ffffff;
-}
-
-.switch span {
-  border-radius: 1em;
+.switch-selector {
+  background-color: #ffffff;
+  border-radius: 1.5em;
   box-sizing: border-box;
   display: inline-block;
-  height: 100%;
-  padding: 0 .5rem;
+  height: 1.5em;
+  margin-bottom: -0.375rem;
+  transition-duration: .25s;
+  transition-property: margin;
+  width: 1.5em;
+}
+
+.switch[aria-checked="false"] .switch-selector {
+  margin-right: 2rem;
+}
+
+.switch[aria-checked="true"] .switch-selector {
+  margin-left: 2rem;
+}
+
+
+#style-picker-bounds {
+  background-image: url("/assets/pattern.png");
 }
 
 

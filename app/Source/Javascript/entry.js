@@ -1,8 +1,10 @@
 "use strict";
 
 import App, {brushState} from "./app";
+import ColorPicker from "./ColorPicker";
 import FileSaver from "file-saver";
 import Range from "./range";
+import Range2d from "./Range2d";
 import Vector3 from "./Vector3";
 
 import "../Stylesheets/main.css";
@@ -10,7 +12,6 @@ import "../Stylesheets/main.css";
 let app;
 let canvas;
 let ongoingTouches = [];
-let stylePicker;
 
 
 function copyTouch(touch) {
@@ -42,29 +43,6 @@ function onPauseClick(event) {
     button.setAttribute("aria-label", "pause");
     button.textContent = "❙❙";
   }
-}
-
-function onPickerPointerMove(event) {
-  if (!event.pressure) {
-    return;
-  }
-
-  const rect = stylePicker.getBoundingClientRect();
-  const bounds = document.getElementById("style-picker-bounds");
-  const boundsRect = bounds.getBoundingClientRect();
-  const knob = document.getElementById("style-picker-knob");
-  const knobRect = knob.getBoundingClientRect();
-  const paddingLeft = boundsRect.left - rect.left;
-  const paddingTop = boundsRect.top - rect.top;
-  let x = event.clientX - rect.left - paddingLeft;
-  let y = event.clientY - rect.top - paddingTop;
-  x = Range.clamp(x, 0, boundsRect.width);
-  y = Range.clamp(y, 0, boundsRect.height);
-  knob.style.left = (x - (knobRect.width / 2)) + "px";
-  knob.style.top = (y - (knobRect.height / 2)) + "px";
-  const killRate = Range.lerp(0.045, 0.07, x / boundsRect.width);
-  const feedRate = Range.lerp(0.01, 0.1, 1 - y / boundsRect.height);
-  app.setRates(killRate, feedRate);
 }
 
 function onPointerCancel(event) {
@@ -126,27 +104,18 @@ canvas.addEventListener("pointermove", onPointerMove);
 canvas.addEventListener("pointerout", onPointerOut);
 canvas.addEventListener("pointerup", onPointerUp);
 
+const stylePickerSpec = {
+  id: "style-picker",
+  boundsId: "style-picker-bounds",
+  selectorId: "style-picker-selector",
+  onInputChange: (x, y) => {
+    const killRate = Range.lerp(0.045, 0.07, x);
+    const feedRate = Range.lerp(0.01, 0.1, y);
+    app.setRates(killRate, feedRate);
+  },
+};
 
-stylePicker = document.getElementById("style-picker");
-
-stylePicker.addEventListener("pointerdown", (event) => {
-  if (stylePicker.getAttribute("aria-disabled") != "true") {
-    onPickerPointerMove(event);
-    stylePicker.setPointerCapture(event.pointerId);
-  }
-});
-
-stylePicker.addEventListener("pointerup", (event) => {
-  if (stylePicker.getAttribute("aria-disabled") != "true") {
-    stylePicker.releasePointerCapture(event.pointerId);
-  }
-});
-
-stylePicker.addEventListener("pointermove", (event) => {
-  if (stylePicker.getAttribute("aria-disabled") != "true") {
-    onPickerPointerMove(event);
-  }
-});
+const stylePicker = new Range2d(stylePickerSpec);
 
 document
   .getElementById("flow-rate")
@@ -166,8 +135,39 @@ document
     const toggle = event.currentTarget;
     const checked = toggle.getAttribute("aria-checked") != "true";
     toggle.setAttribute("aria-checked", checked);
-    stylePicker.setAttribute("aria-disabled", checked);
+    stylePicker.setDisabled(checked);
     app.setApplyStyleMap(checked);
+  });
+
+function openPopover(button) {
+  const popover = document.createElement("div");
+  popover.classList.add("popover");
+
+  popover.addEventListener("focusout", (event) => {
+    if (!popover.contains(event.relatedTarget)) {
+      button.parentElement.removeChild(popover);
+    }
+  });
+
+  const spec = {
+    anchor: popover,
+    onInputChange: (color) => {
+      app.setColorA(color);
+      button.style.backgroundColor = `#${color.toHex()}`;
+    },
+  };
+  const picker = new ColorPicker(spec);
+
+  button.insertAdjacentElement("afterend", popover);
+
+  picker.focus();
+}
+
+document
+  .getElementById("color-a")
+  .addEventListener("click", (event) => {
+    const button = event.currentTarget;
+    openPopover(button);
   });
 
 document

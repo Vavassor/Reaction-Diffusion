@@ -54,6 +54,10 @@ class Vector3 {
   static subtract(a, b) {
     return new Vector3(a.x - b.x, a.y - b.y, a.z - b.z);
   }
+
+  static zero() {
+    return new Vector3(0, 0, 0);
+  }
 }
 
 export default Vector3;

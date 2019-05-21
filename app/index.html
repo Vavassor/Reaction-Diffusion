@@ -16,13 +16,12 @@
       <form>
         <div class="form-group">
           <div id="style-picker-label" class="control-label">Style</div>
-          <div id="style-picker" class="range-2d">
+          <div id="style-picker" class="range-2d" tabindex="0">
             <div class="range-2d-box">
               <div id="style-picker-bounds" class="range-2d-bounds">
-                <div id="style-picker-knob" class="range-2d-knob" tabindex="0"></div>
+                <div id="style-picker-selector" class="range-2d-selector"></div>
               </div>
             </div>
-            <div class="range-2d-overlay"></div>
           </div>
         </div>
 
@@ -54,10 +53,16 @@
 
         <div class="form-group">
           <button id="apply-style-map" class="switch" type="button" role="switch" aria-checked="false">
-            <span>Off</span>
-            <span>On</span>
+            <div class="switch-selector"></div>
           </button>
           <label class="control-label" for="apply-style-map">Apply Style Map</label>
+        </div>
+
+        <div class="form-group">
+          <div class="color-control-container">
+            <button id="color-a" class="color-control" type="button" aria-label="Color A"></button>
+          </div>
+          <label class="control-label" for="color-a">Color A</label>
         </div>
 
         <button id="clear" class="button-control" type="button">Clear</button>
