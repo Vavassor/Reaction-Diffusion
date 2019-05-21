@@ -49,7 +49,12 @@ main {
 }
 
 .hue-slider {
-  height: 2rem;
+  height: 1.5rem;
+  width: 100%;
+  -webkit-appearance: none;
+}
+
+.hue-slider::-webkit-slider-runnable-track {
   background: linear-gradient(
     to right,
     #ff0000 0%,
@@ -60,6 +65,17 @@ main {
     #ff00ff 83.33%,
     #ff0000 100%
   );
+  height: 1rem;
+}
+
+.hue-slider::-webkit-slider-thumb {
+  background-color: #dfdfdf;
+  border: 1px solid #8f8f8f;
+  border-radius: 1rem;
+  height: 1.5rem;
+  margin-top: -.25rem;
+  width: .75rem;
+  -webkit-appearance: none;
 }
 
 .paint-canvas {
@@ -70,6 +86,7 @@ main {
   max-height: 90vh;
   max-width: 90vh;
   touch-action: none;
+  user-select: none;
   width: 100%;
 }
 
@@ -82,6 +99,7 @@ main {
   height: 200px;
   padding: 1em;
   touch-action: none;
+  user-select: none;
   width: 200px;
 }
 
@@ -92,6 +110,8 @@ main {
 .range-2d-box {
   margin: auto;
   position: relative;
+  touch-action: inherit;
+  user-select: inherit;
 }
 
 .range-2d-bounds {
@@ -99,6 +119,8 @@ main {
   height: 200px;
   margin: auto;
   position: absolute;
+  touch-action: inherit;
+  user-select: inherit;
   width: 200px;
 }
 
@@ -107,11 +129,25 @@ main {
 }
 
 .range-2d-selector {
-  background-color: rgb(187, 3, 3);
-  border-radius: 100px;
+  border: 2px solid #000000;
+  border-radius: 2em;
+  box-sizing: border-box;
   height: 2em;
   position: relative;
+  touch-action: inherit;
+  user-select: inherit;
   width: 2em;
+}
+
+.range-2d-selector::before {
+  border: 1px solid #ffffff;
+  border-radius: 2em;
+  bottom: 0;
+  content: "";
+  left: 0;
+  right: 0;
+  position: absolute;
+  top: 0;
 }
 
 .range-2d[aria-disabled="true"] .range-2d-selector {
@@ -160,17 +196,10 @@ main {
 }
 
 #sv-picker-bounds {
-  background: linear-gradient(
-    to bottom,
-    hsl(0, 0%, 100%) 0%,
-    hsla(0, 0%, 100%, 0) 50%,
-    hsla(0, 0%, 0%, 0) 50%,
-    hsl(0, 0%, 0%) 100%
-    ), linear-gradient(
-      to right,
-      hsl(0, 0%, 50%) 0%,
-      hsla(0, 0%, 50%, 0) 100%
-    ), #ff0000;
+  background:
+    linear-gradient(to bottom,#00000000 0%, #000000ff 100%),
+    linear-gradient(to right,#ffffffff 0%,#ffffff00 100%),
+    #ff0000;
 }
 
 

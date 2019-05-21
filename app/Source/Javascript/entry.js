@@ -1,6 +1,7 @@
 "use strict";
 
 import App, {brushState} from "./app";
+import ColorPicker from "./ColorPicker";
 import FileSaver from "file-saver";
 import Range from "./range";
 import Range2d from "./Range2d";
@@ -114,16 +115,19 @@ const stylePicker = new Range2d(
   }
 );
 
-const svPicker = new Range2d(
-  "sv-picker",
-  "sv-picker-bounds",
-  "sv-picker-selector",
-  (x, y) => {
-    const saturation = x;
-    const value = y;
-    console.log(saturation + " " + value);
-  }
-);
+const colorPickerSpec = {
+  onInputChange: (color) => {
+    console.log(color);
+  },
+  svPicker: {
+    boundsId: "sv-picker-bounds",
+    id: "sv-picker",
+    selectorId: "sv-picker-selector",
+  },
+  hueSliderId: "hue-slider",
+};
+
+const colorPicker = new ColorPicker(colorPickerSpec);
 
 document
   .getElementById("flow-rate")

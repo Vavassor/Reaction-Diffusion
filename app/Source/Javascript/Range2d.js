@@ -32,7 +32,7 @@ export default class Range2d {
 
   setDisabled(disabled) {
     this.disabled = disabled;
-    this.range2d.setAttribute("aria-disabled", disable);
+    this.range2d.setAttribute("aria-disabled", disabled);
   }
 
   onPointerMove(event) {
@@ -57,5 +57,13 @@ export default class Range2d {
     knob.style.top = (y - (knobRect.height / 2)) + "px";
 
     this.onInputChange(x / boundsRect.width, 1 - y / boundsRect.height)
+  }
+
+  setBackgroundColor(color) {
+    this.bounds.style.backgroundColor = `#${color.toHex()}`;
+  }
+
+  setSelectorColor(color) {
+    this.selector.style.backgroundColor = `#${color.toHex()}`;
   }
 }
