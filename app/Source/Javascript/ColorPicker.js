@@ -3,22 +3,58 @@ import Range2d from "./Range2d";
 
 export default class ColorPicker {
   constructor(spec) {
+    let hueSlider;
+    let svPicker;
+
+    if (spec.anchor) {
+      const colorPicker = document.createElement("div");
+
+      const svPickerSpec = {
+        anchor: colorPicker,
+        onInputChange: (x, y) => this.onSvChange(x, y),
+      };
+      svPicker = new Range2d(svPickerSpec);
+      svPicker.setBoundsClass("sv-picker-bounds");
+
+      hueSlider = document.createElement("input");
+      hueSlider.classList.add("hue-slider", "form-control");
+      hueSlider.setAttribute("type", "range");
+      hueSlider.setAttribute("value", 0);
+      hueSlider.setAttribute("min", 0);
+      hueSlider.setAttribute("max", 360);
+      hueSlider.setAttribute("step", "any");
+
+      colorPicker.appendChild(hueSlider);
+
+      spec.anchor.appendChild(colorPicker);
+    } else {
+      const svPickerSpec = {
+        id: spec.svPicker.id,
+        boundsId: spec.svPicker.boundsId,
+        selectorId: spec.svPicker.selectorId,
+        onInputChange: (x, y) => this.onSvChange(x, y),
+      };
+      svPicker = new Range2d(svPickerSpec);
+
+      hueSlider = document.getElementById(spec.hueSliderId);
+    }
+
     this.hue = 0;
-    this.hueSlider = document.getElementById(spec.hueSliderId);
+    this.hueSlider = hueSlider;
     this.onInputChange = spec.onInputChange,
-    this.onSvChange = this.onSvChange.bind(this);
     this.saturation = 0;
-    this.svPicker = new Range2d(
-      spec.svPicker.id,
-      spec.svPicker.boundsId,
-      spec.svPicker.selectorId,
-      this.onSvChange,
-    );
+    this.svPicker = svPicker;
     this.value = 0;
 
     this.hueSlider.addEventListener("input", (event) => {
       this.onHueChange(event.currentTarget.value);
     });
+
+    this.svPicker.setSelectorColor(Color.black());
+  }
+  
+  focus() {
+    this.svPicker.focus();
   }
 
   onHueChange(x) {

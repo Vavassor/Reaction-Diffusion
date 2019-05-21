@@ -1,14 +1,40 @@
 import Range from "./range";
 
 export default class Range2d {
-  constructor(id, boundsId, selectorId, onInputChange) {
-    const range2d = document.getElementById(id);
+  constructor(spec) {
+    let bounds;
+    let range2d;
+    let selector;
 
-    this.bounds = document.getElementById(boundsId);
+    if (spec.anchor) {
+      range2d = document.createElement("div");
+      range2d.classList.add("range-2d");
+      range2d.setAttribute("tabindex", "0");
+
+      const box = document.createElement("div");
+      box.classList.add("range-2d-box");
+      range2d.appendChild(box);
+
+      bounds = document.createElement("div");
+      bounds.classList.add("range-2d-bounds");
+      box.appendChild(bounds);
+
+      selector = document.createElement("div");
+      selector.classList.add("range-2d-selector");
+      bounds.appendChild(selector);
+
+      spec.anchor.appendChild(range2d);
+    } else {
+      bounds = document.getElementById(spec.boundsId);
+      range2d = document.getElementById(spec.id);
+      selector = document.getElementById(spec.selectorId);
+    }
+
+    this.bounds = bounds;
     this.disabled = false;
-    this.onInputChange = onInputChange;
+    this.onInputChange = spec.onInputChange;
     this.range2d = range2d;
-    this.selector = document.getElementById(selectorId);
+    this.selector = selector;
 
     range2d.addEventListener("pointerdown", (event) => {
       if (!this.disabled) {
@@ -30,9 +56,8 @@ export default class Range2d {
     });
   }
 
-  setDisabled(disabled) {
-    this.disabled = disabled;
-    this.range2d.setAttribute("aria-disabled", disabled);
+  focus() {
+    this.range2d.focus();
   }
 
   onPointerMove(event) {
@@ -61,6 +86,15 @@ export default class Range2d {
 
   setBackgroundColor(color) {
     this.bounds.style.backgroundColor = `#${color.toHex()}`;
+  }
+
+  setBoundsClass(className) {
+    this.bounds.classList.add(className);
+  }
+
+  setDisabled(disabled) {
+    this.disabled = disabled;
+    this.range2d.setAttribute("aria-disabled", disabled);
   }
 
   setSelectorColor(color) {

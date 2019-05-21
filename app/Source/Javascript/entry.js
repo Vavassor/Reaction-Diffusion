@@ -104,30 +104,18 @@ canvas.addEventListener("pointermove", onPointerMove);
 canvas.addEventListener("pointerout", onPointerOut);
 canvas.addEventListener("pointerup", onPointerUp);
 
-const stylePicker = new Range2d(
-  "style-picker",
-  "style-picker-bounds",
-  "style-picker-selector",
-  (x, y) => {
+const stylePickerSpec = {
+  id: "style-picker",
+  boundsId: "style-picker-bounds",
+  selectorId: "style-picker-selector",
+  onInputChange: (x, y) => {
     const killRate = Range.lerp(0.045, 0.07, x);
     const feedRate = Range.lerp(0.01, 0.1, y);
     app.setRates(killRate, feedRate);
-  }
-);
-
-const colorPickerSpec = {
-  onInputChange: (color) => {
-    app.setColorA(color);
   },
-  svPicker: {
-    boundsId: "sv-picker-bounds",
-    id: "sv-picker",
-    selectorId: "sv-picker-selector",
-  },
-  hueSliderId: "hue-slider",
 };
 
-const colorPicker = new ColorPicker(colorPickerSpec);
+const stylePicker = new Range2d(stylePickerSpec);
 
 document
   .getElementById("flow-rate")
@@ -149,6 +137,37 @@ document
     toggle.setAttribute("aria-checked", checked);
     stylePicker.setDisabled(checked);
     app.setApplyStyleMap(checked);
+  });
+
+function openPopover(button) {
+  const popover = document.createElement("div");
+  popover.classList.add("popover");
+
+  popover.addEventListener("focusout", (event) => {
+    if (!popover.contains(event.relatedTarget)) {
+      button.parentElement.removeChild(popover);
+    }
+  });
+
+  const spec = {
+    anchor: popover,
+    onInputChange: (color) => {
+      app.setColorA(color);
+      button.style.backgroundColor = `#${color.toHex()}`;
+    },
+  };
+  const picker = new ColorPicker(spec);
+
+  button.insertAdjacentElement("afterend", popover);
+
+  picker.focus();
+}
+
+document
+  .getElementById("color-a")
+  .addEventListener("click", (event) => {
+    const button = event.currentTarget;
+    openPopover(button);
   });
 
 document

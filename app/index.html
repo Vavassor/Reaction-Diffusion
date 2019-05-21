@@ -16,10 +16,10 @@
       <form>
         <div class="form-group">
           <div id="style-picker-label" class="control-label">Style</div>
-          <div id="style-picker" class="range-2d">
+          <div id="style-picker" class="range-2d" tabindex="0">
             <div class="range-2d-box">
               <div id="style-picker-bounds" class="range-2d-bounds">
-                <div id="style-picker-selector" class="range-2d-selector" tabindex="0"></div>
+                <div id="style-picker-selector" class="range-2d-selector"></div>
               </div>
             </div>
           </div>
@@ -58,30 +58,17 @@
           <label class="control-label" for="apply-style-map">Apply Style Map</label>
         </div>
 
+        <div class="form-group">
+          <div class="color-control-container">
+            <button id="color-a" class="color-control" type="button" aria-label="Color A"></button>
+          </div>
+          <label class="control-label" for="color-a">Color A</label>
+        </div>
+
         <button id="clear" class="button-control" type="button">Clear</button>
         <button id="pause" class="button-control" type="button" aria-label="pause">❙❙</button>
         <button id="download" class="button-control" type="button">Download</button>
       </form>
-
-      <div class="popup">
-        <div id="sv-picker" class="range-2d">
-          <div class="range-2d-box">
-            <div id="sv-picker-bounds" class="range-2d-bounds">
-              <div id="sv-picker-selector" class="range-2d-selector" tabindex="0"></div>
-            </div>
-          </div>
-        </div>
-
-        <input
-          id="hue-slider"
-          class="hue-slider"
-          type="range"
-          value="0"
-          max="360"
-          min="0"
-          step="any"
-        />
-      </div>
     </div>
   </main>
 </body>

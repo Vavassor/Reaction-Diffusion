@@ -29,6 +29,23 @@ main {
   padding: 1em;
 }
 
+.color-control {
+  background-color: #000000;
+  border: none;
+  border-radius: .25rem;
+  font-size: 1rem;
+  font-weight: 400;
+  height: 2.25rem;
+  line-height: 1.5;
+  padding: .375rem .75rem;
+  width: 3rem;
+}
+
+.color-control-container {
+  display: inline-block;
+  position: relative;
+}
+
 .control-label {
   margin-bottom: .5rem;
 }
@@ -50,7 +67,6 @@ main {
 
 .hue-slider {
   height: 1.5rem;
-  width: 100%;
   -webkit-appearance: none;
 }
 
@@ -90,8 +106,14 @@ main {
   width: 100%;
 }
 
-.popup {
-  padding-top: 1rem;
+.popover {
+  background-color: #ffffff;
+  box-shadow: .125rem .125rem .5rem #0000008f;
+  bottom: 2.25rem;
+  left: 0;
+  padding: 1rem;
+  position: absolute;
+  z-index: 1;
 }
 
 .range-2d {
@@ -131,9 +153,11 @@ main {
 .range-2d-selector {
   border: 2px solid #000000;
   border-radius: 2em;
+  bottom: -1em;
   box-sizing: border-box;
   height: 2em;
-  position: relative;
+  left: -1em;
+  position: absolute;
   touch-action: inherit;
   user-select: inherit;
   width: 2em;
@@ -152,6 +176,13 @@ main {
 
 .range-2d[aria-disabled="true"] .range-2d-selector {
   background-color: #000000;
+}
+
+.sv-picker-bounds {
+  background:
+    linear-gradient(to bottom,#00000000 0%, #000000ff 100%),
+    linear-gradient(to right,#ffffffff 0%,#ffffff00 100%),
+    #ff0000;
 }
 
 .switch {
@@ -193,13 +224,6 @@ main {
 
 #style-picker-bounds {
   background-image: url("/assets/pattern.png");
-}
-
-#sv-picker-bounds {
-  background:
-    linear-gradient(to bottom,#00000000 0%, #000000ff 100%),
-    linear-gradient(to right,#ffffffff 0%,#ffffff00 100%),
-    #ff0000;
 }
 
 
