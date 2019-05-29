@@ -70,6 +70,64 @@ main {
   -webkit-appearance: none;
 }
 
+@supports (-ms-ime-align: auto) {
+  .hue-slider {
+    background-image: linear-gradient(
+      to right,
+      #ff0000 0%,
+      #ffff00 16.66%,
+      #00ff00 33.33%,
+      #00ffff 50%,
+      #0000ff 66.66%,
+      #ff00ff 83.33%,
+      #ff0000 100%
+    );
+    background-position-y: center;
+    background-repeat: no-repeat;
+    background-size: 100% 1rem;
+  }
+}
+
+.hue-slider::-moz-range-thumb {
+  background-color: #dfdfdf;
+  border: 1px solid #8f8f8f;
+  border-radius: .25rem;
+  box-sizing: border-box;
+  height: 1.5rem;
+  margin-bottom: -.25rem;
+  width: .75rem;
+}
+
+.hue-slider::-moz-range-track {
+  background: linear-gradient(
+    to right,
+    #ff0000 0%,
+    #ffff00 16.66%,
+    #00ff00 33.33%,
+    #00ffff 50%,
+    #0000ff 66.66%,
+    #ff00ff 83.33%,
+    #ff0000 100%
+  );
+  height: 1rem;
+}
+
+.hue-slider::-ms-thumb {
+  background-color: #dfdfdf;
+  border: 1px solid #8f8f8f;
+  border-radius: .25rem;
+  box-sizing: border-box;
+  height: 1.5rem;
+  margin-bottom: -.25rem;
+  width: .75rem;
+}
+
+.hue-slider::-ms-track {
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+
 .hue-slider::-webkit-slider-runnable-track {
   background: linear-gradient(
     to right,
@@ -108,7 +166,7 @@ main {
 
 .popover {
   background-color: #ffffff;
-  box-shadow: .125rem .125rem .5rem #0000008f;
+  box-shadow: .125rem .125rem .5rem rgba(0, 0, 0, 143);
   bottom: 2.25rem;
   left: 0;
   padding: 1rem;
@@ -180,8 +238,8 @@ main {
 
 .sv-picker-bounds {
   background:
-    linear-gradient(to bottom,#00000000 0%, #000000ff 100%),
-    linear-gradient(to right,#ffffffff 0%,#ffffff00 100%),
+    linear-gradient(to bottom,rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 255) 100%),
+    linear-gradient(to right,rgba(255, 255, 255, 255) 0%,rgba(255, 255, 255, 0) 100%),
     #ff0000;
 }
 
