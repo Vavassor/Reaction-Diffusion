@@ -54,6 +54,34 @@ export default class Range2d {
         this.onPointerMove(event);
       }
     });
+
+    range2d.addEventListener("keydown", (event) => {
+      if (!this.disabled) {
+        let translationX = 0;
+        let translationY = 0;
+        switch (event.key) {
+          case "ArrowDown":
+            translationY++;
+            break;
+          case "ArrowLeft":
+            translationX--;
+            break;
+          case "ArrowRight":
+            translationX++;
+            break;
+          case "ArrowUp":
+            translationY--;
+            break;
+        }
+        if (translationX || translationY) {
+          event.preventDefault();
+          const stepAmount = 4;
+          translationX *= stepAmount;
+          translationY *= stepAmount;
+          this.translateSelector(translationX, translationY);
+        }
+      }
+    });
   }
 
   focus() {
@@ -111,5 +139,26 @@ export default class Range2d {
     let y = boundsRect.height * (1 - positionY);
     knob.style.left = (x - (knobRect.width / 2)) + "px";
     knob.style.top = (y - (knobRect.height / 2)) + "px";
+  }
+
+  translateSelector(translationX, translationY) {
+    const bounds = this.bounds;
+    const knob = this.selector;
+    const range2d = this.range2d;
+
+    const rect = range2d.getBoundingClientRect();
+    const boundsRect = bounds.getBoundingClientRect();
+    const knobRect = knob.getBoundingClientRect();
+    const paddingLeft = boundsRect.left - rect.left;
+    const paddingTop = boundsRect.top - rect.top;
+    let x = knobRect.left + (knobRect.width / 2) - rect.left - paddingLeft + translationX;
+    let y = knobRect.top + (knobRect.height / 2) - rect.top - paddingTop + translationY;
+    x = Range.clamp(x, 0, boundsRect.width);
+    y = Range.clamp(y, 0, boundsRect.height);
+    
+    knob.style.left = (x - (knobRect.width / 2)) + "px";
+    knob.style.top = (y - (knobRect.height / 2)) + "px";
+
+    this.onInputChange(x / boundsRect.width, 1 - y / boundsRect.height);
   }
 }
