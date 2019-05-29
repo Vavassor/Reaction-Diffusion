@@ -11,6 +11,7 @@ export default class ColorPicker {
 
       const svPickerSpec = {
         anchor: colorPicker,
+        label: "Saturation and Value",
         onInputChange: (x, y) => this.onSvChange(x, y),
       };
       svPicker = new Range2d(svPickerSpec);
@@ -23,6 +24,7 @@ export default class ColorPicker {
       hueSlider.setAttribute("min", 0);
       hueSlider.setAttribute("max", 360);
       hueSlider.setAttribute("step", "any");
+      hueSlider.setAttribute("aria-label", "Hue");
 
       colorPicker.appendChild(hueSlider);
 

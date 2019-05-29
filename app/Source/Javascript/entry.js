@@ -1,6 +1,8 @@
 "use strict";
 
 import App, {brushState} from "./app";
+import Color from "./Color";
+import ColorControl from "./ColorControl";
 import ColorPicker from "./ColorPicker";
 import FileSaver from "file-saver";
 import Range from "./range";
@@ -139,48 +141,22 @@ document
     app.setApplyStyleMap(checked);
   });
 
-function openPopover(button, initialColor, onColorChange) {
-  const popover = document.createElement("div");
-  popover.classList.add("popover");
 
-  popover.addEventListener("focusout", (event) => {
-    if (!popover.contains(event.relatedTarget)) {
-      button.parentElement.removeChild(popover);
-    }
-  });
+const colorA = new ColorControl({
+  buttonId: "color-a",
+  initialColor: Color.black(),
+  onColorChange: (color) => {
+    app.setColorA(color);
+  },
+});
 
-  const spec = {
-    anchor: popover,
-    onInputChange: (color) => {
-      onColorChange(color);
-      button.style.backgroundColor = `#${color.toHex()}`;
-    },
-  };
-  const picker = new ColorPicker(spec);
-
-  button.insertAdjacentElement("afterend", popover);
-
-  picker.setColor(initialColor);
-  picker.focus();
-}
-
-document
-  .getElementById("color-a")
-  .addEventListener("click", (event) => {
-    const button = event.currentTarget;
-    openPopover(button, app.getColorA(), (color) => {
-      app.setColorA(color);
-    });
-  });
-
-document
-  .getElementById("color-b")
-  .addEventListener("click", (event) => {
-    const button = event.currentTarget;
-    openPopover(button, app.getColorB(), (color) => {
-      app.setColorB(color);
-    });
-  });
+const colorB = new ColorControl({
+  buttonId: "color-b",
+  initialColor: Color.white(),
+  onColorChange: (color) => {
+    app.setColorB(color);
+  },
+});
 
 document
   .getElementById("clear")
