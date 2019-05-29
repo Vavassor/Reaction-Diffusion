@@ -37,4 +37,8 @@ export default class Color {
     const b = [p, p, t, v, v, q][sector];
     return new Color(r, g, b);
   }
+
+  static white() {
+    return new Color(1, 1, 1);
+  }
 }
