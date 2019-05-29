@@ -30,6 +30,10 @@ export default class Range2d {
       selector = document.getElementById(spec.selectorId);
     }
 
+    if (spec.label) {
+      range2d.setAttribute("aria-label", spec.label);
+    }
+
     this.bounds = bounds;
     this.disabled = false;
     this.onInputChange = spec.onInputChange;
