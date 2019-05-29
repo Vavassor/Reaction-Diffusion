@@ -31,13 +31,14 @@ main {
 
 .color-control {
   background-color: #000000;
-  border: none;
+  border: .125rem solid #000000;
   border-radius: .25rem;
   font-size: 1rem;
   font-weight: 400;
   height: 2.25rem;
   line-height: 1.5;
   padding: .375rem .75rem;
+  vertical-align: -.25rem;
   width: 3rem;
 }
 
@@ -279,6 +280,10 @@ main {
   margin-left: 2rem;
 }
 
+
+#color-b {
+  background-color: #ffffff;
+}
 
 #style-picker-bounds {
   background-image: url("/assets/pattern.png");

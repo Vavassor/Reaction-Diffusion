@@ -139,7 +139,7 @@ document
     app.setApplyStyleMap(checked);
   });
 
-function openPopover(button, onColorChange) {
+function openPopover(button, initialColor, onColorChange) {
   const popover = document.createElement("div");
   popover.classList.add("popover");
 
@@ -160,6 +160,7 @@ function openPopover(button, onColorChange) {
 
   button.insertAdjacentElement("afterend", popover);
 
+  picker.setColor(initialColor);
   picker.focus();
 }
 
@@ -167,7 +168,7 @@ document
   .getElementById("color-a")
   .addEventListener("click", (event) => {
     const button = event.currentTarget;
-    openPopover(button, (color) => {
+    openPopover(button, app.getColorA(), (color) => {
       app.setColorA(color);
     });
   });
@@ -176,7 +177,7 @@ document
   .getElementById("color-b")
   .addEventListener("click", (event) => {
     const button = event.currentTarget;
-    openPopover(button, (color) => {
+    openPopover(button, app.getColorB(), (color) => {
       app.setColorB(color);
     });
   });
