@@ -3,12 +3,8 @@ import Range2d from "./Range2d";
 
 export default class ColorPicker {
   constructor(spec) {
-    let color = Color.black();
-    let hue = 0;
     let hueSlider;
-    let saturation = 0;
     let svPicker;
-    let value = 0;
 
     if (spec.anchor) {
       const colorPicker = document.createElement("div");

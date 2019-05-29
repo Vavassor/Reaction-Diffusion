@@ -175,6 +175,64 @@ main {
   z-index: 1;
 }
 
+.range {
+  background: transparent;
+  height: 1.5rem;
+  -webkit-appearance: none;
+}
+
+.range::-moz-range-thumb {
+  background-color: #dfdfdf;
+  border: 1px solid #8f8f8f;
+  border-radius: .25rem;
+  box-sizing: border-box;
+  height: 1.5rem;
+  margin-bottom: -.25rem;
+  width: .75rem;
+}
+
+.range::-moz-range-track {
+  background-color: #dfdfdf;
+  height: .5rem;
+}
+
+.range::-ms-track {
+  background: transparent;
+  border-color: transparent;
+  color: transparent;
+}
+
+.range::-ms-fill-lower,
+.range::-ms-fill-upper {
+  background-color: #dfdfdf;
+  height: .5rem;
+}
+
+.range::-ms-thumb {
+  background-color: #dfdfdf;
+  border: 1px solid #8f8f8f;
+  border-radius: .25rem;
+  box-sizing: border-box;
+  height: 1.5rem;
+  margin-bottom: -.5rem;
+  width: .75rem;
+}
+
+.range::-webkit-slider-runnable-track {
+  background-color: #dfdfdf;
+  height: .5rem;
+}
+
+.range::-webkit-slider-thumb {
+  background-color: #dfdfdf;
+  border: 1px solid #8f8f8f;
+  border-radius: .25rem;
+  height: 1.5rem;
+  margin-top: -.5rem;
+  width: .75rem;
+  -webkit-appearance: none;
+}
+
 .range-2d {
   border: 1px solid black;
   height: 200px;
