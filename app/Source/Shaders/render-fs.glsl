@@ -2,8 +2,8 @@ precision mediump float;
 uniform sampler2D state;
 uniform vec2 state_size;
 uniform vec3 color_a;
+uniform vec3 color_b;
 
-const vec3 color_b = vec3(1, 1, 1);
 const float COLOR_MIN = 0.2;
 const float COLOR_MAX = 0.4;
 

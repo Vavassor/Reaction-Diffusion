@@ -139,7 +139,7 @@ document
     app.setApplyStyleMap(checked);
   });
 
-function openPopover(button) {
+function openPopover(button, onColorChange) {
   const popover = document.createElement("div");
   popover.classList.add("popover");
 
@@ -152,7 +152,7 @@ function openPopover(button) {
   const spec = {
     anchor: popover,
     onInputChange: (color) => {
-      app.setColorA(color);
+      onColorChange(color);
       button.style.backgroundColor = `#${color.toHex()}`;
     },
   };
@@ -167,7 +167,18 @@ document
   .getElementById("color-a")
   .addEventListener("click", (event) => {
     const button = event.currentTarget;
-    openPopover(button);
+    openPopover(button, (color) => {
+      app.setColorA(color);
+    });
+  });
+
+document
+  .getElementById("color-b")
+  .addEventListener("click", (event) => {
+    const button = event.currentTarget;
+    openPopover(button, (color) => {
+      app.setColorB(color);
+    });
   });
 
 document

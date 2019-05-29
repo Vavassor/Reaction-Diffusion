@@ -112,6 +112,7 @@ class App {
     this.update = {
       applyStyleMap: false,
       colorA: Color.black(),
+      colorB: Color.white(),
       feedRate: 0.0545,
       flowRate: 1,
       killRate: 0.062,
@@ -259,6 +260,10 @@ class App {
     this.update.colorA = color;
   }
 
+  setColorB(color) {
+    this.update.colorB = color;
+  }
+
   setFlowRate(flowRate) {
     this.update.flowRate = flowRate;
   }
@@ -342,6 +347,7 @@ class App {
     // Render Phase
     gl.useProgram(renderProgram);
     gl.uniform3fv(gl.getUniformLocation(renderProgram, "color_a"), this.update.colorA.toArray());
+    gl.uniform3fv(gl.getUniformLocation(renderProgram, "color_b"), this.update.colorB.toArray());
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, textures[0]);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
