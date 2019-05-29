@@ -325,17 +325,21 @@ main {
   display: inline-block;
   height: 1.5em;
   margin-bottom: -0.375rem;
+  margin-left: 0;
+  margin-right: 2rem;
   transition-duration: .25s;
-  transition-property: margin;
+  transition-property: margin-left, margin-right;
   width: 1.5em;
 }
 
 .switch[aria-checked="false"] .switch-selector {
+  margin-left: 0;
   margin-right: 2rem;
 }
 
 .switch[aria-checked="true"] .switch-selector {
   margin-left: 2rem;
+  margin-right: 0;
 }
 
 
