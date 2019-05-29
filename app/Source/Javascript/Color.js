@@ -38,6 +38,43 @@ export default class Color {
     return new Color(r, g, b);
   }
 
+  static toHsv(color) {
+    const r = color.r;
+    const g = color.g;
+    const b = color.b;
+
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const value = max;
+
+    const d = max - min;
+    const saturation = (max === 0) ? 0 : d / max;
+
+    let hue = max;
+    if (max === min) {
+      hue = 0;
+    } else {
+      switch (max) {
+        case r:
+          hue = (g - b) / d + (g < b ? 6 : 0);
+          break;
+        case g:
+          hue = (b - r) / d + 2;
+          break;
+        case b:
+          hue = (r - g) / d + 4;
+          break;
+      }
+      hue *= 60;
+    }
+
+    return {
+      hue,
+      saturation,
+      value,
+    };
+  }
+
   static white() {
     return new Color(1, 1, 1);
   }

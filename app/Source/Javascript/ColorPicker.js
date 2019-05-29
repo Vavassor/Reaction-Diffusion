@@ -3,8 +3,12 @@ import Range2d from "./Range2d";
 
 export default class ColorPicker {
   constructor(spec) {
+    let color = Color.black();
+    let hue = 0;
     let hueSlider;
+    let saturation = 0;
     let svPicker;
+    let value = 0;
 
     if (spec.anchor) {
       const colorPicker = document.createElement("div");
@@ -49,8 +53,6 @@ export default class ColorPicker {
     this.hueSlider.addEventListener("input", (event) => {
       this.onHueChange(event.currentTarget.value);
     });
-
-    this.svPicker.setSelectorColor(Color.black());
   }
   
   focus() {
@@ -75,5 +77,21 @@ export default class ColorPicker {
     const color = Color.fromHsv(this.hue, saturation, value);
     this.svPicker.setSelectorColor(color);
     this.onInputChange(color);
+  }
+
+  setColor(color) {
+    const parts = Color.toHsv(color);
+    const hue = parts.hue;
+    const saturation = parts.saturation;
+    const value = parts.value;
+    const svColor = Color.fromHsv(hue, 1, 1);
+
+    this.hue = hue;
+    this.saturation = saturation;
+    this.value = value;
+    this.hueSlider.setAttribute("value", hue);
+    this.svPicker.setSelectorColor(color);
+    this.svPicker.setBackgroundColor(svColor);
+    this.svPicker.setSelectorPosition(saturation, value);
   }
 }

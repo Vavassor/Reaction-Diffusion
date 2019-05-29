@@ -205,6 +205,14 @@ class App {
     return texture;
   }
 
+  getColorA() {
+    return this.update.colorA;
+  }
+
+  getColorB() {
+    return this.update.colorB;
+  }
+
   getInitialState(width, height) {
     const pattern = new Array(width * height);
     for (let y = 0; y < height; y++) {

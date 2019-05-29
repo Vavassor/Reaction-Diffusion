@@ -68,7 +68,7 @@ export default class Range2d {
     const bounds = this.bounds;
     const knob = this.selector;
     const range2d = this.range2d;
-  
+
     const rect = range2d.getBoundingClientRect();
     const boundsRect = bounds.getBoundingClientRect();
     const knobRect = knob.getBoundingClientRect();
@@ -81,7 +81,7 @@ export default class Range2d {
     knob.style.left = (x - (knobRect.width / 2)) + "px";
     knob.style.top = (y - (knobRect.height / 2)) + "px";
 
-    this.onInputChange(x / boundsRect.width, 1 - y / boundsRect.height)
+    this.onInputChange(x / boundsRect.width, 1 - y / boundsRect.height);
   }
 
   setBackgroundColor(color) {
@@ -99,5 +99,17 @@ export default class Range2d {
 
   setSelectorColor(color) {
     this.selector.style.backgroundColor = `#${color.toHex()}`;
+  }
+
+  setSelectorPosition(positionX, positionY) {
+    const bounds = this.bounds;
+    const knob = this.selector;
+
+    const boundsRect = bounds.getBoundingClientRect();
+    const knobRect = knob.getBoundingClientRect();
+    let x = boundsRect.width * positionX;
+    let y = boundsRect.height * (1 - positionY);
+    knob.style.left = (x - (knobRect.width / 2)) + "px";
+    knob.style.top = (y - (knobRect.height / 2)) + "px";
   }
 }
