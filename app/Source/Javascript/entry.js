@@ -9,7 +9,7 @@ import Range2d from "./Range2d";
 import Vector3 from "./Vector3";
 
 import "../Stylesheets/main.css";
-import ToggleSwitch from "./ToggleSwitch";
+import SlideSwitch from "./SlideSwitch";
 
 let app;
 let canvas;
@@ -131,7 +131,7 @@ document
     app.setIterationsPerFrame(event.currentTarget.value);
   });
 
-const applyStyleMap = new ToggleSwitch({
+const applyStyleMap = new SlideSwitch({
   id: "apply-style-map",
   onChange: (checked) => {
     stylePicker.setDisabled(checked);

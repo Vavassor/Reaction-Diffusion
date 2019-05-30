@@ -314,8 +314,16 @@ main {
   transition-property: background-color;
 }
 
+.switch:disabled {
+  background-color: #dfdfdf;
+}
+
 .switch[aria-checked="true"] {
   background: #28b9ff;
+}
+
+.switch[aria-checked="true"]:disabled {
+  background: #aee4ff;
 }
 
 .switch-selector {
