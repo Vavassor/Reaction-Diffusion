@@ -3,13 +3,13 @@
 import App, {brushState} from "./app";
 import Color from "./Color";
 import ColorControl from "./ColorControl";
-import ColorPicker from "./ColorPicker";
 import FileSaver from "file-saver";
 import Range from "./range";
 import Range2d from "./Range2d";
 import Vector3 from "./Vector3";
 
 import "../Stylesheets/main.css";
+import ToggleSwitch from "./ToggleSwitch";
 
 let app;
 let canvas;
@@ -131,16 +131,13 @@ document
     app.setIterationsPerFrame(event.currentTarget.value);
   });
 
-document
-  .getElementById("apply-style-map")
-  .addEventListener("click", (event) => {
-    const toggle = event.currentTarget;
-    const checked = toggle.getAttribute("aria-checked") != "true";
-    toggle.setAttribute("aria-checked", checked);
+const applyStyleMap = new ToggleSwitch({
+  id: "apply-style-map",
+  onChange: (checked) => {
     stylePicker.setDisabled(checked);
     app.setApplyStyleMap(checked);
-  });
-
+  },
+});
 
 const colorA = new ColorControl({
   buttonId: "color-a",
