@@ -14,13 +14,10 @@ export default class SlideSwitch {
 
   setDisabled(disabled) {
     this.disabled = disabled;
-    const slideSwitch = this.slideSwitch;
     if (disabled) {
-      slideSwitch.setAttribute("disabled", "disabled");
-      slideSwitch.removeEventListener("click");
+      this.slideSwitch.setAttribute("disabled", "disabled");
     } else {
-      slideSwitch.removeAttribute("disabled");
-      slideSwitch.addEventListener("click", this.onClick);
+      this.slideSwitch.removeAttribute("disabled");
     }
   }
 
