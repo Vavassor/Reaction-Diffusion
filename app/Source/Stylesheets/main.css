@@ -302,7 +302,7 @@ main {
     #ff0000;
 }
 
-.switch {
+.slide-switch {
   background: #bfbfbf;
   border: none;
   border-radius: 1.5em;
@@ -314,11 +314,19 @@ main {
   transition-property: background-color;
 }
 
-.switch[aria-checked="true"] {
+.slide-switch:disabled {
+  background-color: #dfdfdf;
+}
+
+.slide-switch[aria-checked="true"] {
   background: #28b9ff;
 }
 
-.switch-selector {
+.slide-switch[aria-checked="true"]:disabled {
+  background: #aee4ff;
+}
+
+.slide-switch-selector {
   background-color: #ffffff;
   border-radius: 1.5em;
   box-sizing: border-box;
@@ -332,12 +340,12 @@ main {
   width: 1.5em;
 }
 
-.switch[aria-checked="false"] .switch-selector {
+.slide-switch[aria-checked="false"] .slide-switch-selector {
   margin-left: 0;
   margin-right: 2rem;
 }
 
-.switch[aria-checked="true"] .switch-selector {
+.slide-switch[aria-checked="true"] .slide-switch-selector {
   margin-left: 2rem;
   margin-right: 0;
 }
