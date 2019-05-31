@@ -110,6 +110,7 @@ class App {
     this.textures = textures;
     this.timestepProgram = timestepProgram;
     this.update = {
+      applyOrientationMap: false,
       applyStyleMap: false,
       colorA: Color.black(),
       colorB: Color.white(),
@@ -250,6 +251,10 @@ class App {
     const position = gl.getAttribLocation(program, "position");
     gl.enableVertexAttribArray(position);
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+  }
+
+  setApplyOrientationMap(apply) {
+    this.update.applyOrientationMap = apply;
   }
 
   setApplyStyleMap(applyStyleMap) {
