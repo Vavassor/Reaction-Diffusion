@@ -79,7 +79,7 @@ export default class Range2d {
         }
         if (translationX || translationY) {
           event.preventDefault();
-          const stepAmount = 4;
+          const stepAmount = 0.05;
           translationX *= stepAmount;
           translationY *= stepAmount;
           this.translateSelector(translationX, translationY);
@@ -155,8 +155,10 @@ export default class Range2d {
     const knobRect = knob.getBoundingClientRect();
     const paddingLeft = boundsRect.left - rect.left;
     const paddingTop = boundsRect.top - rect.top;
-    let x = knobRect.left + (knobRect.width / 2) - rect.left - paddingLeft + translationX;
-    let y = knobRect.top + (knobRect.height / 2) - rect.top - paddingTop + translationY;
+    const offsetX = translationX * boundsRect.width;
+    const offsetY = translationY * boundsRect.height;
+    let x = knobRect.left + (knobRect.width / 2) - rect.left - paddingLeft + offsetX;
+    let y = knobRect.top + (knobRect.height / 2) - rect.top - paddingTop + offsetY;
     x = Range.clamp(x, 0, boundsRect.width);
     y = Range.clamp(y, 0, boundsRect.height);
     
