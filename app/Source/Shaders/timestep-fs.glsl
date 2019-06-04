@@ -2,6 +2,7 @@ precision mediump float;
 
 uniform sampler2D state;
 uniform sampler2D style_map;
+uniform sampler2D orientation_map;
 uniform vec2 state_size;
 uniform float canvas_feed_rate;
 uniform float canvas_kill_rate;
@@ -47,10 +48,8 @@ void main()
     if(apply_orientation_map)
     {
         vec2 scale = vec2(0.7, 0.2);
-        vec2 direction = normalize(vec2(
-                sin(2.5 * tau * center.y / state_size.x),
-                sin(2.5 * tau * center.x / state_size.y))
-        );
+        vec2 direction = 2.0 * texture2D(orientation_map, center / state_size).xy - 1.0;
+        direction = normalize(direction);
         float cos_angle = direction.x;
         float sin_angle = direction.y;
         
