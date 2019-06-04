@@ -326,7 +326,7 @@ main {
   background: #aee4ff;
 }
 
-.slide-switch-selector {
+.slide-switch-handle {
   background-color: #ffffff;
   border-radius: 1.5em;
   box-sizing: border-box;
@@ -340,12 +340,12 @@ main {
   width: 1.5em;
 }
 
-.slide-switch[aria-checked="false"] .slide-switch-selector {
+.slide-switch[aria-checked="false"] .slide-switch-handle {
   margin-left: 0;
   margin-right: 2rem;
 }
 
-.slide-switch[aria-checked="true"] .slide-switch-selector {
+.slide-switch[aria-checked="true"] .slide-switch-handle {
   margin-left: 2rem;
   margin-right: 0;
 }

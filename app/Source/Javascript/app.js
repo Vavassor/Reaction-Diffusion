@@ -345,6 +345,7 @@ class App {
       gl.uniform1f(gl.getUniformLocation(timestepProgram, "canvas_feed_rate"), this.update.feedRate);
       gl.uniform1f(gl.getUniformLocation(timestepProgram, "flow_rate"), this.update.flowRate);
       gl.uniform1f(gl.getUniformLocation(timestepProgram, "canvas_kill_rate"), this.update.killRate);
+      gl.uniform1i(gl.getUniformLocation(timestepProgram, "apply_orientation_map"), this.update.applyOrientationMap);
       gl.uniform1i(gl.getUniformLocation(timestepProgram, "apply_style_map"), this.update.applyStyleMap);
     
       for (let i = 0; i <= this.iterationsPerFrame; i++) {

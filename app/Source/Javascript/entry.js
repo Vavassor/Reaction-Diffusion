@@ -142,7 +142,6 @@ const applyStyleMap = new SlideSwitch({
 const applyOrientationMap = new SlideSwitch({
   id: "apply-orientation-map",
   onChange: (checked) => {
-    stylePicker.setDisabled(checked);
     app.setApplyOrientationMap(checked);
   },
 });
