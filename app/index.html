@@ -13,69 +13,74 @@
     </div>
 
     <div class="control-panel">
-      <form>
-        <div class="form-group">
-          <div id="style-picker-label" class="control-label">Style</div>
-          <div id="style-picker" class="range-2d" tabindex="0" aria-labelledby="style-picker-label">
-            <div class="range-2d-box">
-              <div id="style-picker-bounds" class="range-2d-bounds">
-                <div id="style-picker-selector" class="range-2d-selector"></div>
-              </div>
+      <div class="form-group">
+        <div id="style-picker-label" class="control-label">Style</div>
+        <div id="style-picker" class="range-2d" tabindex="0" aria-labelledby="style-picker-label">
+          <div class="range-2d-box">
+            <div id="style-picker-bounds" class="range-2d-bounds">
+              <div id="style-picker-selector" class="range-2d-selector"></div>
             </div>
           </div>
         </div>
+      </div>
 
-        <div class="form-group">
-          <label class="control-label" for="flow-rate">Flow Rate</label>
-          <input
-            id="flow-rate"
-            class="form-control range"
-            value="1"
-            max="1.001"
-            min="1"
-            step="0.0001"
-            type="range"
-          >
+      <div class="form-group">
+        <label class="control-label" for="flow-rate">Flow Rate</label>
+        <input
+          id="flow-rate"
+          class="form-control range"
+          value="1"
+          max="1.001"
+          min="1"
+          step="0.0001"
+          type="range"
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="control-label" for="iterations-per-frame">Iterations Per Frame</label>
+        <input
+          id="iterations-per-frame"
+          class="form-control range"
+          value="15"
+          max="32"
+          min="1"
+          step="1"
+          type="range"
+        >
+      </div>
+
+      <div class="form-group">
+        <button id="apply-style-map" class="slide-switch" type="button" role="switch" aria-checked="false">
+          <div class="slide-switch-handle"></div>
+        </button>
+        <label class="control-label" for="apply-style-map">Apply Style Map</label>
+      </div>
+
+      <div class="form-group">
+        <button id="apply-orientation-map" class="slide-switch" type="button" role="switch" aria-checked="false">
+          <div class="slide-switch-handle"></div>
+        </button>
+        <label class="control-label" for="apply-orientation-map">Apply Orientation Map</label>
+      </div>
+
+      <div class="form-group">
+        <div class="color-control-container">
+          <button id="color-a" class="color-control" type="button"></button>
         </div>
+        <label class="control-label" for="color-a">Color A</label>
+      </div>
 
-        <div class="form-group">
-          <label class="control-label" for="iterations-per-frame">Iterations Per Frame</label>
-          <input
-            id="iterations-per-frame"
-            class="form-control range"
-            value="15"
-            max="32"
-            min="1"
-            step="1"
-            type="range"
-          >
+      <div class="form-group">
+        <div class="color-control-container">
+          <button id="color-b" class="color-control" type="button"></button>
         </div>
+        <label class="control-label" for="color-b">Color B</label>
+      </div>
 
-        <div class="form-group">
-          <button id="apply-style-map" class="slide-switch" type="button" role="switch" aria-checked="false">
-            <div class="slide-switch-selector"></div>
-          </button>
-          <label class="control-label" for="apply-style-map">Apply Style Map</label>
-        </div>
-
-        <div class="form-group">
-          <div class="color-control-container">
-            <button id="color-a" class="color-control" type="button"></button>
-          </div>
-          <label class="control-label" for="color-a">Color A</label>
-        </div>
-
-        <div class="form-group">
-          <div class="color-control-container">
-            <button id="color-b" class="color-control" type="button"></button>
-          </div>
-          <label class="control-label" for="color-b">Color B</label>
-        </div>
-
-        <button id="clear" class="button-control" type="button">Clear</button>
-        <button id="pause" class="button-control" type="button" aria-label="pause">❙❙</button>
-        <button id="download" class="button-control" type="button">Download</button>
-      </form>
+      <button id="clear" class="button-control" type="button">Clear</button>
+      <button id="pause" class="button-control" type="button" aria-label="pause">❙❙</button>
+      <button id="download" class="button-control" type="button">Download</button>
     </div>
   </main>
 </body>

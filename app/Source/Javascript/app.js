@@ -10,6 +10,24 @@ import renderFsSource from "../Shaders/render-fs.glsl";
 import timestepFsSource from "../Shaders/timestep-fs.glsl";
 import Vector3 from "./Vector3";
 
+function createVectorField(width, height) {
+  const field = new Uint8Array(3 * width * height); 
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pixelIndex = 3 * ((width * y) + x);
+      const frequencyX = 2.0 * (1.0 / width);
+      const frequencyY = 2.0 * (1.0 / height);
+      const directionX = Math.sin(2.0 * Math.PI * frequencyX * x);
+      const directionY = Math.sin(2.0 * Math.PI * frequencyY * y);
+      field[pixelIndex] = Math.floor(255 * (0.5 * directionX) + 0.5);
+      field[pixelIndex + 1] = Math.floor(255 * (0.5 * directionY) + 0.5);
+    }
+  }
+
+  return field;
+}
+
 function createPattern(width, height) {
   const pattern = new Uint8Array(3 * width * height);
   const side = 50;
@@ -69,9 +87,15 @@ class App {
     gl.uniform2f(gl.getUniformLocation(timestepProgram, "state_size"), width, height);
     gl.uniform1i(gl.getUniformLocation(timestepProgram, "state"), 0);
     gl.uniform1i(gl.getUniformLocation(timestepProgram, "style_map"), 1);
+    gl.uniform1i(gl.getUniformLocation(timestepProgram, "orientation_map"), 2);
 
     const initialState = this.getInitialState(width, height);
     const styleMapSpec = {
+      format: gl.RGB,
+      internalFormat: gl.RGB,
+      type: gl.UNSIGNED_BYTE,
+    };
+    const orientationMapSpec = {
       format: gl.RGB,
       internalFormat: gl.RGB,
       type: gl.UNSIGNED_BYTE,
@@ -80,6 +104,7 @@ class App {
       this.createTexture(width, height, initialState),
       this.createTexture(width, height, null),
       this.createTexture(width, height, createPattern(width, height), styleMapSpec),
+      this.createTexture(width, height, createVectorField(width, height), orientationMapSpec),
     ];
     const framebuffers = [
       this.createFramebuffer(textures[0]),
@@ -110,6 +135,7 @@ class App {
     this.textures = textures;
     this.timestepProgram = timestepProgram;
     this.update = {
+      applyOrientationMap: false,
       applyStyleMap: false,
       colorA: Color.black(),
       colorB: Color.white(),
@@ -252,6 +278,10 @@ class App {
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
   }
 
+  setApplyOrientationMap(apply) {
+    this.update.applyOrientationMap = apply;
+  }
+
   setApplyStyleMap(applyStyleMap) {
     this.update.applyStyleMap = applyStyleMap;
   }
@@ -340,6 +370,7 @@ class App {
       gl.uniform1f(gl.getUniformLocation(timestepProgram, "canvas_feed_rate"), this.update.feedRate);
       gl.uniform1f(gl.getUniformLocation(timestepProgram, "flow_rate"), this.update.flowRate);
       gl.uniform1f(gl.getUniformLocation(timestepProgram, "canvas_kill_rate"), this.update.killRate);
+      gl.uniform1i(gl.getUniformLocation(timestepProgram, "apply_orientation_map"), this.update.applyOrientationMap);
       gl.uniform1i(gl.getUniformLocation(timestepProgram, "apply_style_map"), this.update.applyStyleMap);
     
       for (let i = 0; i <= this.iterationsPerFrame; i++) {
@@ -347,6 +378,8 @@ class App {
         gl.bindTexture(gl.TEXTURE_2D, textures[i % 2]);
         gl.activeTexture(gl.TEXTURE1);
         gl.bindTexture(gl.TEXTURE_2D, textures[2]);
+        gl.activeTexture(gl.TEXTURE2);
+        gl.bindTexture(gl.TEXTURE_2D, textures[3]);
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[(i % 2) ^ 1]);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
