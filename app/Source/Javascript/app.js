@@ -1,6 +1,8 @@
 "use strict";
 
 import basicVsSource from "../Shaders/basic-vs.glsl";
+import brushFsSource from "../Shaders/brush-fs.glsl";
+import brushVsSource from "../Shaders/brush-vs.glsl";
 import Color from "./Color";
 import defaultVsSource from "../Shaders/default-vs.glsl";
 import flatColourFsSource from "../Shaders/flat-colour-fs.glsl";
@@ -9,6 +11,26 @@ import Range from "./range";
 import renderFsSource from "../Shaders/render-fs.glsl";
 import timestepFsSource from "../Shaders/timestep-fs.glsl";
 import Vector3 from "./Vector3";
+
+function createCircle(side) {
+  const pixels = new Uint8Array(4 * side * side);
+  const radius = side / 2;
+
+  for (let y = 0; y < side; y++) {
+    for (let x = 0; x < side; x++) {
+      const pixelIndex = 4 * ((side * y) + x);
+      const deltaX = (x + 0.5) - radius;
+      const deltaY = (y + 0.5) - radius;
+      const squaredDistance = (deltaX * deltaX) + (deltaY * deltaY);
+      pixels[pixelIndex] = 255;
+      pixels[pixelIndex + 1] = 255;
+      pixels[pixelIndex + 2] = 255;
+      pixels[pixelIndex + 3] = (squaredDistance <= (radius * radius)) ? 255 : 0;
+    }
+  }
+
+  return pixels;
+}
 
 function createVectorField(width, height) {
   const field = new Uint8Array(3 * width * height); 
@@ -69,14 +91,21 @@ class App {
     this.checkCompatibility();
 
     const basicVertexShader = this.createShader(gl.VERTEX_SHADER, basicVsSource);
+    const brushVertexShader = this.createShader(gl.VERTEX_SHADER, brushVsSource);
     const vertexShader = this.createShader(gl.VERTEX_SHADER, defaultVsSource);
+    const brushFragmentShader = this.createShader(gl.FRAGMENT_SHADER, brushFsSource);
     const flatColourShader = this.createShader(gl.FRAGMENT_SHADER, flatColourFsSource);
     const timestepShader = this.createShader(gl.FRAGMENT_SHADER, timestepFsSource);
     const renderShader = this.createShader(gl.FRAGMENT_SHADER, renderFsSource);
 
+    const brushProgram = this.createAndLinkProgram(brushVertexShader, brushFragmentShader);
     const flatColourProgram = this.createAndLinkProgram(basicVertexShader, flatColourShader);
     const timestepProgram = this.createAndLinkProgram(vertexShader, timestepShader);
     const renderProgram = this.createAndLinkProgram(vertexShader, renderShader);
+
+    gl.useProgram(brushProgram);
+    this.loadVertexData(brushProgram);
+    gl.uniform1i(gl.getUniformLocation(brushProgram, "brush_shape"), 0);
 
     gl.useProgram(renderProgram);
     this.loadVertexData(renderProgram);
@@ -100,11 +129,17 @@ class App {
       internalFormat: gl.RGB,
       type: gl.UNSIGNED_BYTE,
     };
+    const brushShapeSpec = {
+      format: gl.RGBA,
+      internalFormat: gl.RGBA,
+      type: gl.UNSIGNED_BYTE,
+    };
     const textures = [
       this.createTexture(width, height, initialState),
       this.createTexture(width, height, null),
       this.createTexture(width, height, createPattern(width, height), styleMapSpec),
       this.createTexture(width, height, createVectorField(width, height), orientationMapSpec),
+      this.createTexture(64, 64, createCircle(64), brushShapeSpec),
     ];
     const framebuffers = [
       this.createFramebuffer(textures[0]),
@@ -131,6 +166,9 @@ class App {
     this.framebuffers = framebuffers;
     this.iterationsPerFrame = 16;
     this.paused = false;
+    this.programs = {
+      brush: brushProgram,
+    };
     this.renderProgram = renderProgram;
     this.textures = textures;
     this.timestepProgram = timestepProgram;
@@ -270,12 +308,27 @@ class App {
   loadVertexData(program) {
     const gl = this.gl;
 
+    const data = new Float32Array(
+      [
+        -1, -1, 0, 0,
+        1, -1, 1, 0,
+        -1, 1, 0, 1,
+        1, 1, 1, 1,
+      ]
+    );
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
   
     const position = gl.getAttribLocation(program, "position");
+    const texcoord = gl.getAttribLocation(program, "texcoord");
+    
     gl.enableVertexAttribArray(position);
-    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 16, 0);
+
+    if (texcoord !== -1) {
+      gl.enableVertexAttribArray(texcoord);
+      gl.vertexAttribPointer(texcoord, 2, gl.FLOAT, false, 16, 8);
+    }
   }
 
   setApplyOrientationMap(apply) {
@@ -337,6 +390,7 @@ class App {
   }
 
   step() {
+    const brushProgram = this.programs.brush;
     const flatColourProgram = this.flatColourProgram;
     const framebuffers = this.framebuffers;
     const gl = this.gl;
@@ -358,9 +412,15 @@ class App {
     }
 
     if (this.brush.state === brushState.DOWN) {
-      gl.useProgram(flatColourProgram);
-      gl.uniformMatrix4fv(gl.getUniformLocation(flatColourProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.useProgram(brushProgram);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, textures[4]);
+      gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 1.0]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.disable(gl.BLEND);
     }
 
     // Timestep Phase
@@ -399,8 +459,11 @@ class App {
         || this.brush.state === brushState.HOVERING) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      gl.useProgram(flatColourProgram);
-      gl.uniformMatrix4fv(gl.getUniformLocation(flatColourProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+      gl.useProgram(brushProgram);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, textures[4]);
+      gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 0.5]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       gl.disable(gl.BLEND);
     }
