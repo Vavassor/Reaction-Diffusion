@@ -163,6 +163,12 @@ const colorB = new ColorControl({
 });
 
 document
+  .getElementById("brush-radius")
+  .addEventListener("input", (event) => {
+    app.setBrushRadius(event.currentTarget.value);
+  });
+
+document
   .getElementById("clear")
   .addEventListener("click", (event) => {
     app.clear();

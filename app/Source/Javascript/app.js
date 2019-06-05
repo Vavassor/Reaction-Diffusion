@@ -154,8 +154,9 @@ class App {
     }
     
     this.brush = {
-      state: brushState.UP,
       position: new Vector3(-16, 32, 0),
+      radius: 16,
+      state: brushState.UP,
     };
     this.camera = {
       height: height,
@@ -343,6 +344,10 @@ class App {
     this.brush.position = position;
   }
 
+  setBrushRadius(radius) {
+    this.brush.radius = radius;
+  }
+
   setBrushState(state) {
     this.brush.state = state;
   }
@@ -391,7 +396,6 @@ class App {
 
   step() {
     const brushProgram = this.programs.brush;
-    const flatColourProgram = this.flatColourProgram;
     const framebuffers = this.framebuffers;
     const gl = this.gl;
     const renderProgram = this.renderProgram;
@@ -400,7 +404,8 @@ class App {
 
     // Edit Phase
     const translation = Matrix4.translate(this.brush.position);
-    const dilation = Matrix4.dilate(new Vector3(16, 16, 1));
+    const radius = this.brush.radius;
+    const dilation = Matrix4.dilate(new Vector3(radius, radius, 1));
     const model = Matrix4.multiply(translation, dilation);
     const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
 
