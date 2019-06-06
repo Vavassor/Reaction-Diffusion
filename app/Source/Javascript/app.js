@@ -136,7 +136,12 @@ class App {
       type: gl.UNSIGNED_BYTE,
     };
     const brushShapeSpec = {
+      filter: {
+        magnify: gl.LINEAR,
+        minify: gl.LINEAR_MIPMAP_LINEAR,
+      },
       format: gl.RGBA,
+      generate_mipmaps: true,
       internalFormat: gl.RGBA,
       type: gl.UNSIGNED_BYTE,
     };
@@ -264,14 +269,24 @@ class App {
         type: gl.FLOAT,
       };
     }
+    if (!spec.filter) {
+      spec.filter = {
+        magnify: gl.NEAREST,
+        minify: gl.NEAREST,
+      };
+    }
 
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, spec.filter.minify);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, spec.filter.magnify);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
     gl.texImage2D(gl.TEXTURE_2D, 0, spec.internalFormat, width, height, 0, spec.format, spec.type, contents);
+
+    if (spec.generate_mipmaps) {
+      gl.generateMipmap(gl.TEXTURE_2D);
+    }
   
     return texture;
   }
