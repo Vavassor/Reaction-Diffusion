@@ -5,6 +5,7 @@ import brushFsSource from "../Shaders/brush-fs.glsl";
 import brushVsSource from "../Shaders/brush-vs.glsl";
 import Color from "./Color";
 import defaultVsSource from "../Shaders/default-vs.glsl";
+import FixedHistory from "./FixedHistory";
 import flatColourFsSource from "../Shaders/flat-colour-fs.glsl";
 import Matrix4 from "./Matrix4";
 import Range from "./range";
@@ -169,12 +170,11 @@ class SimulationCanvas {
     }
     
     this.brush = {
-      position: new Vector3(-16, 32, 0),
-      priorPositionIndex: 0,
-      priorPositions: [],
+      positions: new FixedHistory(4),
       radius: 16,
       state: brushState.UP,
     };
+    this.brush.positions.add(new Vector3(-16, 32, 0));
     this.camera = {
       height: height,
       projection: Matrix4.orthographicProjection(width, height, -1, 1),
@@ -368,7 +368,7 @@ class SimulationCanvas {
   }
 
   setBrushPosition(position) {
-    this.brush.position = position;
+    this.brush.positions.add(position);
   }
 
   setBrushRadius(radius) {
@@ -430,7 +430,7 @@ class SimulationCanvas {
     const timestepProgram = this.timestepProgram;
 
     // Edit Phase
-    const translation = Matrix4.translate(this.brush.position);
+    const translation = Matrix4.translate(this.brush.positions.getCurrent());
     const radius = this.brush.radius;
     const dilation = Matrix4.dilate(new Vector3(radius, radius, 1));
     const model = Matrix4.multiply(translation, dilation);
@@ -499,6 +499,12 @@ class SimulationCanvas {
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       gl.disable(gl.BLEND);
     }
+
+    let points = [];
+    for (let i = 0; i < this.brush.positions.count; i++) {
+      points.push(this.brush.positions.getOffset(i));
+    }
+    console.log(points.join(", "));
   }
 
   togglePause() {

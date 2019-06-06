@@ -26,6 +26,10 @@ class Vector3 {
     return this.elements[2];
   }
 
+  toString() {
+    return `⟨${this.x}, ${this.y}, ${this.z}⟩`;
+  }
+
   static add(a, b) {
     return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
   }
