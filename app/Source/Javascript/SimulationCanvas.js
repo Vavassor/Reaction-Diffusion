@@ -5,7 +5,6 @@ import brushFsSource from "../Shaders/brush-fs.glsl";
 import brushVsSource from "../Shaders/brush-vs.glsl";
 import Color from "./Color";
 import defaultVsSource from "../Shaders/default-vs.glsl";
-import FixedHistory from "./FixedHistory";
 import flatColourFsSource from "../Shaders/flat-colour-fs.glsl";
 import Matrix4 from "./Matrix4";
 import Range from "./range";
@@ -170,11 +169,11 @@ class SimulationCanvas {
     }
     
     this.brush = {
-      positions: new FixedHistory(4),
+      position: new Vector3(-16, 32, 0),
+      positions: [],
       radius: 16,
       state: brushState.UP,
     };
-    this.brush.positions.add(new Vector3(-16, 32, 0));
     this.camera = {
       height: height,
       projection: Matrix4.orthographicProjection(width, height, -1, 1),
@@ -368,7 +367,11 @@ class SimulationCanvas {
   }
 
   setBrushPosition(position) {
-    this.brush.positions.add(position);
+    this.brush.position = position;
+
+    if (this.brush.state === brushState.DOWN) {
+      this.brush.positions.push(position);
+    }
   }
 
   setBrushRadius(radius) {
@@ -376,7 +379,14 @@ class SimulationCanvas {
   }
 
   setBrushState(state) {
+    const priorState = this.brush.state;
+
     this.brush.state = state;
+
+    if ((state === brushState.HOVERING || state === brushState.UP)
+        && priorState === brushState.DOWN) {
+      this.brush.positions = [];
+    }
   }
 
   setColorA(color) {
@@ -430,7 +440,7 @@ class SimulationCanvas {
     const timestepProgram = this.timestepProgram;
 
     // Edit Phase
-    const translation = Matrix4.translate(this.brush.positions.getCurrent());
+    const translation = Matrix4.translate(this.brush.position);
     const radius = this.brush.radius;
     const dilation = Matrix4.dilate(new Vector3(radius, radius, 1));
     const model = Matrix4.multiply(translation, dilation);
@@ -443,15 +453,31 @@ class SimulationCanvas {
       this.clearNextStep = false;
     }
 
-    if (this.brush.state === brushState.DOWN) {
+    if (this.brush.state === brushState.DOWN && this.brush.positions.length > 1) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       gl.useProgram(brushProgram);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textures[4]);
-      gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
       gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 1.0]);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+      for (let i = 0; i < this.brush.positions.length - 1; i++) {
+        const a = this.brush.positions[i];
+        const b = this.brush.positions[i + 1];
+        const distance = Vector3.distance(a, b);
+
+        for (let step = 0; step < distance; step += 2.0) {
+          const translation = Matrix4.translate(Vector3.lerp(a, b, step / distance));
+          const model = Matrix4.multiply(translation, dilation);
+          const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
+
+          gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+      }
+
+      this.brush.positions.splice(0, Math.max(this.brush.positions.length - 1, 0));
+
       gl.disable(gl.BLEND);
     }
 
@@ -499,12 +525,6 @@ class SimulationCanvas {
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       gl.disable(gl.BLEND);
     }
-
-    let points = [];
-    for (let i = 0; i < this.brush.positions.count; i++) {
-      points.push(this.brush.positions.getOffset(i));
-    }
-    console.log(points.join(", "));
   }
 
   togglePause() {
