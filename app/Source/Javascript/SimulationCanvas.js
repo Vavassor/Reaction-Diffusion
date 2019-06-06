@@ -81,7 +81,7 @@ const brushState = {
   DOWN: 2,
 };
 
-class App {
+class SimulationCanvas {
   constructor(canvas, width, height) {
     canvas.width = width;
     canvas.height = height;
@@ -444,7 +444,7 @@ class App {
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textures[4]);
       gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 1.0]);
+      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 0.4, 0.0, 1.0]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       gl.disable(gl.BLEND);
     }
@@ -500,5 +500,5 @@ class App {
   }
 }
 
-export { brushState };
-export default App;
+export {brushState};
+export default SimulationCanvas;
