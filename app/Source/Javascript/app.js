@@ -12,6 +12,11 @@ import renderFsSource from "../Shaders/render-fs.glsl";
 import timestepFsSource from "../Shaders/timestep-fs.glsl";
 import Vector3 from "./Vector3";
 
+function smoothstep(a, b, x) {
+  const t = Range.clamp(Range.unlerp(a, b, x), 0.0, 1.0);
+  return t * t * (3.0 - (2.0 * t));
+}
+
 function createCircle(side) {
   const pixels = new Uint8Array(4 * side * side);
   const radius = side / 2;
@@ -21,11 +26,12 @@ function createCircle(side) {
       const pixelIndex = 4 * ((side * y) + x);
       const deltaX = (x + 0.5) - radius;
       const deltaY = (y + 0.5) - radius;
-      const squaredDistance = (deltaX * deltaX) + (deltaY * deltaY);
+      const distance = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
+      const alpha = smoothstep(radius - 2.0, radius, distance);
       pixels[pixelIndex] = 255;
       pixels[pixelIndex + 1] = 255;
       pixels[pixelIndex + 2] = 255;
-      pixels[pixelIndex + 3] = (squaredDistance <= (radius * radius)) ? 255 : 0;
+      pixels[pixelIndex + 3] = 255 * (1.0 - alpha);
     }
   }
 
