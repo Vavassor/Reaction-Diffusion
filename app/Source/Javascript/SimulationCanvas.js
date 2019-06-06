@@ -12,6 +12,10 @@ import renderFsSource from "../Shaders/render-fs.glsl";
 import timestepFsSource from "../Shaders/timestep-fs.glsl";
 import Vector3 from "./Vector3";
 
+function catmull_rom(y0, y1, y2, y3, t) {
+  return y1 + 0.5 * t * (y2 - y0 + t * (2.0 * y0 - 5.0 * y1 + 4.0 * y2 - y3 + t * (3.0 * (y1 - y2) + y3 - y0)));
+}
+
 function smoothstep(a, b, x) {
   const t = Range.clamp(Range.unlerp(a, b, x), 0.0, 1.0);
   return t * t * (3.0 - (2.0 * t));
@@ -81,7 +85,7 @@ const brushState = {
   DOWN: 2,
 };
 
-class App {
+class SimulationCanvas {
   constructor(canvas, width, height) {
     canvas.width = width;
     canvas.height = height;
@@ -166,6 +170,7 @@ class App {
     
     this.brush = {
       position: new Vector3(-16, 32, 0),
+      positions: [],
       radius: 16,
       state: brushState.UP,
     };
@@ -363,6 +368,10 @@ class App {
 
   setBrushPosition(position) {
     this.brush.position = position;
+
+    if (this.brush.state === brushState.DOWN) {
+      this.brush.positions.push(position);
+    }
   }
 
   setBrushRadius(radius) {
@@ -370,7 +379,14 @@ class App {
   }
 
   setBrushState(state) {
+    const priorState = this.brush.state;
+
     this.brush.state = state;
+
+    if ((state === brushState.HOVERING || state === brushState.UP)
+        && priorState === brushState.DOWN) {
+      this.brush.positions = [];
+    }
   }
 
   setColorA(color) {
@@ -437,15 +453,31 @@ class App {
       this.clearNextStep = false;
     }
 
-    if (this.brush.state === brushState.DOWN) {
+    if (this.brush.state === brushState.DOWN && this.brush.positions.length > 1) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       gl.useProgram(brushProgram);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textures[4]);
-      gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
       gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 1.0]);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+      for (let i = 0; i < this.brush.positions.length - 1; i++) {
+        const a = this.brush.positions[i];
+        const b = this.brush.positions[i + 1];
+        const distance = Vector3.distance(a, b);
+
+        for (let step = 0; step < distance; step += 2.0) {
+          const translation = Matrix4.translate(Vector3.lerp(a, b, step / distance));
+          const model = Matrix4.multiply(translation, dilation);
+          const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
+
+          gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+      }
+
+      this.brush.positions.splice(0, Math.max(this.brush.positions.length - 1, 0));
+
       gl.disable(gl.BLEND);
     }
 
@@ -500,5 +532,5 @@ class App {
   }
 }
 
-export { brushState };
-export default App;
+export {brushState};
+export default SimulationCanvas;

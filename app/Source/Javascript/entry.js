@@ -1,6 +1,6 @@
 "use strict";
 
-import App, {brushState} from "./app";
+import SimulationCanvas, {brushState} from "./SimulationCanvas";
 import Color from "./Color";
 import ColorControl from "./ColorControl";
 import FileSaver from "file-saver";
@@ -11,7 +11,7 @@ import Vector3 from "./Vector3";
 import "../Stylesheets/main.css";
 import SlideSwitch from "./SlideSwitch";
 
-let app;
+let simulationCanvas;
 let canvas;
 let ongoingTouches = [];
 
@@ -34,7 +34,7 @@ function getPositionInCanvas(pageX, pageY) {
 }
 
 function onPauseClick(event) {
-  app.togglePause();
+  simulationCanvas.togglePause();
 
   const button = event.currentTarget;
   const pause = (button.getAttribute("aria-label") === "pause");
@@ -52,20 +52,20 @@ function onPointerCancel(event) {
   if (index >= 0) {
     ongoingTouches.splice(index, 1);
     if (!ongoingTouches.length) {
-      app.setBrushState(brushState.UP);
+      simulationCanvas.setBrushState(brushState.UP);
     }
   }
 }
 
 function onPointerDown(event) {
-  app.setBrushPosition(getPositionInCanvas(event.clientX, event.clientY));
-  app.setBrushState(brushState.DOWN);
+  simulationCanvas.setBrushPosition(getPositionInCanvas(event.clientX, event.clientY));
+  simulationCanvas.setBrushState(brushState.DOWN);
   canvas.setPointerCapture(event.pointerId);
 }
 
 function onPointerEnter(event) {
   ongoingTouches.push(copyTouch(event));
-  app.setBrushState(brushState.HOVERING);
+  simulationCanvas.setBrushState(brushState.HOVERING);
 }
 
 function onPointerMove(event) {
@@ -73,20 +73,20 @@ function onPointerMove(event) {
   if (index >= 0) {
     ongoingTouches.splice(index, 1, copyTouch(event));
   }
-  app.setBrushState(event.pressure > 0 ? brushState.DOWN : brushState.HOVERING);
-  app.setBrushPosition(getPositionInCanvas(event.clientX, event.clientY));
+  simulationCanvas.setBrushState(event.pressure > 0 ? brushState.DOWN : brushState.HOVERING);
+  simulationCanvas.setBrushPosition(getPositionInCanvas(event.clientX, event.clientY));
 }
 
 function onPointerOut(event) {
   const index = ongoingTouchIndexById(event.pointerId);
   if (index >= 0) {
     ongoingTouches.splice(index, 1);
-    app.setBrushState(brushState.UP);
+    simulationCanvas.setBrushState(brushState.UP);
   }
 }
 
 function onPointerUp(event) {
-  app.setBrushState(brushState.HOVERING);
+  simulationCanvas.setBrushState(brushState.HOVERING);
   canvas.releasePointerCapture(event.pointerId);
 }
 
@@ -96,8 +96,8 @@ function ongoingTouchIndexById(id) {
 
 
 canvas = document.getElementById("canvas");
-app = new App(canvas, 256, 256);
-app.start();
+simulationCanvas = new SimulationCanvas(canvas, 256, 256);
+simulationCanvas.start();
 
 canvas.addEventListener("pointercancel", onPointerCancel);
 canvas.addEventListener("pointerdown", onPointerDown);
@@ -113,7 +113,7 @@ const stylePickerSpec = {
   onInputChange: (x, y) => {
     const killRate = Range.lerp(0.045, 0.07, x);
     const feedRate = Range.lerp(0.01, 0.1, y);
-    app.setRates(killRate, feedRate);
+    simulationCanvas.setRates(killRate, feedRate);
   },
 };
 
@@ -122,27 +122,27 @@ const stylePicker = new Range2d(stylePickerSpec);
 document
   .getElementById("flow-rate")
   .addEventListener("input", (event) => {
-    app.setFlowRate(event.currentTarget.value);
+    simulationCanvas.setFlowRate(event.currentTarget.value);
   });
 
 document
   .getElementById("iterations-per-frame")
   .addEventListener("input", (event) => {
-    app.setIterationsPerFrame(event.currentTarget.value);
+    simulationCanvas.setIterationsPerFrame(event.currentTarget.value);
   });
 
 const applyStyleMap = new SlideSwitch({
   id: "apply-style-map",
   onChange: (checked) => {
     stylePicker.setDisabled(checked);
-    app.setApplyStyleMap(checked);
+    simulationCanvas.setApplyStyleMap(checked);
   },
 });
 
 const applyOrientationMap = new SlideSwitch({
   id: "apply-orientation-map",
   onChange: (checked) => {
-    app.setApplyOrientationMap(checked);
+    simulationCanvas.setApplyOrientationMap(checked);
   },
 });
 
@@ -150,7 +150,7 @@ const colorA = new ColorControl({
   buttonId: "color-a",
   initialColor: Color.black(),
   onColorChange: (color) => {
-    app.setColorA(color);
+    simulationCanvas.setColorA(color);
   },
 });
 
@@ -158,20 +158,20 @@ const colorB = new ColorControl({
   buttonId: "color-b",
   initialColor: Color.white(),
   onColorChange: (color) => {
-    app.setColorB(color);
+    simulationCanvas.setColorB(color);
   },
 });
 
 document
   .getElementById("brush-radius")
   .addEventListener("input", (event) => {
-    app.setBrushRadius(event.currentTarget.value);
+    simulationCanvas.setBrushRadius(event.currentTarget.value);
   });
 
 document
   .getElementById("clear")
   .addEventListener("click", (event) => {
-    app.clear();
+    simulationCanvas.clear();
   });
 
 document

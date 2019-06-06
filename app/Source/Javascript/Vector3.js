@@ -1,5 +1,7 @@
 "use strict";
 
+import Range from "./range";
+
 class Vector3 {
   constructor(x, y, z) {
     this.elements = [x, y, z];
@@ -26,6 +28,10 @@ class Vector3 {
     return this.elements[2];
   }
 
+  toString() {
+    return `⟨${this.x}, ${this.y}, ${this.z}⟩`;
+  }
+
   static add(a, b) {
     return new Vector3(a.x + b.x, a.y + b.y, a.z + b.z);
   }
@@ -38,8 +44,21 @@ class Vector3 {
     );
   }
 
+  static distance(a, b) {
+    const ab = Vector3.subtract(b, a);
+    return ab.length;
+  }
+
   static dot(a, b) {
     return (a.x * b.x) + (a.y * b.y) + (a.z * b.z);
+  }
+
+  static lerp(a, b, t) {
+    return new Vector3(
+      Range.lerp(a.x, b.x, t),
+      Range.lerp(a.y, b.y, t),
+      Range.lerp(a.z, b.z, t)
+    );
   }
 
   static multiply(s, v) {
