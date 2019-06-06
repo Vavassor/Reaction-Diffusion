@@ -173,6 +173,7 @@ class SimulationCanvas {
       positions: [],
       radius: 16,
       state: brushState.UP,
+      strokeStepStart: 0.0,
     };
     this.camera = {
       height: height,
@@ -386,6 +387,7 @@ class SimulationCanvas {
     if ((state === brushState.HOVERING || state === brushState.UP)
         && priorState === brushState.DOWN) {
       this.brush.positions = [];
+      this.brush.strokeStepStart = 0.0;
     }
   }
 
@@ -461,22 +463,32 @@ class SimulationCanvas {
       gl.bindTexture(gl.TEXTURE_2D, textures[4]);
       gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 1.0]);
 
+      let stepStart = this.brush.strokeStepStart;
+
       for (let i = 0; i < this.brush.positions.length - 1; i++) {
         const a = this.brush.positions[i];
         const b = this.brush.positions[i + 1];
         const distance = Vector3.distance(a, b);
 
-        for (let step = 0; step < distance; step += 2.0) {
-          const translation = Matrix4.translate(Vector3.lerp(a, b, step / distance));
-          const model = Matrix4.multiply(translation, dilation);
-          const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
-
-          gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
-          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        const spacing = 0.5 * this.brush.radius;
+        if (stepStart < distance) {
+          let step = stepStart;
+          for (; step <= distance; step += spacing) {
+            const translation = Matrix4.translate(Vector3.lerp(a, b, step / distance));
+            const model = Matrix4.multiply(translation, dilation);
+            const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
+  
+            gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+          }
+          stepStart = step - distance;
+        } else {
+          stepStart -= distance;
         }
       }
 
       this.brush.positions.splice(0, Math.max(this.brush.positions.length - 1, 0));
+      this.brush.strokeStepStart = stepStart;
 
       gl.disable(gl.BLEND);
     }
