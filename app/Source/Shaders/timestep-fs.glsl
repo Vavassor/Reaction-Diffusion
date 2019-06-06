@@ -63,14 +63,17 @@ void main()
         dxy = 0.0;
         dyy = 0.5;
     }
-    
-    vec3 du_mat1 = diffusion.x * vec3(-dxy, 2.0 * dyy, dxy);
-    vec3 du_mat2 = diffusion.x * vec3(2.0 * dxx, -4.0 * (dxx + dyy), 2.0 * dxx);
-    vec3 du_mat3 = diffusion.x * vec3(dxy, 2.0 * dyy, -dxy);
 
-    vec3 dv_mat1 = diffusion.y * vec3(-dxy, 2.0 * dyy, dxy);
-    vec3 dv_mat2 = diffusion.y * vec3(2.0 * dxx, -4.0 * (dxx + dyy), 2.0 * dxx);
-    vec3 dv_mat3 = diffusion.y * vec3(dxy, 2.0 * dyy, -dxy);
+    float da = diffusion.x * flow_rate;
+    float db = diffusion.y * flow_rate;
+    
+    vec3 du_mat1 = da * vec3(-dxy, 2.0 * dyy, dxy);
+    vec3 du_mat2 = vec3(2.0 * dxx * da, diffusion.x * -4.0 * (dxx + dyy), 2.0 * dxx * da);
+    vec3 du_mat3 = da * vec3(dxy, 2.0 * dyy, -dxy);
+
+    vec3 dv_mat1 = db * vec3(-dxy, 2.0 * dyy, dxy);
+    vec3 dv_mat2 = vec3(2.0 * dxx * db, diffusion.y * -4.0 * (dxx + dyy), 2.0 * dxx * db);
+    vec3 dv_mat3 = db * vec3(dxy, 2.0 * dyy, -dxy);
 
     vec3 u_mat1 = vec3(northwest.x, north.x, northeast.x);
     vec3 u_mat2 = vec3(west.x, value.x, east.x);
