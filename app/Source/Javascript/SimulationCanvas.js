@@ -169,6 +169,7 @@ class SimulationCanvas {
     }
     
     this.brush = {
+      endStrokeNextFrame: false,
       position: new Vector3(-16, 32, 0),
       positions: [],
       radius: 16,
@@ -386,8 +387,7 @@ class SimulationCanvas {
 
     if ((state === brushState.HOVERING || state === brushState.UP)
         && priorState === brushState.DOWN) {
-      this.brush.positions = [];
-      this.brush.strokeStepStart = 0.0;
+      this.brush.endStrokeNextFrame = true;
     }
   }
 
@@ -491,6 +491,30 @@ class SimulationCanvas {
       this.brush.strokeStepStart = stepStart;
 
       gl.disable(gl.BLEND);
+    }
+
+    if (this.brush.endStrokeNextFrame && this.brush.positions.length > 0) {
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      gl.useProgram(brushProgram);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, textures[4]);
+      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 1.0]);
+
+      const translation = Matrix4.translate(this.brush.positions[0]);
+      const model = Matrix4.multiply(translation, dilation);
+      const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
+
+      gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+      gl.disable(gl.BLEND);
+    }
+
+    if (this.brush.endStrokeNextFrame) {
+      this.brush.endStrokeNextFrame = false;
+      this.brush.positions = [];
+      this.brush.strokeStepStart = 0.0;
     }
 
     // Timestep Phase

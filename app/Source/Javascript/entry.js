@@ -58,8 +58,8 @@ function onPointerCancel(event) {
 }
 
 function onPointerDown(event) {
-  simulationCanvas.setBrushPosition(getPositionInCanvas(event.clientX, event.clientY));
   simulationCanvas.setBrushState(brushState.DOWN);
+  simulationCanvas.setBrushPosition(getPositionInCanvas(event.clientX, event.clientY));
   canvas.setPointerCapture(event.pointerId);
 }
 
@@ -87,6 +87,7 @@ function onPointerOut(event) {
 
 function onPointerUp(event) {
   simulationCanvas.setBrushState(brushState.HOVERING);
+  simulationCanvas.setBrushPosition(getPositionInCanvas(event.clientX, event.clientY));
   canvas.releasePointerCapture(event.pointerId);
 }
 
