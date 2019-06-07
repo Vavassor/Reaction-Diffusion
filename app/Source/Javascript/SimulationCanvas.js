@@ -456,8 +456,6 @@ class SimulationCanvas {
     }
 
     if (this.brush.state === brushState.DOWN && this.brush.positions.length > 1) {
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       gl.useProgram(brushProgram);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textures[4]);
@@ -489,13 +487,9 @@ class SimulationCanvas {
 
       this.brush.positions.splice(0, Math.max(this.brush.positions.length - 1, 0));
       this.brush.strokeStepStart = stepStart;
-
-      gl.disable(gl.BLEND);
     }
 
     if (this.brush.endStrokeNextFrame && this.brush.positions.length > 0) {
-      gl.enable(gl.BLEND);
-      gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       gl.useProgram(brushProgram);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textures[4]);
@@ -507,8 +501,6 @@ class SimulationCanvas {
 
       gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-
-      gl.disable(gl.BLEND);
     }
 
     if (this.brush.endStrokeNextFrame) {
