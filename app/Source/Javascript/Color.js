@@ -1,4 +1,9 @@
 export default class Color {
+  /**
+   * @param {number} r - the red component in <0, 1>
+   * @param {number} g - the green component in <0, 1>
+   * @param {number} b - the blue component in <0, 1>
+   */
   constructor(r, g, b) {
     this.r = r;
     this.g = g;
@@ -22,6 +27,14 @@ export default class Color {
     return new Color(0, 0, 0);
   }
   
+  /**
+   * Converts a color from HSV to RGB color space.
+   * 
+   * @param {number} hue - the hue in degrees in <0, 360>
+   * @param {number} saturation - the saturation in <0, 1>
+   * @param {number} value - the value in <0, 1>
+   * @return {Color} a color
+   */
   static fromHsv(hue, saturation, value) {
     const h = hue / 60;
     const s = saturation;

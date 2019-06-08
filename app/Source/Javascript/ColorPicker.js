@@ -1,5 +1,5 @@
 import Color from "./Color";
-import Range2d from "./Range2d";
+import Slider2d from "./Slider2d";
 
 export default class ColorPicker {
   constructor(spec) {
@@ -14,7 +14,7 @@ export default class ColorPicker {
         label: "Saturation and Value",
         onInputChange: (x, y) => this.onSvChange(x, y),
       };
-      svPicker = new Range2d(svPickerSpec);
+      svPicker = new Slider2d(svPickerSpec);
       svPicker.setBoundsClass("sv-picker-bounds");
 
       hueSlider = document.createElement("input");
@@ -36,7 +36,7 @@ export default class ColorPicker {
         selectorId: spec.svPicker.selectorId,
         onInputChange: (x, y) => this.onSvChange(x, y),
       };
-      svPicker = new Range2d(svPickerSpec);
+      svPicker = new Slider2d(svPickerSpec);
 
       hueSlider = document.getElementById(spec.hueSliderId);
     }

@@ -1,15 +1,15 @@
 "use strict";
 
-import SimulationCanvas, {brushState} from "./SimulationCanvas";
 import Color from "./Color";
 import ColorControl from "./ColorControl";
 import FileSaver from "file-saver";
-import Range from "./range";
-import Range2d from "./Range2d";
+import Range from "./Range";
+import SimulationCanvas, {brushState} from "./SimulationCanvas";
+import Slider2d from "./Slider2d";
+import SlideSwitch from "./SlideSwitch";
 import Vector3 from "./Vector3";
 
 import "../Stylesheets/main.css";
-import SlideSwitch from "./SlideSwitch";
 
 let simulationCanvas;
 let canvas;
@@ -95,6 +95,7 @@ function ongoingTouchIndexById(id) {
   return ongoingTouches.findIndex(touch => touch.identifier === id);
 }
 
+// Entrypoint..................................................................
 
 canvas = document.getElementById("canvas");
 simulationCanvas = new SimulationCanvas(canvas, 256, 256);
@@ -118,7 +119,7 @@ const stylePickerSpec = {
   },
 };
 
-const stylePicker = new Range2d(stylePickerSpec);
+const stylePicker = new Slider2d(stylePickerSpec);
 
 document
   .getElementById("flow-rate")
