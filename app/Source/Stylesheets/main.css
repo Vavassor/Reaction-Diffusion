@@ -233,68 +233,6 @@ main {
   -webkit-appearance: none;
 }
 
-.range-2d {
-  border: 1px solid black;
-  height: 200px;
-  padding: 1em;
-  touch-action: none;
-  user-select: none;
-  width: 200px;
-}
-
-.range-2d[aria-disabled="true"] {
-  background-color: #bfbfbf;
-}
-
-.range-2d-box {
-  margin: auto;
-  position: relative;
-  touch-action: inherit;
-  user-select: inherit;
-}
-
-.range-2d-bounds {
-  background-size: 100% 100%;
-  height: 200px;
-  margin: auto;
-  position: absolute;
-  touch-action: inherit;
-  user-select: inherit;
-  width: 200px;
-}
-
-.range-2d[aria-disabled="true"] .range-2d-box {
-  opacity: 0.25;
-}
-
-.range-2d-selector {
-  border: 2px solid #000000;
-  border-radius: 2em;
-  bottom: -1em;
-  box-sizing: border-box;
-  height: 2em;
-  left: -1em;
-  position: absolute;
-  touch-action: inherit;
-  user-select: inherit;
-  width: 2em;
-}
-
-.range-2d-selector::before {
-  border: 1px solid #ffffff;
-  border-radius: 2em;
-  bottom: 0;
-  content: "";
-  left: 0;
-  right: 0;
-  position: absolute;
-  top: 0;
-}
-
-.range-2d[aria-disabled="true"] .range-2d-selector {
-  background-color: #000000;
-}
-
 .sv-picker-bounds {
   background:
     linear-gradient(to bottom,rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 255) 100%),
@@ -348,6 +286,68 @@ main {
 .slide-switch[aria-checked="true"] .slide-switch-handle {
   margin-left: 2rem;
   margin-right: 0;
+}
+
+.slider-2d {
+  border: 1px solid black;
+  height: 200px;
+  padding: 1em;
+  touch-action: none;
+  user-select: none;
+  width: 200px;
+}
+
+.slider-2d[aria-disabled="true"] {
+  background-color: #bfbfbf;
+}
+
+.slider-2d-box {
+  margin: auto;
+  position: relative;
+  touch-action: inherit;
+  user-select: inherit;
+}
+
+.slider-2d-bounds {
+  background-size: 100% 100%;
+  height: 200px;
+  margin: auto;
+  position: absolute;
+  touch-action: inherit;
+  user-select: inherit;
+  width: 200px;
+}
+
+.slider-2d[aria-disabled="true"] .slider-2d-box {
+  opacity: 0.25;
+}
+
+.slider-2d-selector {
+  border: 2px solid #000000;
+  border-radius: 2em;
+  bottom: -1em;
+  box-sizing: border-box;
+  height: 2em;
+  left: -1em;
+  position: absolute;
+  touch-action: inherit;
+  user-select: inherit;
+  width: 2em;
+}
+
+.slider-2d-selector::before {
+  border: 1px solid #ffffff;
+  border-radius: 2em;
+  bottom: 0;
+  content: "";
+  left: 0;
+  right: 0;
+  position: absolute;
+  top: 0;
+}
+
+.slider-2d[aria-disabled="true"] .slider-2d-selector {
+  background-color: #000000;
 }
 
 

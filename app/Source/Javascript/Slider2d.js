@@ -8,19 +8,19 @@ export default class Slider2d {
 
     if (spec.anchor) {
       slider2d = document.createElement("div");
-      slider2d.classList.add("range-2d");
+      slider2d.classList.add("slider-2d");
       slider2d.setAttribute("tabindex", "0");
 
       const box = document.createElement("div");
-      box.classList.add("range-2d-box");
+      box.classList.add("slider-2d-box");
       slider2d.appendChild(box);
 
       bounds = document.createElement("div");
-      bounds.classList.add("range-2d-bounds");
+      bounds.classList.add("slider-2d-bounds");
       box.appendChild(bounds);
 
       selector = document.createElement("div");
-      selector.classList.add("range-2d-selector");
+      selector.classList.add("slider-2d-selector");
       bounds.appendChild(selector);
 
       spec.anchor.appendChild(slider2d);
