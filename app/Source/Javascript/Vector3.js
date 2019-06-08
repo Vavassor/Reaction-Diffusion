@@ -2,6 +2,7 @@
 
 import Range from "./Range";
 
+/** A 3 component vector. */
 class Vector3 {
   constructor(x, y, z) {
     this.elements = [x, y, z];
