@@ -1,4 +1,4 @@
-import Range from "./range";
+import Range from "./Range";
 
 function smoothstep(a, b, x) {
   const t = Range.clamp(Range.unlerp(a, b, x), 0.0, 1.0);

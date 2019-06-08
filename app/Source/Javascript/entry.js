@@ -4,8 +4,8 @@ import SimulationCanvas, {brushState} from "./SimulationCanvas";
 import Color from "./Color";
 import ColorControl from "./ColorControl";
 import FileSaver from "file-saver";
-import Range from "./range";
-import Range2d from "./Range2d";
+import Range from "./Range";
+import Slider2d from "./Slider2d";
 import Vector3 from "./Vector3";
 
 import "../Stylesheets/main.css";
@@ -118,7 +118,7 @@ const stylePickerSpec = {
   },
 };
 
-const stylePicker = new Range2d(stylePickerSpec);
+const stylePicker = new Slider2d(stylePickerSpec);
 
 document
   .getElementById("flow-rate")

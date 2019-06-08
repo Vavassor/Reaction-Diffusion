@@ -17,6 +17,7 @@ function unlerp(a, b, t) {
 }
 
 
+/** Utilities for numeric ranges. */
 export default {
   clamp: clamp,
   lerp: lerp,

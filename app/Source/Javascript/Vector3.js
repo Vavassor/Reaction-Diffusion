@@ -1,6 +1,6 @@
 "use strict";
 
-import Range from "./range";
+import Range from "./Range";
 
 class Vector3 {
   constructor(x, y, z) {

@@ -9,14 +9,10 @@ import flatColourFsSource from "../Shaders/flat-colour-fs.glsl";
 import Glo from "./Glo";
 import ImageDraw from "./ImageDraw";
 import Matrix4 from "./Matrix4";
-import Range from "./range";
+import Range from "./Range";
 import renderFsSource from "../Shaders/render-fs.glsl";
 import timestepFsSource from "../Shaders/timestep-fs.glsl";
 import Vector3 from "./Vector3";
-
-function catmull_rom(y0, y1, y2, y3, t) {
-  return y1 + 0.5 * t * (y2 - y0 + t * (2.0 * y0 - 5.0 * y1 + 4.0 * y2 - y3 + t * (3.0 * (y1 - y2) + y3 - y0)));
-}
 
 const brushState = {
   UP: 0,

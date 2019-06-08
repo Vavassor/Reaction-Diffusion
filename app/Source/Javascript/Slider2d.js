@@ -1,19 +1,19 @@
-import Range from "./range";
+import Range from "./Range";
 
-export default class Range2d {
+export default class Slider2d {
   constructor(spec) {
     let bounds;
-    let range2d;
+    let slider2d;
     let selector;
 
     if (spec.anchor) {
-      range2d = document.createElement("div");
-      range2d.classList.add("range-2d");
-      range2d.setAttribute("tabindex", "0");
+      slider2d = document.createElement("div");
+      slider2d.classList.add("range-2d");
+      slider2d.setAttribute("tabindex", "0");
 
       const box = document.createElement("div");
       box.classList.add("range-2d-box");
-      range2d.appendChild(box);
+      slider2d.appendChild(box);
 
       bounds = document.createElement("div");
       bounds.classList.add("range-2d-bounds");
@@ -23,43 +23,43 @@ export default class Range2d {
       selector.classList.add("range-2d-selector");
       bounds.appendChild(selector);
 
-      spec.anchor.appendChild(range2d);
+      spec.anchor.appendChild(slider2d);
     } else {
       bounds = document.getElementById(spec.boundsId);
-      range2d = document.getElementById(spec.id);
+      slider2d = document.getElementById(spec.id);
       selector = document.getElementById(spec.selectorId);
     }
 
     if (spec.label) {
-      range2d.setAttribute("aria-label", spec.label);
+      slider2d.setAttribute("aria-label", spec.label);
     }
 
     this.bounds = bounds;
     this.disabled = false;
     this.onInputChange = spec.onInputChange;
-    this.range2d = range2d;
+    this.slider2d = slider2d;
     this.selector = selector;
 
-    range2d.addEventListener("pointerdown", (event) => {
+    slider2d.addEventListener("pointerdown", (event) => {
       if (!this.disabled) {
         this.onPointerMove(event);
-        range2d.setPointerCapture(event.pointerId);
+        slider2d.setPointerCapture(event.pointerId);
       }
     });
 
-    range2d.addEventListener("pointerup", (event) => {
+    slider2d.addEventListener("pointerup", (event) => {
       if (!this.disabled) {
-        range2d.releasePointerCapture(event.pointerId);
+        slider2d.releasePointerCapture(event.pointerId);
       }
     });
 
-    range2d.addEventListener("pointermove", (event) => {
+    slider2d.addEventListener("pointermove", (event) => {
       if (!this.disabled) {
         this.onPointerMove(event);
       }
     });
 
-    range2d.addEventListener("keydown", (event) => {
+    slider2d.addEventListener("keydown", (event) => {
       if (!this.disabled) {
         let translationX = 0;
         let translationY = 0;
@@ -89,7 +89,7 @@ export default class Range2d {
   }
 
   focus() {
-    this.range2d.focus();
+    this.slider2d.focus();
   }
 
   onPointerMove(event) {
@@ -99,9 +99,9 @@ export default class Range2d {
 
     const bounds = this.bounds;
     const knob = this.selector;
-    const range2d = this.range2d;
+    const slider2d = this.slider2d;
 
-    const rect = range2d.getBoundingClientRect();
+    const rect = slider2d.getBoundingClientRect();
     const boundsRect = bounds.getBoundingClientRect();
     const knobRect = knob.getBoundingClientRect();
     const paddingLeft = boundsRect.left - rect.left;
@@ -126,7 +126,7 @@ export default class Range2d {
 
   setDisabled(disabled) {
     this.disabled = disabled;
-    this.range2d.setAttribute("aria-disabled", disabled);
+    this.slider2d.setAttribute("aria-disabled", disabled);
   }
 
   setSelectorColor(color) {
@@ -148,9 +148,9 @@ export default class Range2d {
   translateSelector(translationX, translationY) {
     const bounds = this.bounds;
     const knob = this.selector;
-    const range2d = this.range2d;
+    const slider2d = this.slider2d;
 
-    const rect = range2d.getBoundingClientRect();
+    const rect = slider2d.getBoundingClientRect();
     const boundsRect = bounds.getBoundingClientRect();
     const knobRect = knob.getBoundingClientRect();
     const paddingLeft = boundsRect.left - rect.left;
