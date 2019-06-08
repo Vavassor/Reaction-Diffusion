@@ -1,5 +1,6 @@
 import Range from "./Range";
 
+/** Computes a hermite interpolation between two values. */
 function smoothstep(a, b, x) {
   const t = Range.clamp(Range.unlerp(a, b, x), 0.0, 1.0);
   return t * t * (3.0 - (2.0 * t));
