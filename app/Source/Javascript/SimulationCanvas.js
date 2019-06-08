@@ -14,13 +14,13 @@ import renderFsSource from "../Shaders/render-fs.glsl";
 import timestepFsSource from "../Shaders/timestep-fs.glsl";
 import Vector3 from "./Vector3";
 
-const brushState = {
+export const brushState = {
   UP: 0,
   HOVERING: 1,
   DOWN: 2,
 };
 
-class SimulationCanvas {
+export default class SimulationCanvas {
   constructor(canvas, width, height) {
     canvas.width = width;
     canvas.height = height;
@@ -115,7 +115,7 @@ class SimulationCanvas {
     };
     this.camera = {
       height: height,
-      projection: Matrix4.orthographicProjection(width, height, -1, 1),
+      projection: Matrix4.orthographicProjectionRh(width, height, -1, 1),
       width: width,
     };
     this.flatColourProgram = flatColourProgram;
@@ -350,6 +350,3 @@ class SimulationCanvas {
     this.paused = !this.paused;
   }
 }
-
-export {brushState};
-export default SimulationCanvas;

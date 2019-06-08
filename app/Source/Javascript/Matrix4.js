@@ -2,7 +2,11 @@
 
 import Vector3 from "./Vector3";
 
+/** A 4x4 square matrix. */
 class Matrix4 {
+  /**
+   * @param {number[]} elements - the elements of the matrix in row-major order
+   */
   constructor(elements) {
     this.e = elements;
   }
@@ -39,7 +43,14 @@ class Matrix4 {
     ]);
   }
 
-  static lookAtRH(position, target, worldUp) {
+  /**
+   * Computes a view matrix assuming a right-handed coordinate system.
+   * 
+   * @param {Vector3} position - the camera position
+   * @param {Vector3} target - the position where the camera is looking towards
+   * @param {Vector3} worldUp - the world-space up axis
+   */
+  static lookAtRh(position, target, worldUp) {
     const forward = Vector3.normalize(Vector3.subtract(position, target));
     const right = Vector3.normalize(Vector3.cross(worldUp, forward));
     const up = Vector3.normalize(Vector3.cross(forward, right));
@@ -62,7 +73,15 @@ class Matrix4 {
     return new Matrix4(elements);
   }
 
-  static orthographicProjection(width, height, nearPlane, farPlane) {
+  /**
+   * Computes an orthographic projection assuming a right-handed coordinate system.
+   * 
+   * @param {number} width - the width of the image plane
+   * @param {number} height - the height of the image plane
+   * @param {number} nearPlane - the distance from the camera position to the near plane
+   * @param {number} farPlane - the distance from the camera position to the far plane
+   */
+  static orthographicProjectionRh(width, height, nearPlane, farPlane) {
     const negativeDepth = nearPlane - farPlane;
 
     const elements = [];
@@ -90,7 +109,16 @@ class Matrix4 {
     return new Matrix4(elements);
   }
 
-  static perspectiveProjection(fovy, width, height, nearPlane, farPlane) {
+  /**
+   * Computes a perspective projection matrix assuming a right-handed coordinate system.
+   * 
+   * @param {number} fovy - the vertical field of view of the camera
+   * @param {number} width - the width of the image plane
+   * @param {number} height - the height of the image plane
+   * @param {number} nearPlane - the distance from the camera position to the near plane
+   * @param {number} farPlane - the distance from the camera position to the far plane
+   */
+  static perspectiveProjectionRh(fovy, width, height, nearPlane, farPlane) {
     const coty = 1 / Math.tan(fovy / 2);
     const aspectRatio = width / height;
     const negativeDepth = nearPlane - farPlane;
@@ -129,6 +157,14 @@ class Matrix4 {
     ]);
   }
 
+  /**
+   * Computes a view matrix.
+   * 
+   * @param {Vector3} xAxis - the X axis basis vector
+   * @param {Vector3} yAxis - the Y axis basis vector
+   * @param {Vector3} zAxis - the Z axis basis vector
+   * @param {Vector3} position - the position of the viewer
+   */
   static view(xAxis, yAxis, zAxis, position) {
     const elements = [];
 
