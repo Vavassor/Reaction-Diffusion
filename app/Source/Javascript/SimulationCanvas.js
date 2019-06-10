@@ -1,17 +1,15 @@
 "use strict";
 
-import basicVsSource from "../Shaders/basic-vs.glsl";
 import brushFsSource from "../Shaders/brush-fs.glsl";
 import brushVsSource from "../Shaders/brush-vs.glsl";
 import Color from "./Color";
-import defaultVsSource from "../Shaders/default-vs.glsl";
-import flatColourFsSource from "../Shaders/flat-colour-fs.glsl";
+import passthroughVsSource from "../Shaders/passthrough-vs.glsl";
+import displayFsSource from "../Shaders/display-fs.glsl";
 import Glo from "./Glo";
 import ImageDraw from "./ImageDraw";
 import Matrix4 from "./Matrix4";
 import Range from "./Range";
-import renderFsSource from "../Shaders/render-fs.glsl";
-import timestepFsSource from "../Shaders/timestep-fs.glsl";
+import simulateFsSource from "../Shaders/simulate-fs.glsl";
 import Vector3 from "./Vector3";
 
 export const brushState = {
@@ -38,33 +36,30 @@ export default class SimulationCanvas {
 
     glo.checkCompatibility();
 
-    const basicVertexShader = glo.createShader(gl.VERTEX_SHADER, basicVsSource);
     const brushVertexShader = glo.createShader(gl.VERTEX_SHADER, brushVsSource);
-    const vertexShader = glo.createShader(gl.VERTEX_SHADER, defaultVsSource);
+    const displayShader = glo.createShader(gl.FRAGMENT_SHADER, displayFsSource);
+    const passthroughVertexShader = glo.createShader(gl.VERTEX_SHADER, passthroughVsSource);
     const brushFragmentShader = glo.createShader(gl.FRAGMENT_SHADER, brushFsSource);
-    const flatColourShader = glo.createShader(gl.FRAGMENT_SHADER, flatColourFsSource);
-    const timestepShader = glo.createShader(gl.FRAGMENT_SHADER, timestepFsSource);
-    const renderShader = glo.createShader(gl.FRAGMENT_SHADER, renderFsSource);
+    const simulateShader = glo.createShader(gl.FRAGMENT_SHADER, simulateFsSource);
 
     const brushProgram = glo.createAndLinkProgram(brushVertexShader, brushFragmentShader);
-    const flatColourProgram = glo.createAndLinkProgram(basicVertexShader, flatColourShader);
-    const timestepProgram = glo.createAndLinkProgram(vertexShader, timestepShader);
-    const renderProgram = glo.createAndLinkProgram(vertexShader, renderShader);
+    const displayProgram = glo.createAndLinkProgram(passthroughVertexShader, displayShader);
+    const simulateProgram = glo.createAndLinkProgram(passthroughVertexShader, simulateShader);
 
     gl.useProgram(brushProgram);
     glo.loadVertexData(brushProgram);
     gl.uniform1i(gl.getUniformLocation(brushProgram, "brush_shape"), 0);
 
-    gl.useProgram(renderProgram);
-    glo.loadVertexData(renderProgram);
-    gl.uniform2f(gl.getUniformLocation(renderProgram, "state_size"), width, height);
+    gl.useProgram(displayProgram);
+    glo.loadVertexData(displayProgram);
+    gl.uniform2f(gl.getUniformLocation(displayProgram, "state_size"), width, height);
 
-    gl.useProgram(timestepProgram);
-    glo.loadVertexData(timestepProgram);
-    gl.uniform2f(gl.getUniformLocation(timestepProgram, "state_size"), width, height);
-    gl.uniform1i(gl.getUniformLocation(timestepProgram, "state"), 0);
-    gl.uniform1i(gl.getUniformLocation(timestepProgram, "style_map"), 1);
-    gl.uniform1i(gl.getUniformLocation(timestepProgram, "orientation_map"), 2);
+    gl.useProgram(simulateProgram);
+    glo.loadVertexData(simulateProgram);
+    gl.uniform2f(gl.getUniformLocation(simulateProgram, "state_size"), width, height);
+    gl.uniform1i(gl.getUniformLocation(simulateProgram, "state"), 0);
+    gl.uniform1i(gl.getUniformLocation(simulateProgram, "style_map"), 1);
+    gl.uniform1i(gl.getUniformLocation(simulateProgram, "orientation_map"), 2);
 
     const styleMapSpec = {
       format: gl.RGB,
@@ -98,7 +93,7 @@ export default class SimulationCanvas {
       glo.createFramebuffer(textures[1]),
     ];
 
-    gl.useProgram(timestepProgram);
+    gl.useProgram(simulateProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[0]);
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
     if (status !== gl.FRAMEBUFFER_COMPLETE) {
@@ -118,16 +113,15 @@ export default class SimulationCanvas {
       projection: Matrix4.orthographicProjectionRh(width, height, -1, 1),
       width: width,
     };
-    this.flatColourProgram = flatColourProgram;
     this.framebuffers = framebuffers;
     this.iterationsPerFrame = 16;
     this.paused = false;
     this.programs = {
       brush: brushProgram,
+      display: displayProgram,
+      simulate: simulateProgram,
     };
-    this.renderProgram = renderProgram;
     this.textures = textures;
-    this.timestepProgram = timestepProgram;
     this.update = {
       applyOrientationMap: false,
       applyStyleMap: false,
@@ -228,9 +222,9 @@ export default class SimulationCanvas {
     const brushProgram = this.programs.brush;
     const framebuffers = this.framebuffers;
     const gl = this.gl;
-    const renderProgram = this.renderProgram;
+    const displayProgram = this.programs.display;
     const textures = this.textures;
-    const timestepProgram = this.timestepProgram;
+    const simulateProgram = this.programs.simulate;
 
     // Edit Phase
     const translation = Matrix4.translate(this.brush.position);
@@ -300,15 +294,15 @@ export default class SimulationCanvas {
       this.brush.strokeStepStart = 0.0;
     }
 
-    // Timestep Phase
+    // Simulation Phase
     if (!this.paused) {
-      gl.useProgram(timestepProgram);
+      gl.useProgram(simulateProgram);
 
-      gl.uniform1f(gl.getUniformLocation(timestepProgram, "canvas_feed_rate"), this.update.feedRate);
-      gl.uniform1f(gl.getUniformLocation(timestepProgram, "flow_rate"), this.update.flowRate);
-      gl.uniform1f(gl.getUniformLocation(timestepProgram, "canvas_kill_rate"), this.update.killRate);
-      gl.uniform1i(gl.getUniformLocation(timestepProgram, "apply_orientation_map"), this.update.applyOrientationMap);
-      gl.uniform1i(gl.getUniformLocation(timestepProgram, "apply_style_map"), this.update.applyStyleMap);
+      gl.uniform1f(gl.getUniformLocation(simulateProgram, "canvas_feed_rate"), this.update.feedRate);
+      gl.uniform1f(gl.getUniformLocation(simulateProgram, "flow_rate"), this.update.flowRate);
+      gl.uniform1f(gl.getUniformLocation(simulateProgram, "canvas_kill_rate"), this.update.killRate);
+      gl.uniform1i(gl.getUniformLocation(simulateProgram, "apply_orientation_map"), this.update.applyOrientationMap);
+      gl.uniform1i(gl.getUniformLocation(simulateProgram, "apply_style_map"), this.update.applyStyleMap);
     
       for (let i = 0; i <= this.iterationsPerFrame; i++) {
         gl.activeTexture(gl.TEXTURE0);
@@ -322,10 +316,10 @@ export default class SimulationCanvas {
       }
     }
 
-    // Render Phase
-    gl.useProgram(renderProgram);
-    gl.uniform3fv(gl.getUniformLocation(renderProgram, "color_a"), this.update.colorA.toArray());
-    gl.uniform3fv(gl.getUniformLocation(renderProgram, "color_b"), this.update.colorB.toArray());
+    // Display Phase
+    gl.useProgram(displayProgram);
+    gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_a"), this.update.colorA.toArray());
+    gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_b"), this.update.colorB.toArray());
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, textures[0]);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
