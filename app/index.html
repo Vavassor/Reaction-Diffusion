@@ -65,6 +65,12 @@
       </div>
 
       <div class="form-group">
+        <button id="clear" class="button-control" type="button">Clear</button>
+        <button id="pause" class="button-control" type="button" aria-label="pause">❙❙</button>
+        <button id="download" class="button-control" type="button">Download</button>
+      </div>
+
+      <div class="form-group">
         <div class="color-control-container">
           <button id="color-a" class="color-control" type="button"></button>
         </div>
@@ -91,9 +97,12 @@
         >
       </div>
 
-      <button id="clear" class="button-control" type="button">Clear</button>
-      <button id="pause" class="button-control" type="button" aria-label="pause">❙❙</button>
-      <button id="download" class="button-control" type="button">Download</button>
+      <h2>Display</h2>
+      <div class="tablist" role="tablist">
+        <button id="display-orientation-map" class="tab" type="button" role="tab" aria-selected="false">Orientation Map</button>
+        <button id="display-simulation" class="tab tab-selected" type="button" role="tab" aria-selected="true">Simulation</button>
+        <button id="display-style-map" class="tab" type="button" role="tab" aria-selected="false">Style Map</button>
+      </div>
     </div>
   </main>
 </body>

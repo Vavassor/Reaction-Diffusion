@@ -350,6 +350,27 @@ main {
   background-color: #000000;
 }
 
+.tab {
+  border: none;
+  border-top: .1rem solid #afafaf;
+  display: block;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  padding: .375rem;
+  width: 100%;
+}
+
+.tab:first-child {
+  border-top: none;
+}
+
+.tab-selected {
+  background-color: #ff3434;
+  border-top: .1rem solid #ff3434;
+  color: #ffffff;
+}
+
 
 #color-b {
   background-color: #ffffff;

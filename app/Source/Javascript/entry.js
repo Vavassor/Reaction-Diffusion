@@ -4,7 +4,7 @@ import Color from "./Color";
 import ColorControl from "./ColorControl";
 import FileSaver from "file-saver";
 import Range from "./Range";
-import SimulationCanvas, {brushState} from "./SimulationCanvas";
+import SimulationCanvas, {brushState, displayImage} from "./SimulationCanvas";
 import Slider2d from "./Slider2d";
 import SlideSwitch from "./SlideSwitch";
 import Vector3 from "./Vector3";
@@ -168,6 +168,60 @@ document
   .getElementById("brush-radius")
   .addEventListener("input", (event) => {
     simulationCanvas.setBrushRadius(event.currentTarget.value);
+  });
+
+document
+  .getElementById("display-orientation-map")
+  .addEventListener("click", (event) => {
+    simulationCanvas.setDisplayImage(displayImage.ORIENTATION_MAP);
+
+    let button = event.currentTarget;
+    button.setAttribute("aria-selected", true);
+    button.classList.add("tab-selected");
+
+    button = document.getElementById("display-simulation");
+    button.setAttribute("aria-selected", false);
+    button.classList.remove("tab-selected");
+
+    button = document.getElementById("display-style-map");
+    button.setAttribute("aria-selected", false);
+    button.classList.remove("tab-selected");
+  });
+
+document
+  .getElementById("display-simulation")
+  .addEventListener("click", (event) => {
+    simulationCanvas.setDisplayImage(displayImage.SIMULATION_STATE);
+
+    let button = event.currentTarget;
+    button.setAttribute("aria-selected", true);
+    button.classList.add("tab-selected");
+
+    button = document.getElementById("display-orientation-map");
+    button.setAttribute("aria-selected", false);
+    button.classList.remove("tab-selected");
+
+    button = document.getElementById("display-style-map");
+    button.setAttribute("aria-selected", false);
+    button.classList.remove("tab-selected");
+  });
+
+document
+  .getElementById("display-style-map")
+  .addEventListener("click", (event) => {
+    simulationCanvas.setDisplayImage(displayImage.STYLE_MAP);
+
+    let button = event.currentTarget;
+    button.setAttribute("aria-selected", true);
+    button.classList.add("tab-selected");
+
+    button = document.getElementById("display-orientation-map");
+    button.setAttribute("aria-selected", false);
+    button.classList.remove("tab-selected");
+
+    button = document.getElementById("display-simulation");
+    button.setAttribute("aria-selected", false);
+    button.classList.remove("tab-selected");
   });
 
 document
