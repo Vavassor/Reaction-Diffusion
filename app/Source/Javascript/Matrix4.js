@@ -1,9 +1,9 @@
-"use strict";
+/** @module Matrix4 */
 
 import Vector3 from "./Vector3";
 
 /** A 4x4 square matrix. */
-class Matrix4 {
+export default class Matrix4 {
   /**
    * @param {number[]} elements - the elements of the matrix in row-major order
    */
@@ -191,5 +191,3 @@ class Matrix4 {
     return new Matrix4(elements);
   }
 }
-
-export default Matrix4;
