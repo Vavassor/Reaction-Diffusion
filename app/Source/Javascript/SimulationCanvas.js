@@ -1,15 +1,13 @@
-"use strict";
-
 import brushFsSource from "../Shaders/brush-fs.glsl";
 import brushVsSource from "../Shaders/brush-vs.glsl";
 import canvasTextureFsSource from "../Shaders/canvas-texture-fs.glsl";
 import Color from "./Color";
 import displayFsSource from "../Shaders/display-fs.glsl";
 import Glo from "./Glo";
-import ImageDraw from "./ImageDraw";
+import * as ImageDraw from "./ImageDraw";
 import Matrix4 from "./Matrix4";
 import passthroughVsSource from "../Shaders/passthrough-vs.glsl";
-import Range from "./Range";
+import * as Range from "./Range";
 import simulateFsSource from "../Shaders/simulate-fs.glsl";
 import Vector3 from "./Vector3";
 

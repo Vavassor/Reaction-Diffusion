@@ -1,3 +1,5 @@
+/** @module Glo */
+
 /** A WebGL utility class to separate out some of the boilerplate. */
 export default class Glo {
   constructor(gl) {

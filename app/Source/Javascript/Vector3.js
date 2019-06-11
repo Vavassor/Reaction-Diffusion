@@ -1,9 +1,9 @@
-"use strict";
+/** @module Vector3 */
 
-import Range from "./Range";
+import * as Range from "./Range";
 
 /** A 3 component vector. */
-class Vector3 {
+export default class Vector3 {
   constructor(x, y, z) {
     this.elements = [x, y, z];
   }
@@ -79,5 +79,3 @@ class Vector3 {
     return new Vector3(0, 0, 0);
   }
 }
-
-export default Vector3;

@@ -1,4 +1,7 @@
-"use strict";
+/**
+ * @module Range
+ * @desc Utilities for numeric ranges.
+ */
 
 /**
  * Constrains a value to an interval.
@@ -8,7 +11,7 @@
  * @param {number} max - the upper end of the range
  * @return {number}
  */
-function clamp(x, min, max) {
+export function clamp(x, min, max) {
   return Math.min(Math.max(x, min), max);
 }
 
@@ -20,7 +23,7 @@ function clamp(x, min, max) {
  * @param {number} t - the fraction to interpolate between the numbers
  * @return {number} a number between the other two
  */
-function lerp(a, b, t) {
+export function lerp(a, b, t) {
   return ((1 - t) * a) + (t * b);
 }
 
@@ -33,7 +36,7 @@ function lerp(a, b, t) {
  * @param {number} b1 - the upper end of the starting interval
  * @param {number} t - the value in the starting interval
  */
-function remap(a0, b0, a1, b1, t) {
+export function remap(a0, b0, a1, b1, t) {
   return lerp(a0, b0, unlerp(a1, b1, t));
 }
 
@@ -45,14 +48,6 @@ function remap(a0, b0, a1, b1, t) {
  * @param {number} t - the value within the interval
  * @return {number} a fraction between the two numbers
  */
-function unlerp(a, b, t) {
+export function unlerp(a, b, t) {
   return (t - a) / (b - a);
 }
-
-/** Utilities for numeric ranges. */
-export default {
-  clamp: clamp,
-  lerp: lerp,
-  remap: remap,
-  unlerp: unlerp,
-};

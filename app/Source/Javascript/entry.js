@@ -3,7 +3,7 @@
 import Color from "./Color";
 import ColorControl from "./ColorControl";
 import FileSaver from "file-saver";
-import Range from "./Range";
+import * as Range from "./Range";
 import SimulationCanvas, {brushState, displayImage} from "./SimulationCanvas";
 import Slider2d from "./Slider2d";
 import SlideSwitch from "./SlideSwitch";
