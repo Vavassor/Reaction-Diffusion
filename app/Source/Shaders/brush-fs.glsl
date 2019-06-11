@@ -8,7 +8,8 @@ varying vec2 shape_texcoord;
 void main()
 {
     vec4 color = brush_color * texture2D(brush_shape, shape_texcoord);
-    if (color.a < 0.5) {
+    if(color.a < 0.5)
+    {
         discard;
     }
     gl_FragColor = color;

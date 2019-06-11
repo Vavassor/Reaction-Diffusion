@@ -64,10 +64,10 @@ export default {
         const pixelIndex = 3 * ((width * y) + x);
         const frequencyX = 2.0 * (1.0 / width);
         const frequencyY = 2.0 * (1.0 / height);
-        const directionX = Math.sin(2.0 * Math.PI * frequencyX * x);
-        const directionY = Math.sin(2.0 * Math.PI * frequencyY * y);
-        field[pixelIndex] = Math.floor(255 * (0.5 * directionX) + 0.5);
-        field[pixelIndex + 1] = Math.floor(255 * (0.5 * directionY) + 0.5);
+        const directionX = Math.sin(2.0 * Math.PI * frequencyY * y);
+        const directionY = Math.sin(2.0 * Math.PI * frequencyX * x);
+        field[pixelIndex] = Math.floor(255 * ((0.5 * directionX) + 0.5));
+        field[pixelIndex + 1] = Math.floor(255 * ((0.5 * directionY) + 0.5));
       }
     }
   

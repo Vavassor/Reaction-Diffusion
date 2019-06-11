@@ -2,15 +2,22 @@
 
 import brushFsSource from "../Shaders/brush-fs.glsl";
 import brushVsSource from "../Shaders/brush-vs.glsl";
+import canvasTextureFsSource from "../Shaders/canvas-texture-fs.glsl";
 import Color from "./Color";
-import passthroughVsSource from "../Shaders/passthrough-vs.glsl";
 import displayFsSource from "../Shaders/display-fs.glsl";
 import Glo from "./Glo";
 import ImageDraw from "./ImageDraw";
 import Matrix4 from "./Matrix4";
+import passthroughVsSource from "../Shaders/passthrough-vs.glsl";
 import Range from "./Range";
 import simulateFsSource from "../Shaders/simulate-fs.glsl";
 import Vector3 from "./Vector3";
+
+const displayImage = {
+  SIMULATION_STATE: 0,
+  STYLE_MAP: 1,
+  ORIENTATION_MAP: 2,
+};
 
 export const brushState = {
   UP: 0,
@@ -37,18 +44,25 @@ export default class SimulationCanvas {
     glo.checkCompatibility();
 
     const brushVertexShader = glo.createShader(gl.VERTEX_SHADER, brushVsSource);
-    const displayShader = glo.createShader(gl.FRAGMENT_SHADER, displayFsSource);
     const passthroughVertexShader = glo.createShader(gl.VERTEX_SHADER, passthroughVsSource);
     const brushFragmentShader = glo.createShader(gl.FRAGMENT_SHADER, brushFsSource);
+    const canvasTextureShader = glo.createShader(gl.FRAGMENT_SHADER, canvasTextureFsSource);
+    const displayShader = glo.createShader(gl.FRAGMENT_SHADER, displayFsSource);
     const simulateShader = glo.createShader(gl.FRAGMENT_SHADER, simulateFsSource);
 
     const brushProgram = glo.createAndLinkProgram(brushVertexShader, brushFragmentShader);
+    const canvasTextureProgram = glo.createAndLinkProgram(passthroughVertexShader, canvasTextureShader);
     const displayProgram = glo.createAndLinkProgram(passthroughVertexShader, displayShader);
     const simulateProgram = glo.createAndLinkProgram(passthroughVertexShader, simulateShader);
 
     gl.useProgram(brushProgram);
     glo.loadVertexData(brushProgram);
     gl.uniform1i(gl.getUniformLocation(brushProgram, "brush_shape"), 0);
+
+    gl.useProgram(canvasTextureProgram);
+    glo.loadVertexData(canvasTextureProgram);
+    gl.uniform2f(gl.getUniformLocation(canvasTextureProgram, "image_dimensions"), width, height);
+    gl.uniform1i(gl.getUniformLocation(canvasTextureProgram, "image"), 0);
 
     gl.useProgram(displayProgram);
     glo.loadVertexData(displayProgram);
@@ -115,9 +129,11 @@ export default class SimulationCanvas {
     };
     this.framebuffers = framebuffers;
     this.iterationsPerFrame = 16;
+    this.displayImage = displayImage.SIMULATION_STATE;
     this.paused = false;
     this.programs = {
       brush: brushProgram,
+      canvasTexture: canvasTextureProgram,
       display: displayProgram,
       simulate: simulateProgram,
     };
@@ -220,9 +236,10 @@ export default class SimulationCanvas {
 
   step() {
     const brushProgram = this.programs.brush;
+    const canvasTextureProgram = this.programs.canvasTexture;
+    const displayProgram = this.programs.display;
     const framebuffers = this.framebuffers;
     const gl = this.gl;
-    const displayProgram = this.programs.display;
     const textures = this.textures;
     const simulateProgram = this.programs.simulate;
 
@@ -317,13 +334,36 @@ export default class SimulationCanvas {
     }
 
     // Display Phase
-    gl.useProgram(displayProgram);
-    gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_a"), this.update.colorA.toArray());
-    gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_b"), this.update.colorB.toArray());
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, textures[0]);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    switch (this.displayImage) {
+      case displayImage.ORIENTATION_MAP:
+        gl.useProgram(canvasTextureProgram);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textures[3]);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        break;
+
+      case displayImage.STYLE_MAP:
+        gl.useProgram(canvasTextureProgram);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textures[2]);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        break;
+
+      case displayImage.SIMULATION_STATE: {
+        gl.useProgram(displayProgram);
+        gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_a"), this.update.colorA.toArray());
+        gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_b"), this.update.colorB.toArray());
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textures[0]);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        break;
+      }
+    }
+    
+    
 
     // UI Phase
     if (this.brush.state === brushState.DOWN
