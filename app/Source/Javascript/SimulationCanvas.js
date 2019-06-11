@@ -5,12 +5,14 @@ import canvasTextureFsSource from "../Shaders/canvas-texture-fs.glsl";
 import Color from "./Color";
 import displayFsSource from "../Shaders/display-fs.glsl";
 import displayFieldFsSource from "../Shaders/display-field-fs.glsl";
+import divergenceFsSource from "../Shaders/divergence-fs.glsl";
 import Glo from "./Glo";
 import * as ImageDraw from "./ImageDraw";
 import Matrix4 from "./Matrix4";
 import passthroughVsSource from "../Shaders/passthrough-vs.glsl";
 import * as Range from "./Range";
 import simulateFsSource from "../Shaders/simulate-fs.glsl";
+import subtractPressureGradientFsSource from "../Shaders/subtract-pressure-gradient-fs.glsl";
 import Vector3 from "./Vector3";
 
 export const brushState = {
@@ -20,6 +22,7 @@ export const brushState = {
 };
 
 export const displayImage = {
+  DIVERGENCE_FIELD: "DIVERGENCE_FIELD",
   SIMULATION_STATE: "SIMULATION_STATE",
   STYLE_MAP: "STYLE_MAP",
   ORIENTATION_MAP: "ORIENTATION_MAP",
@@ -51,14 +54,18 @@ export default class SimulationCanvas {
     const canvasTextureShader = glo.createShader(gl.FRAGMENT_SHADER, canvasTextureFsSource);
     const displayShader = glo.createShader(gl.FRAGMENT_SHADER, displayFsSource);
     const displayFieldShader = glo.createShader(gl.FRAGMENT_SHADER, displayFieldFsSource);
+    const divergenceShader = glo.createShader(gl.FRAGMENT_SHADER, divergenceFsSource);
     const simulateShader = glo.createShader(gl.FRAGMENT_SHADER, simulateFsSource);
+    const subtractPressureGradientShader = glo.createShader(gl.FRAGMENT_SHADER, subtractPressureGradientFsSource);
 
     const advectProgram = glo.createAndLinkProgram(basicVertexShader, advectFragmentShader);
     const brushProgram = glo.createAndLinkProgram(basicVertexShader, brushFragmentShader);
     const canvasTextureProgram = glo.createAndLinkProgram(passthroughVertexShader, canvasTextureShader);
     const displayProgram = glo.createAndLinkProgram(passthroughVertexShader, displayShader);
     const displayFieldProgram = glo.createAndLinkProgram(basicVertexShader, displayFieldShader);
+    const divergenceProgram = glo.createAndLinkProgram(basicVertexShader, divergenceShader);
     const simulateProgram = glo.createAndLinkProgram(passthroughVertexShader, simulateShader);
+    const subtractPressureGradientProgram = glo.createAndLinkProgram(basicVertexShader, subtractPressureGradientShader);
 
     gl.useProgram(advectProgram);
     glo.loadVertexData(advectProgram);
@@ -84,12 +91,23 @@ export default class SimulationCanvas {
     gl.uniform1i(gl.getUniformLocation(displayFieldProgram, "field"), 0);
     gl.uniformMatrix4fv(gl.getUniformLocation(displayFieldProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
 
+    gl.useProgram(divergenceProgram);
+    glo.loadVertexData(divergenceProgram);
+    gl.uniform1i(gl.getUniformLocation(divergenceProgram, "velocity_field"), 0);
+    gl.uniform2f(gl.getUniformLocation(divergenceProgram, "velocity_field_size"), width, height);
+    gl.uniformMatrix4fv(gl.getUniformLocation(divergenceProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
+
     gl.useProgram(simulateProgram);
     glo.loadVertexData(simulateProgram);
     gl.uniform2f(gl.getUniformLocation(simulateProgram, "state_size"), width, height);
     gl.uniform1i(gl.getUniformLocation(simulateProgram, "state"), 0);
     gl.uniform1i(gl.getUniformLocation(simulateProgram, "style_map"), 1);
     gl.uniform1i(gl.getUniformLocation(simulateProgram, "orientation_map"), 2);
+
+    gl.useProgram(subtractPressureGradientProgram);
+    glo.loadVertexData(subtractPressureGradientProgram);
+    gl.uniform1i(gl.getUniformLocation(subtractPressureGradientProgram, "velocity_field"), 0);
+    gl.uniformMatrix4fv(gl.getUniformLocation(subtractPressureGradientProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
 
     const styleMapSpec = {
       format: gl.RGB,
@@ -113,6 +131,7 @@ export default class SimulationCanvas {
     };
     const textures = {
       brushShape: glo.createTexture(64, 64, ImageDraw.createCircle(64), brushShapeSpec),
+      divergence: glo.createTexture(width, height, null),
       orientationMap: glo.createTexture(width, height, ImageDraw.createVectorField(width, height), orientationMapSpec),
       state: [
         glo.createTexture(width, height, ImageDraw.createCenteredNoiseSquare(width, height)),
@@ -124,7 +143,9 @@ export default class SimulationCanvas {
         glo.createTexture(width, height, null),
       ],
     };
+    
     const framebuffers = {
+      divergence: glo.createFramebuffer(textures.divergence),
       state: [
         glo.createFramebuffer(textures.state[0]),
         glo.createFramebuffer(textures.state[1]),
@@ -157,8 +178,7 @@ export default class SimulationCanvas {
     };
     this.framebuffers = framebuffers;
     this.iterationsPerFrame = 16;
-    this.displayImage = displayImage.VELOCITY_FIELD;
-    this.pageIndex = 0;
+    this.displayImage = displayImage.DIVERGENCE_FIELD;
     this.paused = false;
     this.programs = {
       advect: advectProgram,
@@ -166,7 +186,9 @@ export default class SimulationCanvas {
       canvasTexture: canvasTextureProgram,
       display: displayProgram,
       displayField: displayFieldProgram,
+      divergence: divergenceProgram,
       simulate: simulateProgram,
+      subtractPressureGradient: subtractPressureGradientProgram,
     };
     this.textures = textures;
     this.update = {
@@ -275,10 +297,12 @@ export default class SimulationCanvas {
     const canvasTextureProgram = this.programs.canvasTexture;
     const displayProgram = this.programs.display;
     const displayFieldProgram = this.programs.displayField;
+    const divergenceProgram = this.programs.divergence;
     const framebuffers = this.framebuffers;
     const gl = this.gl;
     const textures = this.textures;
     const simulateProgram = this.programs.simulate;
+    const subtractPressureGradientProgram = this.programs.subtractPressureGradient;
 
     // Edit Phase
     const translation = Matrix4.translate(this.brush.position);
@@ -372,22 +396,43 @@ export default class SimulationCanvas {
 
     // Advection Phase
     if (!this.paused) {
-      const pageIndex = this.pageIndex;
-      const nextIndex = pageIndex ^ 1;
-
       gl.useProgram(advectProgram);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[nextIndex]);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[1]);
       gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[pageIndex]);
+      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
       gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[pageIndex]);
+      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
 
-      this.pageIndex = nextIndex;
+    // Divergence Phase
+    if (!this.paused) {
+      gl.useProgram(divergenceProgram);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.divergence);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[1]);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+
+    // Subtract Pressure Gradient Phase
+    if (!this.paused) {
+      gl.useProgram(subtractPressureGradientProgram);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[0]);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[1]);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
     // Display Phase
     switch (this.displayImage) {
+      case displayImage.DIVERGENCE_FIELD:
+        gl.useProgram(displayFieldProgram);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textures.divergence);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        break;
+
       case displayImage.ORIENTATION_MAP:
         gl.useProgram(canvasTextureProgram);
         gl.activeTexture(gl.TEXTURE0);
@@ -418,7 +463,7 @@ export default class SimulationCanvas {
       case displayImage.VELOCITY_FIELD:
         gl.useProgram(displayFieldProgram);
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[this.pageIndex]);
+        gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
