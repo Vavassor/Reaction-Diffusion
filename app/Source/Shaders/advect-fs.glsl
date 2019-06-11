@@ -9,8 +9,7 @@ const float DELTA_TIME = 1.0 / 120.0;
 
 void main()
 {
-    vec2 velocity_sample = texture2D(velocity_field, surface_texcoord).xy;
-    vec2 velocity = normalize(2.0 * velocity_sample - 1.0);
+    vec2 velocity = texture2D(velocity_field, surface_texcoord).xy;
     vec2 prior_texcoord = fract(surface_texcoord - (0.5 * DELTA_TIME * velocity));
     gl_FragColor = texture2D(input_texture, prior_texcoord);
 }

@@ -15,7 +15,7 @@ function smoothstep(a, b, x) {
  * Draws a red rectangle with a square of red-green noise in the middle.
  * @param {number} width - the width of the rectangle
  * @param {number} height - the height of the rectangle
- * @return {Uint8Array} - an interleaved array of RGBA pixels
+ * @return {Float32Array} - an interleaved array of RGBA pixels
  */
 export function createCenteredNoiseSquare(width, height) {
   const pattern = new Array(width * height);
@@ -89,6 +89,30 @@ export function createVectorField(width, height) {
       const directionY = Math.sin(2.0 * Math.PI * frequencyX * x);
       field[pixelIndex] = Math.floor(255 * ((0.5 * directionX) + 0.5));
       field[pixelIndex + 1] = Math.floor(255 * ((0.5 * directionY) + 0.5));
+    }
+  }
+
+  return field;
+}
+
+/**
+ * Draws a 2D vector field stored in the red and green channels.
+ * @param {number} width - the width of the rectangle
+ * @param {number} height - the height of the rectangle
+ * @return {Float32Array} - an interleaved array of RGBA pixels
+ */
+export function createVectorFieldFloat32(width, height) {
+  const field = new Float32Array(4 * width * height);
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pixelIndex = 4 * ((width * y) + x);
+      const frequencyX = 2.0 * (1.0 / width);
+      const frequencyY = 2.0 * (1.0 / height);
+      const directionX = Math.sin(2.0 * Math.PI * frequencyY * y);
+      const directionY = Math.sin(2.0 * Math.PI * frequencyX * x);
+      field[pixelIndex] = directionX;
+      field[pixelIndex + 1] = directionY;
     }
   }
 

@@ -4,6 +4,7 @@ import brushFsSource from "../Shaders/brush-fs.glsl";
 import canvasTextureFsSource from "../Shaders/canvas-texture-fs.glsl";
 import Color from "./Color";
 import displayFsSource from "../Shaders/display-fs.glsl";
+import displayFieldFsSource from "../Shaders/display-field-fs.glsl";
 import Glo from "./Glo";
 import * as ImageDraw from "./ImageDraw";
 import Matrix4 from "./Matrix4";
@@ -49,12 +50,14 @@ export default class SimulationCanvas {
     const brushFragmentShader = glo.createShader(gl.FRAGMENT_SHADER, brushFsSource);
     const canvasTextureShader = glo.createShader(gl.FRAGMENT_SHADER, canvasTextureFsSource);
     const displayShader = glo.createShader(gl.FRAGMENT_SHADER, displayFsSource);
+    const displayFieldShader = glo.createShader(gl.FRAGMENT_SHADER, displayFieldFsSource);
     const simulateShader = glo.createShader(gl.FRAGMENT_SHADER, simulateFsSource);
 
     const advectProgram = glo.createAndLinkProgram(basicVertexShader, advectFragmentShader);
     const brushProgram = glo.createAndLinkProgram(basicVertexShader, brushFragmentShader);
     const canvasTextureProgram = glo.createAndLinkProgram(passthroughVertexShader, canvasTextureShader);
     const displayProgram = glo.createAndLinkProgram(passthroughVertexShader, displayShader);
+    const displayFieldProgram = glo.createAndLinkProgram(basicVertexShader, displayFieldShader);
     const simulateProgram = glo.createAndLinkProgram(passthroughVertexShader, simulateShader);
 
     gl.useProgram(advectProgram);
@@ -75,6 +78,11 @@ export default class SimulationCanvas {
     gl.useProgram(displayProgram);
     glo.loadVertexData(displayProgram);
     gl.uniform2f(gl.getUniformLocation(displayProgram, "state_size"), width, height);
+
+    gl.useProgram(displayFieldProgram);
+    glo.loadVertexData(displayFieldProgram);
+    gl.uniform1i(gl.getUniformLocation(displayFieldProgram, "field"), 0);
+    gl.uniformMatrix4fv(gl.getUniformLocation(displayFieldProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
 
     gl.useProgram(simulateProgram);
     glo.loadVertexData(simulateProgram);
@@ -112,7 +120,7 @@ export default class SimulationCanvas {
       ],
       styleMap: glo.createTexture(width, height, ImageDraw.createWaves(width, height), styleMapSpec),
       velocityField: [
-        glo.createTexture(width, height, ImageDraw.createVectorField(width, height), orientationMapSpec),
+        glo.createTexture(width, height, ImageDraw.createVectorFieldFloat32(width, height)),
         glo.createTexture(width, height, null),
       ],
     };
@@ -149,7 +157,7 @@ export default class SimulationCanvas {
     };
     this.framebuffers = framebuffers;
     this.iterationsPerFrame = 16;
-    this.displayImage = displayImage.SIMULATION_STATE;
+    this.displayImage = displayImage.VELOCITY_FIELD;
     this.pageIndex = 0;
     this.paused = false;
     this.programs = {
@@ -157,6 +165,7 @@ export default class SimulationCanvas {
       brush: brushProgram,
       canvasTexture: canvasTextureProgram,
       display: displayProgram,
+      displayField: displayFieldProgram,
       simulate: simulateProgram,
     };
     this.textures = textures;
@@ -265,6 +274,7 @@ export default class SimulationCanvas {
     const brushProgram = this.programs.brush;
     const canvasTextureProgram = this.programs.canvasTexture;
     const displayProgram = this.programs.display;
+    const displayFieldProgram = this.programs.displayField;
     const framebuffers = this.framebuffers;
     const gl = this.gl;
     const textures = this.textures;
@@ -406,7 +416,7 @@ export default class SimulationCanvas {
       }
 
       case displayImage.VELOCITY_FIELD:
-        gl.useProgram(canvasTextureProgram);
+        gl.useProgram(displayFieldProgram);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[this.pageIndex]);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
