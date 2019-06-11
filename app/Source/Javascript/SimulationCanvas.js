@@ -13,16 +13,16 @@ import Range from "./Range";
 import simulateFsSource from "../Shaders/simulate-fs.glsl";
 import Vector3 from "./Vector3";
 
-const displayImage = {
-  SIMULATION_STATE: 0,
-  STYLE_MAP: 1,
-  ORIENTATION_MAP: 2,
-};
-
 export const brushState = {
   UP: 0,
   HOVERING: 1,
   DOWN: 2,
+};
+
+export const displayImage = {
+  SIMULATION_STATE: 0,
+  STYLE_MAP: 1,
+  ORIENTATION_MAP: 2,
 };
 
 export default class SimulationCanvas {
@@ -200,6 +200,10 @@ export default class SimulationCanvas {
     this.update.colorB = color;
   }
 
+  setDisplayImage(image) {
+    this.displayImage = image;
+  }
+
   setFlowRate(flowRate) {
     this.update.flowRate = flowRate;
   }
@@ -363,8 +367,6 @@ export default class SimulationCanvas {
       }
     }
     
-    
-
     // UI Phase
     if (this.brush.state === brushState.DOWN
         || this.brush.state === brushState.HOVERING) {
