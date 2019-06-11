@@ -57,6 +57,12 @@ export default class SimulationCanvas {
     const displayProgram = glo.createAndLinkProgram(passthroughVertexShader, displayShader);
     const simulateProgram = glo.createAndLinkProgram(passthroughVertexShader, simulateShader);
 
+    gl.useProgram(advectProgram);
+    glo.loadVertexData(advectProgram);
+    gl.uniform1i(gl.getUniformLocation(advectProgram, "input_texture"), 0);
+    gl.uniform1i(gl.getUniformLocation(advectProgram, "velocity_field"), 1);
+    gl.uniformMatrix4fv(gl.getUniformLocation(advectProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
+
     gl.useProgram(brushProgram);
     glo.loadVertexData(brushProgram);
     gl.uniform1i(gl.getUniformLocation(brushProgram, "brush_shape"), 0);
@@ -110,13 +116,19 @@ export default class SimulationCanvas {
         glo.createTexture(width, height, null),
       ],
     };
-    const framebuffers = [
-      glo.createFramebuffer(textures.state[0]),
-      glo.createFramebuffer(textures.state[1]),
-    ];
+    const framebuffers = {
+      state: [
+        glo.createFramebuffer(textures.state[0]),
+        glo.createFramebuffer(textures.state[1]),
+      ],
+      velocityField: [
+        glo.createFramebuffer(textures.velocityField[0]),
+        glo.createFramebuffer(textures.velocityField[1]),
+      ],
+    };
 
     gl.useProgram(simulateProgram);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[0]);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.state[0]);
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
     if (status !== gl.FRAMEBUFFER_COMPLETE) {
       throw new Error("Cannot render to framebuffer: " + status);
@@ -138,6 +150,7 @@ export default class SimulationCanvas {
     this.framebuffers = framebuffers;
     this.iterationsPerFrame = 16;
     this.displayImage = displayImage.SIMULATION_STATE;
+    this.pageIndex = 0;
     this.paused = false;
     this.programs = {
       advect: advectProgram,
@@ -248,6 +261,7 @@ export default class SimulationCanvas {
   }
 
   step() {
+    const advectProgram = this.programs.advect;
     const brushProgram = this.programs.brush;
     const canvasTextureProgram = this.programs.canvasTexture;
     const displayProgram = this.programs.display;
@@ -263,7 +277,7 @@ export default class SimulationCanvas {
     const model = Matrix4.multiply(translation, dilation);
     const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
 
-    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[0]);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.state[0]);
 
     if (this.clearNextStep) {
       gl.clear(gl.COLOR_BUFFER_BIT);
@@ -341,9 +355,25 @@ export default class SimulationCanvas {
         gl.bindTexture(gl.TEXTURE_2D, textures.styleMap);
         gl.activeTexture(gl.TEXTURE2);
         gl.bindTexture(gl.TEXTURE_2D, textures.orientationMap);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers[(i % 2) ^ 1]);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.state[(i % 2) ^ 1]);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
+    }
+
+    // Advection Phase
+    if (!this.paused) {
+      const pageIndex = this.pageIndex;
+      const nextIndex = pageIndex ^ 1;
+
+      gl.useProgram(advectProgram);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[nextIndex]);
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[pageIndex]);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[pageIndex]);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+      this.pageIndex = nextIndex;
     }
 
     // Display Phase
@@ -378,7 +408,7 @@ export default class SimulationCanvas {
       case displayImage.VELOCITY_FIELD:
         gl.useProgram(canvasTextureProgram);
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
+        gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[this.pageIndex]);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
