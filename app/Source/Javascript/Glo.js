@@ -17,6 +17,11 @@ export default class Glo {
     if (!floatTextureExtension) {
       throw new Error("The WebGL extension OES_texture_float is not supported.");
     }
+
+    const floatLinearFilteringExtension = gl.getExtension("OES_texture_float_linear");
+    if (!floatLinearFilteringExtension) {
+      throw new Error("The WebGL extension OES_texture_float_linear is not supported.");
+    }
   
     const requiredTextureSize = 512;
     const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
@@ -69,27 +74,22 @@ export default class Glo {
   createTexture(width, height, contents, spec) {
     const gl = this.gl;
 
-    if (!spec) {
-      spec = {
-        format: gl.RGBA,
-        internalFormat: gl.RGBA,
-        type: gl.FLOAT,
-      };
-    }
-    if (!spec.filter) {
-      spec.filter = {
-        magnify: gl.NEAREST,
-        minify: gl.NEAREST,
-      };
-    }
+    spec = spec || {};
+    spec.filter = spec.filter || {};
+
+    const format = spec.format || gl.RGBA;
+    const internalFormat = spec.internalFormat || gl.RGBA;
+    const type = spec.type || gl.FLOAT;
+    const minifyFilter = spec.filter.minify || gl.NEAREST;
+    const magnifyFilter = spec.filter.magnify || gl.NEAREST;
 
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, spec.filter.minify);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, spec.filter.magnify);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minifyFilter);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magnifyFilter);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-    gl.texImage2D(gl.TEXTURE_2D, 0, spec.internalFormat, width, height, 0, spec.format, spec.type, contents);
+    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, contents);
 
     if (spec.generate_mipmaps) {
       gl.generateMipmap(gl.TEXTURE_2D);
