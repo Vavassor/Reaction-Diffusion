@@ -117,7 +117,9 @@ export default class SimulationCanvas {
 
     gl.useProgram(subtractPressureGradientProgram);
     glo.loadVertexData(subtractPressureGradientProgram);
+    gl.uniform2f(gl.getUniformLocation(subtractPressureGradientProgram, "field_size"), width, height);
     gl.uniform1i(gl.getUniformLocation(subtractPressureGradientProgram, "velocity_field"), 0);
+    gl.uniform1i(gl.getUniformLocation(subtractPressureGradientProgram, "pressure_field"), 1);
     gl.uniformMatrix4fv(gl.getUniformLocation(subtractPressureGradientProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
 
     const styleMapSpec = {
@@ -197,7 +199,7 @@ export default class SimulationCanvas {
     };
     this.framebuffers = framebuffers;
     this.iterationsPerFrame = 16;
-    this.displayImage = displayImage.PRESSURE_FIELD;
+    this.displayImage = displayImage.VELOCITY_FIELD;
     this.paused = false;
     this.programs = {
       advect: advectProgram,
@@ -440,11 +442,11 @@ export default class SimulationCanvas {
       gl.useProgram(pressureProgram);
       
       for (let i = 0; i < 10; i++) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.pressure[i % 2]);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.pressure[(i % 2) ^ 1]);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, textures.divergence);
         gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, textures.pressure[(i % 2) ^ 1]);
+        gl.bindTexture(gl.TEXTURE_2D, textures.pressure[i % 2]);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
     }
@@ -455,6 +457,8 @@ export default class SimulationCanvas {
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[0]);
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[1]);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, textures.pressure[0]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
 
