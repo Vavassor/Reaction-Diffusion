@@ -134,6 +134,13 @@ document
     simulationCanvas.setIterationsPerFrame(event.currentTarget.value);
   });
 
+const applyFlowMap = new SlideSwitch({
+  id: "apply-flow-map",
+  onChange: (checked) => {
+    simulationCanvas.setApplyFlowMap(checked);
+  },
+});
+
 const applyStyleMap = new SlideSwitch({
   id: "apply-style-map",
   onChange: (checked) => {
@@ -185,10 +192,6 @@ const tablistSpec = {
     {
       id: "display-style-map",
       displayImage: displayImage.STYLE_MAP,
-    },
-    {
-      id: "display-velocity-field",
-      displayImage: displayImage.VELOCITY_FIELD,
     },
   ],
 };

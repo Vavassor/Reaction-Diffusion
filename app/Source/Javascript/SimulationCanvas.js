@@ -147,6 +147,13 @@ export default class SimulationCanvas {
       type: gl.UNSIGNED_BYTE,
     };
 
+    const stateSpec = {
+      filter: {
+        magnify: gl.LINEAR,
+        minify: gl.LINEAR,
+      },
+    };
+
     const styleMapSpec = {
       format: gl.RGB,
       internalFormat: gl.RGB,
@@ -173,8 +180,8 @@ export default class SimulationCanvas {
         glo.createTexture(width, height, null),
       ],
       state: [
-        glo.createTexture(width, height, ImageDraw.createCenteredNoiseSquare(width, height)),
-        glo.createTexture(width, height, null),
+        glo.createTexture(width, height, ImageDraw.createCenteredNoiseSquare(width, height), stateSpec),
+        glo.createTexture(width, height, null, stateSpec),
       ],
       styleMap: glo.createTexture(width, height, ImageDraw.createWaves(width, height), styleMapSpec),
       velocityField: [
@@ -223,7 +230,7 @@ export default class SimulationCanvas {
       projection: Matrix4.orthographicProjectionRh(width, height, -1, 1),
       width: width,
     };
-    this.displayImage = displayImage.CHECKER;
+    this.displayImage = displayImage.SIMULATION_STATE;
     this.framebuffers = framebuffers;
     this.iterationsPerFrame = 16;
     this.pageIndex = 0;
@@ -241,6 +248,7 @@ export default class SimulationCanvas {
     };
     this.textures = textures;
     this.update = {
+      applyFlowMap: false,
       applyOrientationMap: false,
       applyStyleMap: false,
       colorA: Color.black(),
@@ -261,6 +269,10 @@ export default class SimulationCanvas {
 
   getColorB() {
     return this.update.colorB;
+  }
+
+  setApplyFlowMap(apply) {
+    this.update.applyFlowMap = apply;
   }
 
   setApplyOrientationMap(apply) {
@@ -444,62 +456,69 @@ export default class SimulationCanvas {
       }
     }
 
-    // Advection Phase
-    if (!this.paused) {
-      gl.useProgram(advectProgram);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[1]);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    }
-
-    // Divergence Phase
-    if (!this.paused) {
-      gl.useProgram(divergenceProgram);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.divergence);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[1]);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    }
-
-    // Pressure Iteration Phase
-    if (!this.paused) {
-      gl.useProgram(pressureProgram);
-      
-      for (let i = 0; i < 10; i++) {
-        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.pressure[(i % 2) ^ 1]);
+    if (!this.paused && this.update.applyFlowMap) {
+      // Advection Phase
+      {
+        gl.useProgram(advectProgram);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[1]);
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, textures.divergence);
+        gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
         gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, textures.pressure[i % 2]);
+        gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
-    }
 
-    // Subtract Pressure Gradient Phase
-    if (!this.paused) {
-      gl.useProgram(subtractPressureGradientProgram);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[0]);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[1]);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, textures.pressure[0]);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    }
+      // Divergence Phase
+      {
+        gl.useProgram(divergenceProgram);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.divergence);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[1]);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
 
-    // Color Advection Phase
-    if (!this.paused) {
-      const i = this.pageIndex;
-      gl.useProgram(advectProgram);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.checker[i ^ 1]);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, textures.checker[i]);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-      this.pageIndex ^= 1;
+      // Pressure Iteration Phase
+      {
+        gl.useProgram(pressureProgram);
+        
+        for (let i = 0; i < 10; i++) {
+          gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.pressure[(i % 2) ^ 1]);
+          gl.activeTexture(gl.TEXTURE0);
+          gl.bindTexture(gl.TEXTURE_2D, textures.divergence);
+          gl.activeTexture(gl.TEXTURE1);
+          gl.bindTexture(gl.TEXTURE_2D, textures.pressure[i % 2]);
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+      }
+
+      // Subtract Pressure Gradient Phase
+      {
+        gl.useProgram(subtractPressureGradientProgram);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[0]);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[1]);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, textures.pressure[0]);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
+
+      // Color Advection Phase
+      {
+        gl.useProgram(advectProgram);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.state[1]);
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, textures.state[0]);
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        let temp = framebuffers.state[1];
+        framebuffers.state[1] = framebuffers.state[0];
+        framebuffers.state[0] = temp;
+        temp = textures.state[1];
+        textures.state[1] = textures.state[0];
+        textures.state[0] = temp;
+      }
     }
 
     // Display Phase
