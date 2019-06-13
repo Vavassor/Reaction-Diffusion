@@ -123,21 +123,6 @@ export default class SimulationCanvas {
     gl.uniform1i(gl.getUniformLocation(subtractPressureGradientProgram, "pressure_field"), 1);
     gl.uniformMatrix4fv(gl.getUniformLocation(subtractPressureGradientProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
 
-    const checkerSpec = {
-      format: gl.RGB,
-      internalFormat: gl.RGB,
-      type: gl.UNSIGNED_BYTE,
-    };
-    const styleMapSpec = {
-      format: gl.RGB,
-      internalFormat: gl.RGB,
-      type: gl.UNSIGNED_BYTE,
-    };
-    const orientationMapSpec = {
-      format: gl.RGB,
-      internalFormat: gl.RGB,
-      type: gl.UNSIGNED_BYTE,
-    };
     const brushShapeSpec = {
       filter: {
         magnify: gl.LINEAR,
@@ -148,6 +133,33 @@ export default class SimulationCanvas {
       internalFormat: gl.RGBA,
       type: gl.UNSIGNED_BYTE,
     };
+
+    const checkerSpec = {
+      filter: {
+        magnify: gl.LINEAR,
+        minify: gl.LINEAR,
+      },
+    };
+
+    const orientationMapSpec = {
+      format: gl.RGB,
+      internalFormat: gl.RGB,
+      type: gl.UNSIGNED_BYTE,
+    };
+
+    const styleMapSpec = {
+      format: gl.RGB,
+      internalFormat: gl.RGB,
+      type: gl.UNSIGNED_BYTE,
+    };
+    
+    const velocityFieldSpec = {
+      filter: {
+        magnify: gl.LINEAR,
+        minify: gl.LINEAR,
+      },
+    };
+
     const textures = {
       brushShape: glo.createTexture(64, 64, ImageDraw.createCircle(64), brushShapeSpec),
       checker: [
@@ -166,8 +178,8 @@ export default class SimulationCanvas {
       ],
       styleMap: glo.createTexture(width, height, ImageDraw.createWaves(width, height), styleMapSpec),
       velocityField: [
-        glo.createTexture(width, height, ImageDraw.createVectorFieldFloat32(width, height)),
-        glo.createTexture(width, height, null),
+        glo.createTexture(width, height, ImageDraw.createVectorFieldFloat32(width, height), velocityFieldSpec),
+        glo.createTexture(width, height, null, velocityFieldSpec),
       ],
     };
     
@@ -211,9 +223,9 @@ export default class SimulationCanvas {
       projection: Matrix4.orthographicProjectionRh(width, height, -1, 1),
       width: width,
     };
+    this.displayImage = displayImage.CHECKER;
     this.framebuffers = framebuffers;
     this.iterationsPerFrame = 16;
-    this.displayImage = displayImage.CHECKER;
     this.pageIndex = 0;
     this.paused = false;
     this.programs = {

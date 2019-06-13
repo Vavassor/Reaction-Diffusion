@@ -76,18 +76,19 @@ export function createCircle(side) {
  * @param {number} width - the width of the rectangle
  * @param {number} height - the height of the rectangle
  * @param {number} squareWidth - the width of a square
- * @return {Uint8Array} - an interleaved array of RGB pixels
+ * @return {Float32Array} - an interleaved array of RGB pixels
  */
 export function createChecker(width, height, squareWidth) {
-  const pixels = new Uint8Array(3 * width * height);
+  const pixels = new Float32Array(4 * width * height);
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const pixelIndex = 3 * ((width * y) + x);
-      const value = 255 * (((x / squareWidth) % 2) ^ ((y / squareWidth) % 2));
+      const pixelIndex = 4 * ((width * y) + x);
+      const value = ((x / squareWidth) % 2) ^ ((y / squareWidth) % 2);
       pixels[pixelIndex] = value;
       pixels[pixelIndex + 1] = value;
       pixels[pixelIndex + 2] = value;
+      pixels[pixelIndex + 3] = 1.0;
     }
   }
 
