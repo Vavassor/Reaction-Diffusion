@@ -23,7 +23,6 @@ export const brushState = {
 };
 
 export const displayImage = {
-  CHECKER: "CHECKER",
   DIVERGENCE_FIELD: "DIVERGENCE_FIELD",
   ORIENTATION_MAP: "ORIENTATION_MAP",
   PRESSURE_FIELD: "PRESSURE_FIELD",
@@ -134,13 +133,6 @@ export default class SimulationCanvas {
       type: gl.UNSIGNED_BYTE,
     };
 
-    const checkerSpec = {
-      filter: {
-        magnify: gl.LINEAR,
-        minify: gl.LINEAR,
-      },
-    };
-
     const orientationMapSpec = {
       format: gl.RGB,
       internalFormat: gl.RGB,
@@ -169,10 +161,6 @@ export default class SimulationCanvas {
 
     const textures = {
       brushShape: glo.createTexture(64, 64, ImageDraw.createCircle(64), brushShapeSpec),
-      checker: [
-        glo.createTexture(width, height, ImageDraw.createChecker(width, height, 10), checkerSpec),
-        glo.createTexture(width, height, null, checkerSpec),
-      ],
       divergence: glo.createTexture(width, height, null),
       orientationMap: glo.createTexture(width, height, ImageDraw.createVectorField(width, height), orientationMapSpec),
       pressure: [
@@ -191,10 +179,6 @@ export default class SimulationCanvas {
     };
     
     const framebuffers = {
-      checker: [
-        glo.createFramebuffer(textures.checker[0]),
-        glo.createFramebuffer(textures.checker[1]),
-      ],
       divergence: glo.createFramebuffer(textures.divergence),
       pressure: [
         glo.createFramebuffer(textures.pressure[0]),
@@ -523,14 +507,6 @@ export default class SimulationCanvas {
 
     // Display Phase
     switch (this.displayImage) {
-      case displayImage.CHECKER:
-        gl.useProgram(canvasTextureProgram);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, textures.checker[this.pageIndex]);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-        break;
-
       case displayImage.DIVERGENCE_FIELD:
         gl.useProgram(displayFieldProgram);
         gl.activeTexture(gl.TEXTURE0);
