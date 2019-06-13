@@ -72,6 +72,29 @@ export function createCircle(side) {
 }
 
 /**
+ * Draws a checker pattern.
+ * @param {number} width - the width of the rectangle
+ * @param {number} height - the height of the rectangle
+ * @param {number} squareWidth - the width of a square
+ * @return {Uint8Array} - an interleaved array of RGB pixels
+ */
+export function createChecker(width, height, squareWidth) {
+  const pixels = new Uint8Array(3 * width * height);
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pixelIndex = 3 * ((width * y) + x);
+      const value = 255 * (((x / squareWidth) % 2) ^ ((y / squareWidth) % 2));
+      pixels[pixelIndex] = value;
+      pixels[pixelIndex + 1] = value;
+      pixels[pixelIndex + 2] = value;
+    }
+  }
+
+  return pixels;
+}
+
+/**
  * Draws a 2D vector field stored in the red and green channels.
  * @param {number} width - the width of the rectangle
  * @param {number} height - the height of the rectangle
