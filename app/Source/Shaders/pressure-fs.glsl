@@ -1,3 +1,5 @@
+// Computes one iteration of pressure approximation using the Jacobi method.
+
 precision mediump float;
 
 uniform sampler2D divergence_field;
