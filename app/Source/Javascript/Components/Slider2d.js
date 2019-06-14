@@ -1,4 +1,4 @@
-import * as Range from "./Range";
+import * as Range from "../Utility/Range";
 
 export default class Slider2d {
   constructor(spec) {

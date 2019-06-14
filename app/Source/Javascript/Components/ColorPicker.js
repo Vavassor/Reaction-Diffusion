@@ -1,4 +1,4 @@
-import Color from "./Color";
+import Color from "../Utility/Color";
 import Slider2d from "./Slider2d";
 
 export default class ColorPicker {

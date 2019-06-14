@@ -1,17 +1,17 @@
-import basicVsSource from "../Shaders/basic-vs.glsl";
-import brushFsSource from "../Shaders/brush-fs.glsl";
-import canvasTextureFsSource from "../Shaders/canvas-texture-fs.glsl";
-import Color from "./Color";
-import displayFsSource from "../Shaders/display-fs.glsl";
-import displayFieldFsSource from "../Shaders/display-field-fs.glsl";
-import FlowSim from "./FlowSim";
-import Glo from "./Glo";
-import * as ImageDraw from "./ImageDraw";
-import Matrix4 from "./Matrix4";
-import passthroughVsSource from "../Shaders/passthrough-vs.glsl";
-import * as Range from "./Range";
-import simulateFsSource from "../Shaders/simulate-fs.glsl";
-import Vector3 from "./Vector3";
+import basicVsSource from "../../Shaders/basic-vs.glsl";
+import brushFsSource from "../../Shaders/brush-fs.glsl";
+import canvasTextureFsSource from "../../Shaders/canvas-texture-fs.glsl";
+import Color from "../Utility/Color";
+import displayFsSource from "../../Shaders/display-fs.glsl";
+import displayFieldFsSource from "../../Shaders/display-field-fs.glsl";
+import FlowSim from "../FlowSim";
+import Glo from "../Utility/Glo";
+import * as ImageDraw from "../Utility/ImageDraw";
+import Matrix4 from "../Utility/Matrix4";
+import passthroughVsSource from "../../Shaders/passthrough-vs.glsl";
+import * as Range from "../Utility/Range";
+import simulateFsSource from "../../Shaders/simulate-fs.glsl";
+import Vector3 from "../Utility/Vector3";
 
 export const brushState = {
   UP: 0,

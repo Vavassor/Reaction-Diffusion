@@ -1,17 +1,17 @@
 "use strict";
 
-import Color from "./Color";
-import ColorControl from "./ColorControl";
+import Alert from "./Components/Alert";
+import Color from "./Utility/Color";
+import ColorControl from "./Components/ColorControl";
 import FileSaver from "file-saver";
-import * as Range from "./Range";
-import SimulationCanvas, {brushState, displayImage} from "./SimulationCanvas";
-import Slider2d from "./Slider2d";
-import SlideSwitch from "./SlideSwitch";
-import Tablist from "./Tablist";
-import Vector3 from "./Vector3";
+import * as Range from "./Utility/Range";
+import SimulationCanvas, {brushState, displayImage} from "./Components/SimulationCanvas";
+import Slider2d from "./Components/Slider2d";
+import SlideSwitch from "./Components/SlideSwitch";
+import Tablist from "./Components/Tablist";
+import Vector3 from "./Utility/Vector3";
 
 import "../Stylesheets/main.css";
-import Alert from "./Alert";
 
 let simulationCanvas;
 let canvas;
