@@ -215,6 +215,7 @@ export default class SimulationCanvas {
   resize(width, height) {
     const camera = this.camera;
     const canvas = this.canvas;
+    const canvasTextureProgram = this.programs.canvasTexture;
     const displayProgram = this.programs.display;
     const gl = this.gl;
     const simulateProgram = this.programs.simulate;
@@ -227,13 +228,22 @@ export default class SimulationCanvas {
     camera.height = height;
     camera.projection = Matrix4.orthographicProjectionRh(width, height, -1, 1);
 
+    const orientationContent = ImageDraw.createVectorField(width, height);
+    textures.orientationMap.update(width, height, orientationContent);
+
     const stateContents = ImageDraw.createCenteredNoiseSquare(width, height);
     textures.state[0].update(width, height, stateContents);
     textures.state[1].update(width, height, null);
 
+    const styleContent = ImageDraw.createWaves(width, height);
+    textures.styleMap.update(width, height, styleContent);
+
+    gl.useProgram(canvasTextureProgram);
+    gl.uniform2f(gl.getUniformLocation(canvasTextureProgram, "image_dimensions"), width, height);
+
     gl.useProgram(displayProgram);
     gl.uniform2f(gl.getUniformLocation(displayProgram, "state_size"), width, height);
-    
+
     gl.useProgram(simulateProgram);
     gl.uniform2f(gl.getUniformLocation(simulateProgram, "state_size"), width, height);
   }
