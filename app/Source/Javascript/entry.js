@@ -11,6 +11,7 @@ import Tablist from "./Tablist";
 import Vector3 from "./Vector3";
 
 import "../Stylesheets/main.css";
+import Alert from "./Alert";
 
 let simulationCanvas;
 let canvas;
@@ -98,8 +99,17 @@ function ongoingTouchIndexById(id) {
 
 // Entrypoint..................................................................
 
+const canvasAlert = new Alert({
+  id: "canvas-alert",
+});
+
 canvas = document.getElementById("canvas");
-simulationCanvas = new SimulationCanvas(canvas, 256, 256);
+try {
+  simulationCanvas = new SimulationCanvas(canvas, 256, 256);
+} catch (exception) {
+  canvasAlert.show(exception);
+}
+
 simulationCanvas.start();
 
 canvas.addEventListener("pointercancel", onPointerCancel);

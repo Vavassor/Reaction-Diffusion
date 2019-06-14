@@ -13,6 +13,14 @@ main {
 }
 
 
+.alert {
+  background-color: #ffbcc1;
+  border: .1rem solid #570d0d;
+  color: #570d0d;
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
 .button-control {
   background-color: #ff3434;
   border: none;
@@ -55,6 +63,10 @@ main {
   border-top: .1em solid #000000;
   grid-area: controls;
   padding: 1em;
+}
+
+.display-none {
+  display: none;
 }
 
 .form-control {
