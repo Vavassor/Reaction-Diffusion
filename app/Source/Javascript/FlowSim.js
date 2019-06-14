@@ -3,8 +3,8 @@
 import advectFsSource from "../Shaders/advect-fs.glsl";
 import basicVsSource from "../Shaders/basic-vs.glsl";
 import divergenceFsSource from "../Shaders/divergence-fs.glsl";
-import * as ImageDraw from "./ImageDraw";
-import Matrix4 from "./Matrix4";
+import * as ImageDraw from "./Utility/ImageDraw";
+import Matrix4 from "./Utility/Matrix4";
 import pressureFsSource from "../Shaders/pressure-fs.glsl";
 import subtractPressureGradientFsSource from "../Shaders/subtract-pressure-gradient-fs.glsl";
 
