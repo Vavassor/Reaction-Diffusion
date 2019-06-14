@@ -84,43 +84,55 @@ export default class SimulationCanvas {
     gl.uniform1i(gl.getUniformLocation(simulateProgram, "orientation_map"), 2);
 
     const brushShapeSpec = {
+      contents: ImageDraw.createCircle(64),
       filter: {
         magnify: gl.LINEAR,
         minify: gl.LINEAR_MIPMAP_LINEAR,
       },
       format: gl.RGBA,
       generate_mipmaps: true,
+      height: 64,
       internalFormat: gl.RGBA,
       type: gl.UNSIGNED_BYTE,
+      width: 64,
     };
 
     const orientationMapSpec = {
+      contents: ImageDraw.createVectorField(width, height),
       format: gl.RGB,
+      height: height,
       internalFormat: gl.RGB,
       type: gl.UNSIGNED_BYTE,
+      width: width,
     };
 
     const stateSpec = {
+      contents: ImageDraw.createCenteredNoiseSquare(width, height),
       filter: {
         magnify: gl.LINEAR,
         minify: gl.LINEAR,
       },
+      height: height,
+      width: width,
     };
 
     const styleMapSpec = {
+      contents: ImageDraw.createWaves(width, height),
       format: gl.RGB,
       internalFormat: gl.RGB,
+      height: height,
       type: gl.UNSIGNED_BYTE,
+      width: width,
     };
 
     const textures = {
-      brushShape: glo.createTexture(64, 64, ImageDraw.createCircle(64), brushShapeSpec),
-      orientationMap: glo.createTexture(width, height, ImageDraw.createVectorField(width, height), orientationMapSpec),
+      brushShape: glo.createTexture(brushShapeSpec),
+      orientationMap: glo.createTexture(orientationMapSpec),
       state: [
-        glo.createTexture(width, height, ImageDraw.createCenteredNoiseSquare(width, height), stateSpec),
-        glo.createTexture(width, height, null, stateSpec),
+        glo.createTexture(stateSpec),
+        glo.createTexture(stateSpec),
       ],
-      styleMap: glo.createTexture(width, height, ImageDraw.createWaves(width, height), styleMapSpec),
+      styleMap: glo.createTexture(styleMapSpec),
     };
     
     const framebuffers = {
@@ -150,6 +162,7 @@ export default class SimulationCanvas {
       projection: Matrix4.orthographicProjectionRh(width, height, -1, 1),
       width: width,
     };
+    this.canvas = canvas;
     this.displayImage = displayImage.SIMULATION_STATE;
     this.flowSim = new FlowSim({
       canvasSize: {
@@ -161,6 +174,9 @@ export default class SimulationCanvas {
     });
     this.framebuffers = framebuffers;
     this.iterationsPerFrame = 16;
+    this.nextFrameChange = {
+      resize: false,
+    };
     this.pageIndex = 0;
     this.paused = false;
     this.programs = {
@@ -193,6 +209,17 @@ export default class SimulationCanvas {
 
   getColorB() {
     return this.update.colorB;
+  }
+
+  resize(width, height) {
+    this.canvas.width = width;
+    this.canvas.height = height;
+    
+    this.camera.width = width;
+    this.camera.height = height;
+    this.camera.projection = Matrix4.orthographicProjectionRh(width, height, -1, 1);
+
+    this.nextFrameChange.resize = true;
   }
 
   setApplyFlowMap(apply) {
@@ -302,8 +329,7 @@ export default class SimulationCanvas {
 
     if (this.brush.state === brushState.DOWN && this.brush.positions.length > 1) {
       gl.useProgram(brushProgram);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, textures.brushShape);
+      textures.brushShape.bind(0);
       gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 1.0]);
 
       let stepStart = this.brush.strokeStepStart;
@@ -336,8 +362,7 @@ export default class SimulationCanvas {
 
     if (this.brush.endStrokeNextFrame && this.brush.positions.length > 0) {
       gl.useProgram(brushProgram);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, textures.brushShape);
+      textures.brushShape.bind(0);
       gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 1.0]);
 
       const translation = Matrix4.translate(this.brush.positions[0]);
@@ -365,12 +390,9 @@ export default class SimulationCanvas {
       gl.uniform1i(gl.getUniformLocation(simulateProgram, "apply_style_map"), this.update.applyStyleMap);
     
       for (let i = 0; i <= this.iterationsPerFrame; i++) {
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, textures.state[i % 2]);
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, textures.styleMap);
-        gl.activeTexture(gl.TEXTURE2);
-        gl.bindTexture(gl.TEXTURE_2D, textures.orientationMap);
+        textures.state[i % 2].bind(0);
+        textures.styleMap.bind(1);
+        textures.orientationMap.bind(2);
         gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.state[(i % 2) ^ 1]);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
@@ -388,20 +410,22 @@ export default class SimulationCanvas {
       textures.state[0] = temp;
     }
 
+    if (this.nextFrameChange.resize) {
+      gl.viewport(0, 0, this.camera.width, this.camera.height);
+    }
+
     // Display Phase
     switch (this.displayImage) {
       case displayImage.ORIENTATION_MAP:
         gl.useProgram(canvasTextureProgram);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, textures.orientationMap);
+        textures.orientationMap.bind(0);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
 
       case displayImage.STYLE_MAP:
         gl.useProgram(canvasTextureProgram);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, textures.styleMap);
+        textures.styleMap.bind(0);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
@@ -410,8 +434,7 @@ export default class SimulationCanvas {
         gl.useProgram(displayProgram);
         gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_a"), this.update.colorA.toArray());
         gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_b"), this.update.colorB.toArray());
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, textures.state[0]);
+        textures.state[0].bind(0);
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
@@ -428,8 +451,7 @@ export default class SimulationCanvas {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
       gl.useProgram(brushProgram);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, textures.brushShape);
+      textures.brushShape.bind(0);
       gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
       gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 0.5]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

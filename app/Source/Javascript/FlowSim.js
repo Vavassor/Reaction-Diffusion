@@ -67,22 +67,35 @@ export default class FlowSim {
       subtractPressureGradient: subtractPressureGradientProgram,
     };
 
+    const divergenceFieldSpec = {
+      height: height,
+      width: width,
+    };
+
+    const pressureFieldSpec = {
+      height: height,
+      width: width,
+    };
+
     const velocityFieldSpec = {
+      contents: ImageDraw.createVectorFieldFloat32(width, height),
       filter: {
         magnify: gl.LINEAR,
         minify: gl.LINEAR,
       },
+      height: height,
+      width: width,
     };
 
     const textures = {
-      divergence: glo.createTexture(width, height, null),
+      divergence: glo.createTexture(divergenceFieldSpec),
       pressure: [
-        glo.createTexture(width, height, null),
-        glo.createTexture(width, height, null),
+        glo.createTexture(pressureFieldSpec),
+        glo.createTexture(pressureFieldSpec),
       ],
       velocityField: [
-        glo.createTexture(width, height, ImageDraw.createVectorFieldFloat32(width, height), velocityFieldSpec),
-        glo.createTexture(width, height, null, velocityFieldSpec),
+        glo.createTexture(velocityFieldSpec),
+        glo.createTexture(velocityFieldSpec),
       ],
     };
 
@@ -112,10 +125,8 @@ export default class FlowSim {
 
     gl.useProgram(advectProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[1]);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
+    textures.velocityField[0].bind(0);
+    textures.velocityField[0].bind(1);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
@@ -127,8 +138,7 @@ export default class FlowSim {
 
     gl.useProgram(divergenceProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.divergence);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[1]);
+    textures.velocityField[1].bind(0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
@@ -142,10 +152,8 @@ export default class FlowSim {
       
     for (let i = 0; i < 10; i++) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.pressure[(i % 2) ^ 1]);
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, textures.divergence);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_2D, textures.pressure[i % 2]);
+      textures.divergence.bind(0);
+      textures.pressure[i % 2].bind(1);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
   }
@@ -158,10 +166,8 @@ export default class FlowSim {
 
     gl.useProgram(subtractPressureGradientProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[0]);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[1]);
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, textures.pressure[0]);
+    textures.velocityField[1].bind(0);
+    textures.pressure[0].bind(1);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
@@ -172,10 +178,8 @@ export default class FlowSim {
 
     gl.useProgram(advectProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, inputTexture);
-    gl.activeTexture(gl.TEXTURE1);
-    gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
+    inputTexture.bind(0);
+    textures.velocityField[0].bind(1);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
@@ -192,8 +196,7 @@ export default class FlowSim {
     const textures = this.textures;
 
     gl.useProgram(displayFieldProgram);
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, textures.velocityField[0]);
+    textures.velocityField[0].bind(0);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }

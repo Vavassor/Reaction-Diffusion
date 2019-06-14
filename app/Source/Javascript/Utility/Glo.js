@@ -1,3 +1,5 @@
+import Texture from "../Texture";
+
 /** @module Glo */
 
 /** A WebGL utility class to separate out some of the boilerplate. */
@@ -51,7 +53,7 @@ export default class Glo {
 
     const framebuffer = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture.handle, 0);
 
     return framebuffer;
   }
@@ -71,31 +73,8 @@ export default class Glo {
     return shader;
   }
 
-  createTexture(width, height, contents, spec) {
-    const gl = this.gl;
-
-    spec = spec || {};
-    spec.filter = spec.filter || {};
-
-    const format = spec.format || gl.RGBA;
-    const internalFormat = spec.internalFormat || gl.RGBA;
-    const type = spec.type || gl.FLOAT;
-    const minifyFilter = spec.filter.minify || gl.NEAREST;
-    const magnifyFilter = spec.filter.magnify || gl.NEAREST;
-
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minifyFilter);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magnifyFilter);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, contents);
-
-    if (spec.generate_mipmaps) {
-      gl.generateMipmap(gl.TEXTURE_2D);
-    }
-  
-    return texture;
+  createTexture(spec) {
+    return new Texture(this.gl, spec);
   }
 
   loadVertexData(program) {
