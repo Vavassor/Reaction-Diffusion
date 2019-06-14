@@ -203,6 +203,10 @@ const tablistSpec = {
       id: "display-style-map",
       displayImage: displayImage.STYLE_MAP,
     },
+    {
+      id: "display-velocity-field",
+      displayImage: displayImage.VELOCITY_FIELD,
+    },
   ],
 };
 const tablist = new Tablist(tablistSpec);
