@@ -36,15 +36,16 @@ export default class Texture {
     gl.bindTexture(gl.TEXTURE_2D, this.handle);
   }
 
-  update(contents) {
+  update(width, height, contents) {
     const format = this.format;
     const gl = this.gl;
-    const height = this.height;
     const internalFormat = this.internalFormat;
     const type = this.type;
-    const width = this.width;
+
+    this.width = width;
+    this.height = height;
     
-    this.bind();
+    this.bind(0);
     gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, contents);
   }
 }

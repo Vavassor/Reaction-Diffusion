@@ -197,7 +197,6 @@ export default class FlowSim {
 
     gl.useProgram(displayFieldProgram);
     textures.velocityField[0].bind(0);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 }

@@ -175,6 +175,7 @@ export default class SimulationCanvas {
     this.framebuffers = framebuffers;
     this.iterationsPerFrame = 16;
     this.nextFrameChange = {
+      clear: false,
       resize: false,
     };
     this.pageIndex = 0;
@@ -200,7 +201,7 @@ export default class SimulationCanvas {
   }
 
   clear() {
-    this.clearNextStep = true;
+    this.nextFrameChange.clear = true;
   }
 
   getColorA() {
@@ -212,14 +213,29 @@ export default class SimulationCanvas {
   }
 
   resize(width, height) {
-    this.canvas.width = width;
-    this.canvas.height = height;
-    
-    this.camera.width = width;
-    this.camera.height = height;
-    this.camera.projection = Matrix4.orthographicProjectionRh(width, height, -1, 1);
+    const camera = this.camera;
+    const canvas = this.canvas;
+    const displayProgram = this.programs.display;
+    const gl = this.gl;
+    const simulateProgram = this.programs.simulate;
+    const textures = this.textures;
 
-    this.nextFrameChange.resize = true;
+    canvas.width = width;
+    canvas.height = height;
+    
+    camera.width = width;
+    camera.height = height;
+    camera.projection = Matrix4.orthographicProjectionRh(width, height, -1, 1);
+
+    const stateContents = ImageDraw.createCenteredNoiseSquare(width, height);
+    textures.state[0].update(width, height, stateContents);
+    textures.state[1].update(width, height, null);
+
+    gl.useProgram(displayProgram);
+    gl.uniform2f(gl.getUniformLocation(displayProgram, "state_size"), width, height);
+    
+    gl.useProgram(simulateProgram);
+    gl.uniform2f(gl.getUniformLocation(simulateProgram, "state_size"), width, height);
   }
 
   setApplyFlowMap(apply) {
@@ -321,10 +337,11 @@ export default class SimulationCanvas {
     const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.state[0]);
+    gl.viewport(0, 0, this.camera.width, this.camera.height);
 
-    if (this.clearNextStep) {
+    if (this.nextFrameChange.clear) {
       gl.clear(gl.COLOR_BUFFER_BIT);
-      this.clearNextStep = false;
+      this.nextFrameChange.clear = false;
     }
 
     if (this.brush.state === brushState.DOWN && this.brush.positions.length > 1) {
@@ -409,24 +426,21 @@ export default class SimulationCanvas {
       textures.state[1] = textures.state[0];
       textures.state[0] = temp;
     }
-
-    if (this.nextFrameChange.resize) {
-      gl.viewport(0, 0, this.camera.width, this.camera.height);
-    }
+    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.viewport(0, 0, this.camera.width, this.camera.height);
 
     // Display Phase
     switch (this.displayImage) {
       case displayImage.ORIENTATION_MAP:
         gl.useProgram(canvasTextureProgram);
         textures.orientationMap.bind(0);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
 
       case displayImage.STYLE_MAP:
         gl.useProgram(canvasTextureProgram);
         textures.styleMap.bind(0);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
 
@@ -435,7 +449,6 @@ export default class SimulationCanvas {
         gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_a"), this.update.colorA.toArray());
         gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_b"), this.update.colorB.toArray());
         textures.state[0].bind(0);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
       }
