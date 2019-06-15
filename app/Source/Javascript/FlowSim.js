@@ -227,4 +227,11 @@ export default class FlowSim {
     textures.velocityField[0].bind(0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
+
+  bindVelocityFramebuffer() {
+    const framebuffers = this.framebuffers;
+    const gl = this.gl;
+    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[0]);
+  }
 }

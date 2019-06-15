@@ -11,6 +11,7 @@ import Matrix4 from "../Utility/Matrix4";
 import passthroughVsSource from "../../Shaders/passthrough-vs.glsl";
 import * as Range from "../Utility/Range";
 import simulateFsSource from "../../Shaders/simulate-fs.glsl";
+import Vector2 from "../Utility/Vector2";
 import Vector3 from "../Utility/Vector3";
 
 export const brushState = {
@@ -156,6 +157,7 @@ export default class SimulationCanvas {
       radius: 16,
       state: brushState.UP,
       strokeStepStart: 0.0,
+      velocity: Vector2.zero(),
     };
     this.camera = {
       height: height,
@@ -202,6 +204,71 @@ export default class SimulationCanvas {
 
   clear() {
     this.nextFrameChange.clear = true;
+  }
+
+  drawBrush(brushColor) {
+    const brush = this.brush;
+    const brushProgram = this.programs.brush;
+    const gl = this.gl;
+    const textures = this.textures;
+
+    let stepStart = 0.0;
+
+    if (brush.state === brushState.DOWN && brush.positions.length > 1) {
+      gl.useProgram(brushProgram);
+      textures.brushShape.bind(0);
+      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor);
+      stepStart = this.drawBrushStroke();
+    }
+
+    if (brush.endStrokeNextFrame && brush.positions.length > 0) {
+      gl.useProgram(brushProgram);
+      textures.brushShape.bind(0);
+      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor);
+      this.drawBrushDot(brush.positions[0]);
+    }
+
+    return stepStart;
+  }
+
+  drawBrushDot(position) {
+    const brush = this.brush;
+    const brushProgram = this.programs.brush;
+    const gl = this.gl;
+
+    const dilation = Matrix4.dilate(new Vector3(brush.radius, brush.radius, 1));
+    const translation = Matrix4.translate(position);
+    const model = Matrix4.multiply(translation, dilation);
+    const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
+
+    gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+
+  drawBrushStroke() {
+    const brush = this.brush;
+
+    let stepStart = brush.strokeStepStart;
+
+    for (let i = 0; i < brush.positions.length - 1; i++) {
+      const a = brush.positions[i];
+      const b = brush.positions[i + 1];
+      const distance = Vector3.distance(a, b);
+
+      const spacing = 0.5 * brush.radius;
+      if (stepStart < distance) {
+        let step = stepStart;
+        for (; step <= distance; step += spacing) {
+          const position = Vector3.lerp(a, b, step / distance);
+          this.drawBrushDot(position);
+        }
+        stepStart = step - distance;
+      } else {
+        stepStart -= distance;
+      }
+    }
+
+    return stepStart;
   }
 
   getColorA() {
@@ -263,10 +330,18 @@ export default class SimulationCanvas {
   }
 
   setBrushPosition(position) {
-    this.brush.position = position;
+    const brush = this.brush;
+    const priorPosition = brush.position;
 
-    if (this.brush.state === brushState.DOWN) {
-      this.brush.positions.push(position);
+    brush.position = position;
+
+    const delta = Vector3.subtract(position, priorPosition);
+    if (delta.squaredLength > 0.0) {
+      brush.velocity = new Vector2(delta.x, delta.y);
+    }
+
+    if (brush.state === brushState.DOWN) {
+      brush.positions.push(position);
     }
   }
 
@@ -356,57 +431,7 @@ export default class SimulationCanvas {
       this.nextFrameChange.clear = false;
     }
 
-    if (this.brush.state === brushState.DOWN && this.brush.positions.length > 1) {
-      gl.useProgram(brushProgram);
-      textures.brushShape.bind(0);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 1.0]);
-
-      let stepStart = this.brush.strokeStepStart;
-
-      for (let i = 0; i < this.brush.positions.length - 1; i++) {
-        const a = this.brush.positions[i];
-        const b = this.brush.positions[i + 1];
-        const distance = Vector3.distance(a, b);
-
-        const spacing = 0.5 * this.brush.radius;
-        if (stepStart < distance) {
-          let step = stepStart;
-          for (; step <= distance; step += spacing) {
-            const translation = Matrix4.translate(Vector3.lerp(a, b, step / distance));
-            const model = Matrix4.multiply(translation, dilation);
-            const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
-  
-            gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-          }
-          stepStart = step - distance;
-        } else {
-          stepStart -= distance;
-        }
-      }
-
-      this.brush.positions.splice(0, Math.max(this.brush.positions.length - 1, 0));
-      this.brush.strokeStepStart = stepStart;
-    }
-
-    if (this.brush.endStrokeNextFrame && this.brush.positions.length > 0) {
-      gl.useProgram(brushProgram);
-      textures.brushShape.bind(0);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 1.0]);
-
-      const translation = Matrix4.translate(this.brush.positions[0]);
-      const model = Matrix4.multiply(translation, dilation);
-      const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
-
-      gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-    }
-
-    if (this.brush.endStrokeNextFrame) {
-      this.brush.endStrokeNextFrame = false;
-      this.brush.positions = [];
-      this.brush.strokeStepStart = 0.0;
-    }
+    const stepStart = this.drawBrush([0.0, 1.0, 0.0, 1.0]);
 
     // Simulation Phase
     if (!this.paused) {
@@ -429,6 +454,13 @@ export default class SimulationCanvas {
 
     // Flow Phase
     if (!this.paused && this.update.applyFlowMap) {
+      this.flowSim.bindVelocityFramebuffer();
+      let brushVelocity = Vector2.multiply(0.05, this.brush.velocity);
+      if (brushVelocity.length > 1.0) {
+        brushVelocity = Vector2.normalize(brushVelocity);
+      }
+      this.drawBrush([brushVelocity.x, brushVelocity.y, 0.0, 1.0]);
+
       this.flowSim.drawFlow(textures.state[0], framebuffers.state[1]);
 
       let temp = framebuffers.state[1];
@@ -438,6 +470,8 @@ export default class SimulationCanvas {
       textures.state[1] = textures.state[0];
       textures.state[0] = temp;
     }
+
+    this.updateBrushAfterDrawing(stepStart);
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, this.camera.width, this.camera.height);
@@ -481,6 +515,21 @@ export default class SimulationCanvas {
       gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 0.5]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       gl.disable(gl.BLEND);
+    }
+  }
+
+  updateBrushAfterDrawing(stepStart) {
+    const brush = this.brush;
+
+    if (brush.state === brushState.DOWN && brush.positions.length > 1) {
+      brush.positions.splice(0, Math.max(brush.positions.length - 1, 0));
+      brush.strokeStepStart = stepStart;
+    }
+
+    if (brush.endStrokeNextFrame) {
+      brush.endStrokeNextFrame = false;
+      brush.positions = [];
+      brush.strokeStepStart = 0.0;
     }
   }
 
