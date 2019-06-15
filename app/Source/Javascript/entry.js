@@ -35,6 +35,16 @@ function getPositionInCanvas(pageX, pageY) {
   return new Vector3(scaleX * x, scaleY * y, 0);
 }
 
+function onCanvasSizeChange(event) {
+  const button = event.currentTarget;
+  const checked = button.checked;
+  if (checked) {
+    const width = parseInt(button.value);
+    const height = width;
+    simulationCanvas.resize(width, height);
+  }
+}
+
 function onPauseClick(event) {
   simulationCanvas.togglePause();
 
@@ -203,6 +213,10 @@ const tablistSpec = {
       id: "display-style-map",
       displayImage: displayImage.STYLE_MAP,
     },
+    {
+      id: "display-velocity-field",
+      displayImage: displayImage.VELOCITY_FIELD,
+    },
   ],
 };
 const tablist = new Tablist(tablistSpec);
@@ -224,3 +238,11 @@ document
 document
   .getElementById("pause")
   .addEventListener("click", onPauseClick);
+
+document
+  .getElementById("canvas-size-small")
+  .addEventListener("change", onCanvasSizeChange);
+
+document
+  .getElementById("canvas-size-large")
+  .addEventListener("change", onCanvasSizeChange);

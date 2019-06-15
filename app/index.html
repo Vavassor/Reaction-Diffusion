@@ -9,7 +9,7 @@
 <body>
   <main>
     <div class="canvas-panel">
-      <div id="canvas-alert" class="alert display-none"></div>
+      <div id="canvas-alert" class="alert display-none" role="alert"></div>
       <canvas id="canvas" class="paint-canvas"></canvas>
     </div>
 
@@ -105,8 +105,20 @@
         >
       </div>
 
+      <fieldset>
+        <legend>Canvas Size</legend>
+        <div>
+          <input id="canvas-size-small" type="radio" name="canvas-size" value="256" checked>
+          <label for="canvas-size-small">256</label>
+
+          <input id="canvas-size-large" type="radio" name="canvas-size" value="512">
+          <label for="canvas-size-large">512</label>
+        </div>
+      </fieldset>
+
       <h2>Display</h2>
       <div class="tablist" role="tablist">
+        <button id="display-velocity-field" class="tab" type="button" role="tab" aria-selected="false">Flow Velocity</button>
         <button id="display-orientation-map" class="tab" type="button" role="tab" aria-selected="false">Orientation Map</button>
         <button id="display-simulation" class="tab tab-selected" type="button" role="tab" aria-selected="true">Simulation</button>
         <button id="display-style-map" class="tab" type="button" role="tab" aria-selected="false">Style Map</button>

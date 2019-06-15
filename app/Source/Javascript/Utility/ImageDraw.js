@@ -151,7 +151,7 @@ export function createVectorFieldFloat32(width, height) {
  */
 export function createWaves(width, height) {
   const pattern = new Uint8Array(3 * width * height);
-  const side = 50;
+  const side = width / 5;
   
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
