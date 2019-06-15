@@ -32,9 +32,16 @@ main {
   padding: .375rem .75rem;
 }
 
+.canvas-controls {
+  margin: auto;
+  max-width: 85vh;
+  padding-top: 1rem;
+  width: 100%;
+}
+
 .canvas-panel {
   grid-area: canvas;
-  padding: 1em;
+  padding: 1rem;
 }
 
 .color-control {
@@ -170,8 +177,8 @@ main {
   display: block;
   height: auto;
   margin: auto;
-  max-height: 90vh;
-  max-width: 90vh;
+  max-height: 85vh;
+  max-width: 85vh;
   touch-action: none;
   user-select: none;
   width: 100%;

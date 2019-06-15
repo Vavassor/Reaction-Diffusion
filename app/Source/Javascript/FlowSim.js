@@ -175,8 +175,10 @@ export default class FlowSim {
     const textures = this.textures;
 
     gl.useProgram(pressureProgram);
+
+    const iterationsPerFrame = 10;
       
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < iterationsPerFrame; i++) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.pressure[(i % 2) ^ 1]);
       textures.divergence.bind(0);
       textures.pressure[i % 2].bind(1);
