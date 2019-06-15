@@ -117,6 +117,32 @@ export default class FlowSim {
     this.textures = textures;
   }
 
+  resize(width, height) {
+    const divergenceProgram = this.programs.divergence;
+    const gl = this.gl;
+    const pressureProgram = this.programs.pressure;
+    const subtractPressureGradientProgram = this.programs.subtractPressureGradient;
+    const textures = this.textures;
+
+    textures.divergence.update(width, height, null);
+
+    textures.pressure[0].update(width, height, null);
+    textures.pressure[1].update(width, height, null);
+
+    const velocityContent = ImageDraw.createVectorFieldFloat32(width, height);
+    textures.velocityField[0].update(width, height, velocityContent);
+    textures.velocityField[1].update(width, height, velocityContent);
+    
+    gl.useProgram(divergenceProgram);
+    gl.uniform2f(gl.getUniformLocation(divergenceProgram, "velocity_field_size"), width, height);
+
+    gl.useProgram(pressureProgram);
+    gl.uniform2f(gl.getUniformLocation(pressureProgram, "field_size"), width, height);
+
+    gl.useProgram(subtractPressureGradientProgram);
+    gl.uniform2f(gl.getUniformLocation(subtractPressureGradientProgram, "field_size"), width, height);
+  }
+
   advectVelocity() {
     const advectProgram = this.programs.advect;
     const framebuffers = this.framebuffers;

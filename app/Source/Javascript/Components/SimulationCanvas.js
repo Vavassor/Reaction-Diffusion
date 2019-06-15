@@ -246,6 +246,8 @@ export default class SimulationCanvas {
 
     gl.useProgram(simulateProgram);
     gl.uniform2f(gl.getUniformLocation(simulateProgram, "state_size"), width, height);
+
+    this.flowSim.resize(width, height);
   }
 
   setApplyFlowMap(apply) {
