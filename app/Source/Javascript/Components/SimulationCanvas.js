@@ -431,7 +431,7 @@ export default class SimulationCanvas {
       this.nextFrameChange.clear = false;
     }
 
-    const stepStart = this.drawBrush([0.0, 1.0, 0.0, 1.0]);
+    const stepStart = this.drawBrush([0, 1.0, 0.0, 1.0]);
 
     // Simulation Phase
     if (!this.paused) {
