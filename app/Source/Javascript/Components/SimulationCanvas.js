@@ -70,6 +70,8 @@ export default class SimulationCanvas {
 
     gl.useProgram(displayProgram);
     glo.loadVertexData(displayProgram);
+    gl.uniform1i(gl.getUniformLocation(displayProgram, "state"), 0);
+    gl.uniform1i(gl.getUniformLocation(displayProgram, "ink"), 1);
     gl.uniform2f(gl.getUniformLocation(displayProgram, "state_size"), width, height);
 
     gl.useProgram(displayFieldProgram);
@@ -98,6 +100,12 @@ export default class SimulationCanvas {
       width: 64,
     };
 
+    const inkSpec = {
+      contents: ImageDraw.createColorChecker(width, height),
+      height: height,
+      width: width,
+    };
+
     const orientationMapSpec = {
       contents: ImageDraw.createVectorField(width, height),
       format: gl.RGB,
@@ -109,10 +117,6 @@ export default class SimulationCanvas {
 
     const stateSpec = {
       contents: ImageDraw.createCenteredNoiseSquare(width, height),
-      filter: {
-        magnify: gl.LINEAR,
-        minify: gl.LINEAR,
-      },
       height: height,
       width: width,
     };
@@ -128,6 +132,10 @@ export default class SimulationCanvas {
 
     const textures = {
       brushShape: glo.createTexture(brushShapeSpec),
+      ink: [
+        glo.createTexture(inkSpec),
+        glo.createTexture(inkSpec),
+      ],
       orientationMap: glo.createTexture(orientationMapSpec),
       state: [
         glo.createTexture(stateSpec),
@@ -137,6 +145,10 @@ export default class SimulationCanvas {
     };
     
     const framebuffers = {
+      ink: [
+        glo.createFramebuffer(textures.ink[0]),
+        glo.createFramebuffer(textures.ink[1]),
+      ],
       state: [
         glo.createFramebuffer(textures.state[0]),
         glo.createFramebuffer(textures.state[1]),
@@ -431,7 +443,7 @@ export default class SimulationCanvas {
       this.nextFrameChange.clear = false;
     }
 
-    const stepStart = this.drawBrush([0, 1.0, 0.0, 1.0]);
+    const stepStart = this.drawBrush([0.0, 1.0, 0.0, 1.0]);
 
     // Simulation Phase
     if (!this.paused) {
@@ -469,6 +481,14 @@ export default class SimulationCanvas {
       temp = textures.state[1];
       textures.state[1] = textures.state[0];
       textures.state[0] = temp;
+
+      this.flowSim.advectInput(textures.ink[0], framebuffers.ink[1]);
+      temp = textures.ink[1];
+      textures.ink[1] = textures.ink[0];
+      textures.ink[0] = temp;
+      temp = framebuffers.ink[1];
+      framebuffers.ink[1] = framebuffers.ink[0];
+      framebuffers.ink[0] = temp;
     }
 
     this.updateBrushAfterDrawing(stepStart);
@@ -492,9 +512,8 @@ export default class SimulationCanvas {
 
       case displayImage.SIMULATION_STATE: {
         gl.useProgram(displayProgram);
-        gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_a"), this.update.colorA.toArray());
-        gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_b"), this.update.colorB.toArray());
         textures.state[0].bind(0);
+        textures.ink[0].bind(1);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
       }

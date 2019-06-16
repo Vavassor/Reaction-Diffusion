@@ -32,6 +32,7 @@ export default class FlowSim {
     gl.useProgram(advectProgram);
     glo.loadVertexData(advectProgram);
     gl.uniform1f(gl.getUniformLocation(advectProgram, "delta_time"), deltaTime);
+    gl.uniform2f(gl.getUniformLocation(advectProgram, "texture_size"), width, height);
     gl.uniform1i(gl.getUniformLocation(advectProgram, "input_texture"), 0);
     gl.uniform1i(gl.getUniformLocation(advectProgram, "velocity_field"), 1);
     gl.uniformMatrix4fv(gl.getUniformLocation(advectProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
@@ -79,10 +80,6 @@ export default class FlowSim {
 
     const velocityFieldSpec = {
       contents: ImageDraw.createVectorFieldFloat32(width, height),
-      filter: {
-        magnify: gl.LINEAR,
-        minify: gl.LINEAR,
-      },
       height: height,
       width: width,
     };

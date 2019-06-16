@@ -26,8 +26,10 @@ export default class Texture {
     this.format = format;
     this.gl = gl;
     this.handle = texture;
+    this.height = height;
     this.internalFormat = internalFormat;
     this.type = type;
+    this.width = width;
   }
   
   bind(activeTexture) {
