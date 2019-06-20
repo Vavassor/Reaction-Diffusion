@@ -120,6 +120,7 @@ export default class FlowSim {
       ],
     };
 
+    this.deltaTime = deltaTime;
     this.framebuffers = framebuffers;
     this.gl = spec.gl;
     this.programs = programs;
@@ -160,11 +161,10 @@ export default class FlowSim {
   advectVelocity() {
     const advectProgram = this.programs.advect;
     const bfeccProgram = this.programs.bfecc;
+    const deltaTime = this.deltaTime;
     const framebuffers = this.framebuffers;
     const gl = this.gl;
     const textures = this.textures;
-
-    const deltaTime = 1.0 / 120.0;
 
     gl.useProgram(advectProgram);
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[1]);

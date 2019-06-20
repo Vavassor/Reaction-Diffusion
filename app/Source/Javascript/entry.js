@@ -202,6 +202,10 @@ const tablistSpec = {
   onSelect: (displayImage) => simulationCanvas.setDisplayImage(displayImage),
   tabs: [
     {
+      id: "display-ink",
+      displayImage: displayImage.INK,
+    },
+    {
       id: "display-orientation-map",
       displayImage: displayImage.ORIENTATION_MAP,
     },

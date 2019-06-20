@@ -21,6 +21,7 @@ export const brushState = {
 };
 
 export const displayImage = {
+  INK: "INK",
   ORIENTATION_MAP: "ORIENTATION_MAP",
   SIMULATION_STATE: "SIMULATION_STATE",
   STYLE_MAP: "STYLE_MAP",
@@ -163,6 +164,7 @@ export default class SimulationCanvas {
     }
     
     this.brush = {
+      color: Color.white(),
       endStrokeNextFrame: false,
       position: new Vector3(-16, 32, 0),
       positions: [],
@@ -229,14 +231,14 @@ export default class SimulationCanvas {
     if (brush.state === brushState.DOWN && brush.positions.length > 1) {
       gl.useProgram(brushProgram);
       textures.brushShape.bind(0);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor);
+      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor.toRgba());
       stepStart = this.drawBrushStroke();
     }
 
     if (brush.endStrokeNextFrame && brush.positions.length > 0) {
       gl.useProgram(brushProgram);
       textures.brushShape.bind(0);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor);
+      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor.toRgba());
       this.drawBrushDot(brush.positions[0]);
     }
 
@@ -447,7 +449,7 @@ export default class SimulationCanvas {
       this.nextFrameChange.clear = false;
     }
 
-    const stepStart = this.drawBrush([0.0, 1.0, 0.0, 1.0]);
+    const stepStart = this.drawBrush(new Color(0.0, 1.0, 0.0));
 
     // Simulation Phase
     if (!this.paused) {
@@ -468,6 +470,9 @@ export default class SimulationCanvas {
       }
     }
 
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.ink[0]);
+    this.drawBrush(this.brush.color);
+
     // Flow Phase
     if (!this.paused && this.update.applyFlowMap) {
       this.flowSim.bindVelocityFramebuffer();
@@ -475,7 +480,7 @@ export default class SimulationCanvas {
       if (brushVelocity.length > 1.0) {
         brushVelocity = Vector2.normalize(brushVelocity);
       }
-      this.drawBrush([brushVelocity.x, brushVelocity.y, 0.0, 1.0]);
+      this.drawBrush(new Color(brushVelocity.x, brushVelocity.y, 0.0));
 
       this.flowSim.drawFlow(textures.state[0], framebuffers.state[1]);
 
@@ -502,6 +507,12 @@ export default class SimulationCanvas {
 
     // Display Phase
     switch (this.displayImage) {
+      case displayImage.INK:
+        gl.useProgram(canvasTextureProgram);
+        textures.ink[0].bind(0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        break;
+
       case displayImage.ORIENTATION_MAP:
         gl.useProgram(canvasTextureProgram);
         textures.orientationMap.bind(0);
