@@ -307,6 +307,10 @@ export default class SimulationCanvas {
     camera.height = height;
     camera.projection = Matrix4.orthographicProjectionRh(width, height, -1, 1);
 
+    const inkContent = ImageDraw.createColorChecker(width, height);
+    textures.ink[0].update(width, height, inkContent);
+    textures.ink[1].update(width, height, inkContent);
+
     const orientationContent = ImageDraw.createVectorField(width, height);
     textures.orientationMap.update(width, height, orientationContent);
 

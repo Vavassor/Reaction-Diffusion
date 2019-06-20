@@ -127,6 +127,7 @@ export default class FlowSim {
   }
 
   resize(width, height) {
+    const advectProgram = this.programs.advect;
     const divergenceProgram = this.programs.divergence;
     const gl = this.gl;
     const pressureProgram = this.programs.pressure;
@@ -142,6 +143,9 @@ export default class FlowSim {
     textures.velocityField[0].update(width, height, velocityContent);
     textures.velocityField[1].update(width, height, velocityContent);
     textures.velocityField[2].update(width, height, velocityContent);
+
+    gl.useProgram(advectProgram);
+    gl.uniform2f(gl.getUniformLocation(advectProgram, "texture_size"), width, height);
     
     gl.useProgram(divergenceProgram);
     gl.uniform2f(gl.getUniformLocation(divergenceProgram, "velocity_field_size"), width, height);

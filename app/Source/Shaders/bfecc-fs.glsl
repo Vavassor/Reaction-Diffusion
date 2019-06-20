@@ -1,4 +1,6 @@
 // Back and Forth Error Compensation And Correction
+// This program applies the compensation after the back and forth advection
+// computation.
 
 precision mediump float;
 
