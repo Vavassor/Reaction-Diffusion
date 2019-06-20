@@ -447,6 +447,9 @@ export default class SimulationCanvas {
 
     const stepStart = this.drawBrush(new Color(0.0, 1.0, 0.0));
 
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.ink[0]);
+    this.drawBrush(this.brush.color);
+
     // Simulation Phase
     if (!this.paused) {
       gl.useProgram(simulateProgram);
@@ -465,9 +468,6 @@ export default class SimulationCanvas {
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
     }
-
-    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.ink[0]);
-    this.drawBrush(this.brush.color);
 
     // Flow Phase
     if (!this.paused && this.update.applyFlowMap) {
