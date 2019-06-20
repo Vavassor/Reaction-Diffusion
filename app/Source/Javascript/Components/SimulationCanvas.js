@@ -347,6 +347,10 @@ export default class SimulationCanvas {
     this.update.applyStyleMap = applyStyleMap;
   }
 
+  setBrushColor(color) {
+    this.brush.color = color;
+  }
+
   setBrushPosition(position) {
     const brush = this.brush;
     const priorPosition = brush.position;
@@ -376,14 +380,6 @@ export default class SimulationCanvas {
         && priorState === brushState.DOWN) {
       this.brush.endStrokeNextFrame = true;
     }
-  }
-
-  setColorA(color) {
-    this.update.colorA = color;
-  }
-
-  setColorB(color) {
-    this.update.colorB = color;
   }
 
   setDisplayImage(image) {

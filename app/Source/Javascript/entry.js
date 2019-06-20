@@ -176,19 +176,11 @@ const applyOrientationMap = new SlideSwitch({
   },
 });
 
-const plateColor = new ColorControl({
-  buttonId: "plate-color",
+const brushColor = new ColorControl({
+  buttonId: "brush-color",
   initialColor: Color.black(),
   onColorChange: (color) => {
-    simulationCanvas.setColorA(color);
-  },
-});
-
-const activatorColor = new ColorControl({
-  buttonId: "activator-color",
-  initialColor: Color.white(),
-  onColorChange: (color) => {
-    simulationCanvas.setColorB(color);
+    simulationCanvas.setBrushColor(color);
   },
 });
 
