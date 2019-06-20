@@ -9,23 +9,32 @@ uniform sampler2D velocity_field;
 
 varying vec2 surface_texcoord;
 
-void main()
+vec4 sample_bilinear(sampler2D source, vec2 texel_size, vec2 sample_position)
 {
-    vec2 texel_size = 1.0 / texture_size;
+    vec2 integral_part = floor(sample_position - 0.5) + 0.5;
+    vec2 fractional_part = sample_position - integral_part;
+    vec2 texcoord = texel_size * integral_part;
 
-    vec2 velocity = texture2D(velocity_field, surface_texcoord).xy;
-    vec2 texel_velocity = -0.5 * delta_time * velocity * texture_size;
-    vec2 integral_part = floor(texel_velocity);
-    vec2 fractional_part = texel_velocity - integral_part;
-    vec2 prior_texcoord = surface_texcoord + (texel_size * integral_part);
-
-    vec4 southwest = texture2D(input_texture, prior_texcoord);
-    vec4 northwest = texture2D(input_texture, vec2(prior_texcoord.x, prior_texcoord.y + texel_size.y));
-    vec4 southeast = texture2D(input_texture, vec2(prior_texcoord.x + texel_size.x, prior_texcoord.y));
-    vec4 northeast = texture2D(input_texture, prior_texcoord + texel_size);
+    vec4 southwest = texture2D(source, texcoord);
+    vec4 northwest = texture2D(source, vec2(texcoord.x, texcoord.y + texel_size.y));
+    vec4 southeast = texture2D(source, vec2(texcoord.x + texel_size.x, texcoord.y));
+    vec4 northeast = texture2D(source, texcoord + texel_size);
 
     vec4 north = mix(northwest, northeast, fractional_part.x);
     vec4 south = mix(southwest, southeast, fractional_part.x);
 
-    gl_FragColor = mix(south, north, fractional_part.y);
+    return mix(south, north, fractional_part.y);
+}
+
+void main()
+{
+    vec2 texel_size = 1.0 / texture_size;
+    vec2 velocity = texture2D(velocity_field, surface_texcoord).xy;
+    vec2 texel_velocity = -0.5 * delta_time * velocity;
+    vec2 sample_position = texture_size * (surface_texcoord + texel_velocity);
+
+    // Manually do the bilinear sample instead of using bilinear sampler
+    // parameters. This allows floating-point input textures to be sampled
+    // without requiring the OES_texture_float_linear extension.
+    gl_FragColor = sample_bilinear(input_texture, texel_size, sample_position);
 }
