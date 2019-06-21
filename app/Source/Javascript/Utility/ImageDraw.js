@@ -61,10 +61,11 @@ export function createCircle(side) {
       const deltaY = (y + 0.5) - radius;
       const distance = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
       const alpha = smoothstep(radius - 2.0, radius, distance);
-      pixels[pixelIndex] = 255;
-      pixels[pixelIndex + 1] = 255;
-      pixels[pixelIndex + 2] = 255;
-      pixels[pixelIndex + 3] = 255 * (1.0 - alpha);
+      const value = 255 * (1.0 - alpha);
+      pixels[pixelIndex] = value;
+      pixels[pixelIndex + 1] = value;
+      pixels[pixelIndex + 2] = value;
+      pixels[pixelIndex + 3] = value;
     }
   }
 
