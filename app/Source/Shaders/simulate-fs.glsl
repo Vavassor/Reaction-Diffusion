@@ -49,7 +49,16 @@ void main()
     {
         vec2 scale = vec2(0.7, 0.2);
         vec2 direction = 2.0 * texture2D(orientation_map, center / state_size).xy - 1.0;
-        direction = normalize(direction);
+        float direction_length = length(direction);
+        if (direction_length == 0.0)
+        {
+            direction = vec2(0.0, 0.0);
+        }
+        else
+        {
+            direction /= direction_length;
+        }
+        
         float cos_angle = direction.x;
         float sin_angle = direction.y;
         

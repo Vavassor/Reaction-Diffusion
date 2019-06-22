@@ -119,7 +119,10 @@ export default class SimulationCanvas {
 
     const inkSpec = {
       contents: ImageDraw.createColorChecker(width, height),
+      format: gl.RGB,
       height: height,
+      internalFormat: gl.RGB,
+      type: gl.UNSIGNED_BYTE,
       width: width,
     };
 

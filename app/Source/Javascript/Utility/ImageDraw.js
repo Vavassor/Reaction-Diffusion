@@ -97,21 +97,20 @@ export function createChecker(width, height, squareWidth) {
 }
 
 export function createColorChecker(width, height) {
-  const pixels = new Float32Array(4 * width * height);
+  const pixels = new Uint8Array(3 * width * height);
   const squareWidth = 10;
 
   for (let y = 0; y < height; y++) {
     for (let x = 0; x < width; x++) {
-      const pixelIndex = 4 * ((width * y) + x);
+      const pixelIndex = 3 * ((width * y) + x);
       const squareX = Math.floor(x / squareWidth);
       const squareY = Math.floor(y / squareWidth);
       const redCheck = ((squareX % 3) ^ (squareY % 3)) & 1;
       const greenCheck = ((squareX % 3) ^ ((squareY + 1) % 3)) & 1;
       const blueCheck = (((squareX + 1) % 3) ^ (squareY % 3)) & 1;
-      pixels[pixelIndex] = redCheck;
-      pixels[pixelIndex + 1] = greenCheck;
-      pixels[pixelIndex + 2] = blueCheck;
-      pixels[pixelIndex + 3] = 1.0;
+      pixels[pixelIndex] = 255 * redCheck;
+      pixels[pixelIndex + 1] = 255 * greenCheck;
+      pixels[pixelIndex + 2] = 255 * blueCheck;
     }
   }
 
