@@ -26,6 +26,10 @@ export default class Color {
         + b.toString(16).padStart(2, "0");
   }
 
+  toRgba() {
+    return [this.r, this.g, this.b, 1.0];
+  }
+
   static black() {
     return new Color(0, 0, 0);
   }

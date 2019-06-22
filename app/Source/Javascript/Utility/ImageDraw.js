@@ -61,10 +61,11 @@ export function createCircle(side) {
       const deltaY = (y + 0.5) - radius;
       const distance = Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
       const alpha = smoothstep(radius - 2.0, radius, distance);
-      pixels[pixelIndex] = 255;
-      pixels[pixelIndex + 1] = 255;
-      pixels[pixelIndex + 2] = 255;
-      pixels[pixelIndex + 3] = 255 * (1.0 - alpha);
+      const value = 255 * (1.0 - alpha);
+      pixels[pixelIndex] = value;
+      pixels[pixelIndex + 1] = value;
+      pixels[pixelIndex + 2] = value;
+      pixels[pixelIndex + 3] = value;
     }
   }
 
@@ -88,6 +89,28 @@ export function createChecker(width, height, squareWidth) {
       pixels[pixelIndex] = value;
       pixels[pixelIndex + 1] = value;
       pixels[pixelIndex + 2] = value;
+      pixels[pixelIndex + 3] = 1.0;
+    }
+  }
+
+  return pixels;
+}
+
+export function createColorChecker(width, height) {
+  const pixels = new Float32Array(4 * width * height);
+  const squareWidth = 10;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const pixelIndex = 4 * ((width * y) + x);
+      const squareX = Math.floor(x / squareWidth);
+      const squareY = Math.floor(y / squareWidth);
+      const redCheck = ((squareX % 3) ^ (squareY % 3)) & 1;
+      const greenCheck = ((squareX % 3) ^ ((squareY + 1) % 3)) & 1;
+      const blueCheck = (((squareX + 1) % 3) ^ (squareY % 3)) & 1;
+      pixels[pixelIndex] = redCheck;
+      pixels[pixelIndex + 1] = greenCheck;
+      pixels[pixelIndex + 2] = blueCheck;
       pixels[pixelIndex + 3] = 1.0;
     }
   }

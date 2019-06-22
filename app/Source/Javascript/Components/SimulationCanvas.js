@@ -1,7 +1,9 @@
 import basicVsSource from "../../Shaders/basic-vs.glsl";
+import brushCutoutFsSource from "../../Shaders/brush-cutout-fs.glsl";
 import brushFsSource from "../../Shaders/brush-fs.glsl";
 import canvasTextureFsSource from "../../Shaders/canvas-texture-fs.glsl";
 import Color from "../Utility/Color";
+import diffuseInkFsSource from "../../Shaders/diffuse-ink-fs.glsl";
 import displayFsSource from "../../Shaders/display-fs.glsl";
 import displayFieldFsSource from "../../Shaders/display-field-fs.glsl";
 import FlowSim from "../FlowSim";
@@ -21,6 +23,7 @@ export const brushState = {
 };
 
 export const displayImage = {
+  INK: "INK",
   ORIENTATION_MAP: "ORIENTATION_MAP",
   SIMULATION_STATE: "SIMULATION_STATE",
   STYLE_MAP: "STYLE_MAP",
@@ -47,14 +50,18 @@ export default class SimulationCanvas {
 
     const basicVertexShader = glo.createShader(gl.VERTEX_SHADER, basicVsSource);
     const passthroughVertexShader = glo.createShader(gl.VERTEX_SHADER, passthroughVsSource);
+    const brushCutoutShader = glo.createShader(gl.FRAGMENT_SHADER, brushCutoutFsSource);
     const brushFragmentShader = glo.createShader(gl.FRAGMENT_SHADER, brushFsSource);
     const canvasTextureShader = glo.createShader(gl.FRAGMENT_SHADER, canvasTextureFsSource);
+    const diffuseInkShader = glo.createShader(gl.FRAGMENT_SHADER, diffuseInkFsSource);
     const displayShader = glo.createShader(gl.FRAGMENT_SHADER, displayFsSource);
     const displayFieldShader = glo.createShader(gl.FRAGMENT_SHADER, displayFieldFsSource);
     const simulateShader = glo.createShader(gl.FRAGMENT_SHADER, simulateFsSource);
 
     const brushProgram = glo.createAndLinkProgram(basicVertexShader, brushFragmentShader);
+    const brushCutoutProgram = glo.createAndLinkProgram(basicVertexShader, brushCutoutShader);
     const canvasTextureProgram = glo.createAndLinkProgram(passthroughVertexShader, canvasTextureShader);
+    const diffuseInkProgram = glo.createAndLinkProgram(basicVertexShader, diffuseInkShader);
     const displayProgram = glo.createAndLinkProgram(passthroughVertexShader, displayShader);
     const displayFieldProgram = glo.createAndLinkProgram(basicVertexShader, displayFieldShader);
     const simulateProgram = glo.createAndLinkProgram(passthroughVertexShader, simulateShader);
@@ -63,13 +70,25 @@ export default class SimulationCanvas {
     glo.loadVertexData(brushProgram);
     gl.uniform1i(gl.getUniformLocation(brushProgram, "brush_shape"), 0);
 
+    gl.useProgram(brushCutoutProgram);
+    glo.loadVertexData(brushCutoutProgram);
+    gl.uniform1i(gl.getUniformLocation(brushCutoutProgram, "brush_shape"), 0);
+
     gl.useProgram(canvasTextureProgram);
     glo.loadVertexData(canvasTextureProgram);
     gl.uniform2f(gl.getUniformLocation(canvasTextureProgram, "image_dimensions"), width, height);
     gl.uniform1i(gl.getUniformLocation(canvasTextureProgram, "image"), 0);
 
+    gl.useProgram(diffuseInkProgram);
+    glo.loadVertexData(diffuseInkProgram);
+    gl.uniform2f(gl.getUniformLocation(diffuseInkProgram, "texture_size"), width, height);
+    gl.uniform1i(gl.getUniformLocation(diffuseInkProgram, "ink"), 0);
+    gl.uniformMatrix4fv(gl.getUniformLocation(diffuseInkProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
+
     gl.useProgram(displayProgram);
     glo.loadVertexData(displayProgram);
+    gl.uniform1i(gl.getUniformLocation(displayProgram, "state"), 0);
+    gl.uniform1i(gl.getUniformLocation(displayProgram, "ink"), 1);
     gl.uniform2f(gl.getUniformLocation(displayProgram, "state_size"), width, height);
 
     gl.useProgram(displayFieldProgram);
@@ -98,6 +117,12 @@ export default class SimulationCanvas {
       width: 64,
     };
 
+    const inkSpec = {
+      contents: ImageDraw.createColorChecker(width, height),
+      height: height,
+      width: width,
+    };
+
     const orientationMapSpec = {
       contents: ImageDraw.createVectorField(width, height),
       format: gl.RGB,
@@ -109,10 +134,6 @@ export default class SimulationCanvas {
 
     const stateSpec = {
       contents: ImageDraw.createCenteredNoiseSquare(width, height),
-      filter: {
-        magnify: gl.LINEAR,
-        minify: gl.LINEAR,
-      },
       height: height,
       width: width,
     };
@@ -128,6 +149,10 @@ export default class SimulationCanvas {
 
     const textures = {
       brushShape: glo.createTexture(brushShapeSpec),
+      ink: [
+        glo.createTexture(inkSpec),
+        glo.createTexture(inkSpec),
+      ],
       orientationMap: glo.createTexture(orientationMapSpec),
       state: [
         glo.createTexture(stateSpec),
@@ -137,6 +162,10 @@ export default class SimulationCanvas {
     };
     
     const framebuffers = {
+      ink: [
+        glo.createFramebuffer(textures.ink[0]),
+        glo.createFramebuffer(textures.ink[1]),
+      ],
       state: [
         glo.createFramebuffer(textures.state[0]),
         glo.createFramebuffer(textures.state[1]),
@@ -151,6 +180,7 @@ export default class SimulationCanvas {
     }
     
     this.brush = {
+      color: Color.white(),
       endStrokeNextFrame: false,
       position: new Vector3(-16, 32, 0),
       positions: [],
@@ -184,7 +214,9 @@ export default class SimulationCanvas {
     this.paused = false;
     this.programs = {
       brush: brushProgram,
+      brushCutout: brushCutoutProgram,
       canvasTexture: canvasTextureProgram,
+      diffuseInk: diffuseInkProgram,
       display: displayProgram,
       displayField: displayFieldProgram,
       simulate: simulateProgram,
@@ -194,8 +226,7 @@ export default class SimulationCanvas {
       applyFlowMap: false,
       applyOrientationMap: false,
       applyStyleMap: false,
-      colorA: Color.black(),
-      colorB: Color.white(),
+      backgroundColor: Color.black(),
       feedRate: 0.0545,
       flowRate: 1,
       killRate: 0.062,
@@ -206,9 +237,8 @@ export default class SimulationCanvas {
     this.nextFrameChange.clear = true;
   }
 
-  drawBrush(brushColor) {
+  drawBrush(brushColor, brushProgram) {
     const brush = this.brush;
-    const brushProgram = this.programs.brush;
     const gl = this.gl;
     const textures = this.textures;
 
@@ -217,23 +247,22 @@ export default class SimulationCanvas {
     if (brush.state === brushState.DOWN && brush.positions.length > 1) {
       gl.useProgram(brushProgram);
       textures.brushShape.bind(0);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor);
-      stepStart = this.drawBrushStroke();
+      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor.toRgba());
+      stepStart = this.drawBrushStroke(brushProgram);
     }
 
     if (brush.endStrokeNextFrame && brush.positions.length > 0) {
       gl.useProgram(brushProgram);
       textures.brushShape.bind(0);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor);
-      this.drawBrushDot(brush.positions[0]);
+      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor.toRgba());
+      this.drawBrushDot(brush.positions[0], brushProgram);
     }
 
     return stepStart;
   }
 
-  drawBrushDot(position) {
+  drawBrushDot(position, brushProgram) {
     const brush = this.brush;
-    const brushProgram = this.programs.brush;
     const gl = this.gl;
 
     const dilation = Matrix4.dilate(new Vector3(brush.radius, brush.radius, 1));
@@ -245,7 +274,7 @@ export default class SimulationCanvas {
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
-  drawBrushStroke() {
+  drawBrushStroke(brushProgram) {
     const brush = this.brush;
 
     let stepStart = brush.strokeStepStart;
@@ -260,7 +289,7 @@ export default class SimulationCanvas {
         let step = stepStart;
         for (; step <= distance; step += spacing) {
           const position = Vector3.lerp(a, b, step / distance);
-          this.drawBrushDot(position);
+          this.drawBrushDot(position, brushProgram);
         }
         stepStart = step - distance;
       } else {
@@ -269,14 +298,6 @@ export default class SimulationCanvas {
     }
 
     return stepStart;
-  }
-
-  getColorA() {
-    return this.update.colorA;
-  }
-
-  getColorB() {
-    return this.update.colorB;
   }
 
   resize(width, height) {
@@ -294,6 +315,10 @@ export default class SimulationCanvas {
     camera.width = width;
     camera.height = height;
     camera.projection = Matrix4.orthographicProjectionRh(width, height, -1, 1);
+
+    const inkContent = ImageDraw.createColorChecker(width, height);
+    textures.ink[0].update(width, height, inkContent);
+    textures.ink[1].update(width, height, inkContent);
 
     const orientationContent = ImageDraw.createVectorField(width, height);
     textures.orientationMap.update(width, height, orientationContent);
@@ -329,6 +354,14 @@ export default class SimulationCanvas {
     this.update.applyStyleMap = applyStyleMap;
   }
 
+  setBackgroundColor(color) {
+    this.update.backgroundColor = color;
+  }
+
+  setBrushColor(color) {
+    this.brush.color = color;
+  }
+
   setBrushPosition(position) {
     const brush = this.brush;
     const priorPosition = brush.position;
@@ -358,14 +391,6 @@ export default class SimulationCanvas {
         && priorState === brushState.DOWN) {
       this.brush.endStrokeNextFrame = true;
     }
-  }
-
-  setColorA(color) {
-    this.update.colorA = color;
-  }
-
-  setColorB(color) {
-    this.update.colorB = color;
   }
 
   setDisplayImage(image) {
@@ -407,8 +432,9 @@ export default class SimulationCanvas {
   }
 
   step() {
-    const brushProgram = this.programs.brush;
+    const brushProgram = this.programs.brushCutout;
     const canvasTextureProgram = this.programs.canvasTexture;
+    const diffuseInkProgram = this.programs.diffuseInk;
     const displayProgram = this.programs.display;
     const displayFieldProgram = this.programs.displayField;
     const framebuffers = this.framebuffers;
@@ -431,7 +457,28 @@ export default class SimulationCanvas {
       this.nextFrameChange.clear = false;
     }
 
-    const stepStart = this.drawBrush([0.0, 1.0, 0.0, 1.0]);
+    const stepStart = this.drawBrush(new Color(0.0, 1.0, 0.0), this.programs.brushCutout);
+
+    // Ink Phase
+    gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.ink[0]);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    this.drawBrush(this.brush.color, this.programs.brush);
+    gl.disable(gl.BLEND);
+
+    if (!this.paused && !this.update.applyFlowMap) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.ink[1]);
+      gl.useProgram(diffuseInkProgram);
+      textures.ink[0].bind(0);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+      let temp = textures.ink[1];
+      textures.ink[1] = textures.ink[0];
+      textures.ink[0] = temp;
+      temp = framebuffers.ink[1];
+      framebuffers.ink[1] = framebuffers.ink[0];
+      framebuffers.ink[0] = temp;
+    }
 
     // Simulation Phase
     if (!this.paused) {
@@ -459,7 +506,7 @@ export default class SimulationCanvas {
       if (brushVelocity.length > 1.0) {
         brushVelocity = Vector2.normalize(brushVelocity);
       }
-      this.drawBrush([brushVelocity.x, brushVelocity.y, 0.0, 1.0]);
+      this.drawBrush(new Color(brushVelocity.x, brushVelocity.y, 0.0), this.programs.brushCutout);
 
       this.flowSim.drawFlow(textures.state[0], framebuffers.state[1]);
 
@@ -469,6 +516,14 @@ export default class SimulationCanvas {
       temp = textures.state[1];
       textures.state[1] = textures.state[0];
       textures.state[0] = temp;
+
+      this.flowSim.advectInput(textures.ink[0], framebuffers.ink[1]);
+      temp = textures.ink[1];
+      textures.ink[1] = textures.ink[0];
+      textures.ink[0] = temp;
+      temp = framebuffers.ink[1];
+      framebuffers.ink[1] = framebuffers.ink[0];
+      framebuffers.ink[0] = temp;
     }
 
     this.updateBrushAfterDrawing(stepStart);
@@ -478,6 +533,12 @@ export default class SimulationCanvas {
 
     // Display Phase
     switch (this.displayImage) {
+      case displayImage.INK:
+        gl.useProgram(canvasTextureProgram);
+        textures.ink[0].bind(0);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        break;
+
       case displayImage.ORIENTATION_MAP:
         gl.useProgram(canvasTextureProgram);
         textures.orientationMap.bind(0);
@@ -492,9 +553,9 @@ export default class SimulationCanvas {
 
       case displayImage.SIMULATION_STATE: {
         gl.useProgram(displayProgram);
-        gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_a"), this.update.colorA.toArray());
-        gl.uniform3fv(gl.getUniformLocation(displayProgram, "color_b"), this.update.colorB.toArray());
+        gl.uniform4fv(gl.getUniformLocation(displayProgram, "background_color"), this.update.backgroundColor.toRgba());
         textures.state[0].bind(0);
+        textures.ink[0].bind(1);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
       }

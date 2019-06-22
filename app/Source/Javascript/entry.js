@@ -176,19 +176,19 @@ const applyOrientationMap = new SlideSwitch({
   },
 });
 
-const plateColor = new ColorControl({
-  buttonId: "plate-color",
+const backgroundColor = new ColorControl({
+  buttonId: "background-color",
   initialColor: Color.black(),
   onColorChange: (color) => {
-    simulationCanvas.setColorA(color);
+    simulationCanvas.setBackgroundColor(color);
   },
 });
 
-const activatorColor = new ColorControl({
-  buttonId: "activator-color",
-  initialColor: Color.white(),
+const brushColor = new ColorControl({
+  buttonId: "brush-color",
+  initialColor: Color.black(),
   onColorChange: (color) => {
-    simulationCanvas.setColorB(color);
+    simulationCanvas.setBrushColor(color);
   },
 });
 
@@ -201,6 +201,10 @@ document
 const tablistSpec = {
   onSelect: (displayImage) => simulationCanvas.setDisplayImage(displayImage),
   tabs: [
+    {
+      id: "display-ink",
+      displayImage: displayImage.INK,
+    },
     {
       id: "display-orientation-map",
       displayImage: displayImage.ORIENTATION_MAP,

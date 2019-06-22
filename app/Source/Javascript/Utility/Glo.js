@@ -19,11 +19,6 @@ export default class Glo {
     if (!floatTextureExtension) {
       throw new Error("The WebGL extension OES_texture_float is not supported.");
     }
-
-    const floatLinearFilteringExtension = gl.getExtension("OES_texture_float_linear");
-    if (!floatLinearFilteringExtension) {
-      throw new Error("The WebGL extension OES_texture_float_linear is not supported.");
-    }
   
     const requiredTextureSize = 512;
     const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);

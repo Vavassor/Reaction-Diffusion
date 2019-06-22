@@ -7,10 +7,8 @@ varying vec2 surface_texcoord;
 
 void main()
 {
-    vec4 color = brush_color * texture2D(brush_shape, surface_texcoord);
-    if(color.a < 0.5)
-    {
-        discard;
-    }
+    vec4 shape_color = texture2D(brush_shape, surface_texcoord);
+    vec4 color = brush_color * shape_color;
+    
     gl_FragColor = color;
 }
