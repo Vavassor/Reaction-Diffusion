@@ -176,6 +176,14 @@ const applyOrientationMap = new SlideSwitch({
   },
 });
 
+const backgroundColor = new ColorControl({
+  buttonId: "background-color",
+  initialColor: Color.black(),
+  onColorChange: (color) => {
+    simulationCanvas.setBackgroundColor(color);
+  },
+});
+
 const brushColor = new ColorControl({
   buttonId: "brush-color",
   initialColor: Color.black(),

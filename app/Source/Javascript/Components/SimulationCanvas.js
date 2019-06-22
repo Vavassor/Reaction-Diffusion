@@ -226,8 +226,7 @@ export default class SimulationCanvas {
       applyFlowMap: false,
       applyOrientationMap: false,
       applyStyleMap: false,
-      colorA: Color.black(),
-      colorB: Color.white(),
+      backgroundColor: Color.black(),
       feedRate: 0.0545,
       flowRate: 1,
       killRate: 0.062,
@@ -301,14 +300,6 @@ export default class SimulationCanvas {
     return stepStart;
   }
 
-  getColorA() {
-    return this.update.colorA;
-  }
-
-  getColorB() {
-    return this.update.colorB;
-  }
-
   resize(width, height) {
     const camera = this.camera;
     const canvas = this.canvas;
@@ -361,6 +352,10 @@ export default class SimulationCanvas {
 
   setApplyStyleMap(applyStyleMap) {
     this.update.applyStyleMap = applyStyleMap;
+  }
+
+  setBackgroundColor(color) {
+    this.update.backgroundColor = color;
   }
 
   setBrushColor(color) {
@@ -558,6 +553,7 @@ export default class SimulationCanvas {
 
       case displayImage.SIMULATION_STATE: {
         gl.useProgram(displayProgram);
+        gl.uniform4fv(gl.getUniformLocation(displayProgram, "background_color"), this.update.backgroundColor.toRgba());
         textures.state[0].bind(0);
         textures.ink[0].bind(1);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
