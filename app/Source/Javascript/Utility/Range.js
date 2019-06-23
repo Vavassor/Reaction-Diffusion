@@ -28,6 +28,25 @@ export function lerp(a, b, t) {
 }
 
 /**
+ * Rounds an unsigned 32-bit integer up to the nearest power of two.
+ * 
+ * @param {number} x - an unsigned 32-bit integer
+ * @return {number} the smallest power of two larger than the given number
+ */
+export function nextPowerOfTwoUint32(x) {
+  if (x === 0) {
+    return 1;
+  }
+  x--;
+  x |= x >> 1;
+  x |= x >> 2;
+  x |= x >> 4;
+  x |= x >> 8;
+  x |= x >> 16;
+  return x + 1;
+}
+
+/**
  * Remaps a value in one interval to a value another inverval.
  * 
  * @param {number} a0 - the lower end of the ending interval
