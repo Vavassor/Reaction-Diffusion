@@ -36,8 +36,11 @@ vec4 sample_bilinear(sampler2D source, vec2 texel_size, vec2 sample_position)
 void main()
 {
     vec2 texel_size = 1.0 / texture_size;
+    float inverse_aspect_ratio = texture_size.x / texture_size.y;
+
     vec2 velocity = texture2D(velocity_field, surface_texcoord).xy;
     vec2 texel_velocity = -0.5 * delta_time * velocity;
+    texel_velocity.y *= inverse_aspect_ratio;
     vec2 sample_position = texture_size * (surface_texcoord + texel_velocity);
 
     // Manually do the bilinear sample instead of using bilinear sampler

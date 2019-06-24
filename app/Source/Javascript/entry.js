@@ -115,7 +115,7 @@ const canvasAlert = new Alert({
 
 canvas = document.getElementById("canvas");
 try {
-  simulationCanvas = new SimulationCanvas(canvas, 600, 300);
+  simulationCanvas = new SimulationCanvas(canvas, 256, 256);
 } catch (exception) {
   canvasAlert.show(exception);
 }

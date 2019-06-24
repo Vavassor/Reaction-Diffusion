@@ -122,15 +122,14 @@ export function createColorChecker(size) {
  * @return {Uint8Array} - an interleaved array of RGB pixels
  */
 export function createVectorField(size) {
-  const field = new Uint8Array(3 * size.x * size.y); 
+  const field = new Uint8Array(3 * size.x * size.y);
+  const frequency = 2.0 / Math.min(size.x, size.y);
   
   for (let y = 0; y < size.y; y++) {
     for (let x = 0; x < size.x; x++) {
       const pixelIndex = 3 * ((size.x * y) + x);
-      const frequencyX = 2.0 * (1.0 / size.x);
-      const frequencyY = 2.0 * (1.0 / size.y);
-      const directionX = Math.sin(2.0 * Math.PI * frequencyY * y);
-      const directionY = Math.sin(2.0 * Math.PI * frequencyX * x);
+      const directionX = Math.sin(2.0 * Math.PI * frequency * y);
+      const directionY = Math.sin(2.0 * Math.PI * frequency * x);
       field[pixelIndex] = Math.floor(255 * ((0.5 * directionX) + 0.5));
       field[pixelIndex + 1] = Math.floor(255 * ((0.5 * directionY) + 0.5));
     }
@@ -146,14 +145,14 @@ export function createVectorField(size) {
  */
 export function createVectorFieldFloat32(size) {
   const field = new Float32Array(4 * size.x * size.y);
+
+  const frequency = 2.0 / Math.min(size.x, size.y);
   
   for (let y = 0; y < size.y; y++) {
     for (let x = 0; x < size.x; x++) {
       const pixelIndex = 4 * ((size.x * y) + x);
-      const frequencyX = 2.0 * (1.0 / size.x);
-      const frequencyY = 2.0 * (1.0 / size.y);
-      const directionX = Math.sin(2.0 * Math.PI * frequencyY * y);
-      const directionY = Math.sin(2.0 * Math.PI * frequencyX * x);
+      const directionX = Math.sin(2.0 * Math.PI * frequency * y);
+      const directionY = Math.sin(2.0 * Math.PI * frequency * x);
       field[pixelIndex] = directionX;
       field[pixelIndex + 1] = directionY;
     }

@@ -17,8 +17,6 @@ export default class FlowSim {
     const gl = spec.gl;
     const glo = spec.glo;
     const simSize = spec.canvasSize;
-    const height = spec.canvasSize.y;
-    const width = spec.canvasSize.x;
 
     const advectFragmentShader = glo.createShader(gl.FRAGMENT_SHADER, advectFsSource);
     const basicVertexShader = glo.createShader(gl.VERTEX_SHADER, basicVsSource);
