@@ -123,7 +123,7 @@ export default class FlowSim {
     this.textures = textures;
   }
 
-  resize(width, height) {
+  resize(size) {
     const advectProgram = this.programs.advect;
     const divergenceProgram = this.programs.divergence;
     const gl = this.gl;
@@ -131,27 +131,27 @@ export default class FlowSim {
     const subtractPressureGradientProgram = this.programs.subtractPressureGradient;
     const textures = this.textures;
 
-    textures.divergence.update(width, height, null);
+    textures.divergence.update(size, null);
 
-    textures.pressure[0].update(width, height, null);
-    textures.pressure[1].update(width, height, null);
+    textures.pressure[0].update(size, null);
+    textures.pressure[1].update(size, null);
 
-    const velocityContent = ImageDraw.createVectorFieldFloat32(width, height);
-    textures.velocityField[0].update(width, height, velocityContent);
-    textures.velocityField[1].update(width, height, velocityContent);
-    textures.velocityField[2].update(width, height, velocityContent);
+    const velocityContent = ImageDraw.createVectorFieldFloat32(size);
+    textures.velocityField[0].update(size, velocityContent);
+    textures.velocityField[1].update(size, velocityContent);
+    textures.velocityField[2].update(size, velocityContent);
 
     gl.useProgram(advectProgram);
-    gl.uniform2f(gl.getUniformLocation(advectProgram, "texture_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(advectProgram, "texture_size"), size.elements);
     
     gl.useProgram(divergenceProgram);
-    gl.uniform2f(gl.getUniformLocation(divergenceProgram, "velocity_field_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(divergenceProgram, "velocity_field_size"), size.elements);
 
     gl.useProgram(pressureProgram);
-    gl.uniform2f(gl.getUniformLocation(pressureProgram, "field_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(pressureProgram, "field_size"), size.elements);
 
     gl.useProgram(subtractPressureGradientProgram);
-    gl.uniform2f(gl.getUniformLocation(subtractPressureGradientProgram, "field_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(subtractPressureGradientProgram, "field_size"), size.elements);
   }
 
   advectVelocity() {

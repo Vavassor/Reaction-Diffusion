@@ -299,7 +299,7 @@ export default class SimulationCanvas {
     return stepStart;
   }
 
-  resize(width, height) {
+  resize(size) {
     const camera = this.camera;
     const canvas = this.canvas;
     const canvasTextureProgram = this.programs.canvasTexture;
@@ -308,37 +308,37 @@ export default class SimulationCanvas {
     const simulateProgram = this.programs.simulate;
     const textures = this.textures;
 
-    canvas.width = width;
-    canvas.height = height;
+    canvas.width = size.x;
+    canvas.height = size.y;
     
-    camera.width = width;
-    camera.height = height;
-    camera.projection = Matrix4.orthographicProjectionRh(width, height, -1, 1);
+    camera.width = size.x;
+    camera.height = size.y;
+    camera.projection = Matrix4.orthographicProjectionRh(size.x, size.y, -1, 1);
 
-    const inkContent = ImageDraw.createColorChecker(width, height);
-    textures.ink[0].update(width, height, inkContent);
-    textures.ink[1].update(width, height, inkContent);
+    const inkContent = ImageDraw.createColorChecker(size);
+    textures.ink[0].update(size, inkContent);
+    textures.ink[1].update(size, inkContent);
 
-    const orientationContent = ImageDraw.createVectorField(width, height);
-    textures.orientationMap.update(width, height, orientationContent);
+    const orientationContent = ImageDraw.createVectorField(size);
+    textures.orientationMap.update(size, orientationContent);
 
-    const stateContents = ImageDraw.createCenteredNoiseSquare(width, height);
-    textures.state[0].update(width, height, stateContents);
-    textures.state[1].update(width, height, null);
+    const stateContents = ImageDraw.createCenteredNoiseSquare(size);
+    textures.state[0].update(size, stateContents);
+    textures.state[1].update(size, null);
 
-    const styleContent = ImageDraw.createWaves(width, height);
-    textures.styleMap.update(width, height, styleContent);
+    const styleContent = ImageDraw.createWaves(size);
+    textures.styleMap.update(size, styleContent);
 
     gl.useProgram(canvasTextureProgram);
-    gl.uniform2f(gl.getUniformLocation(canvasTextureProgram, "image_dimensions"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(canvasTextureProgram, "image_dimensions"), size.elements);
 
     gl.useProgram(displayProgram);
-    gl.uniform2f(gl.getUniformLocation(displayProgram, "state_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(displayProgram, "state_size"), size.elements);
 
     gl.useProgram(simulateProgram);
-    gl.uniform2f(gl.getUniformLocation(simulateProgram, "state_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(simulateProgram, "state_size"), size.elements);
 
-    this.flowSim.resize(width, height);
+    this.flowSim.resize(size);
   }
 
   setApplyFlowMap(apply) {

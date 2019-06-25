@@ -12,6 +12,7 @@ import Tablist from "./Components/Tablist";
 import Vector3 from "./Utility/Vector3";
 
 import "../Stylesheets/main.css";
+import Vector2 from "./Utility/Vector2";
 
 let simulationCanvas;
 let canvas;
@@ -41,7 +42,8 @@ function onCanvasSizeChange(event) {
   if (checked) {
     const width = parseInt(button.value);
     const height = width;
-    simulationCanvas.resize(width, height);
+    const size = new Vector2(width, height);
+    simulationCanvas.resize(size);
   }
 }
 
