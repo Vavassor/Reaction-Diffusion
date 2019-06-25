@@ -37,17 +37,6 @@ function getPositionInCanvas(pageX, pageY) {
   return new Vector3(scaleX * x, scaleY * y, 0);
 }
 
-function onCanvasSizeChange(event) {
-  const button = event.currentTarget;
-  const checked = button.checked;
-  if (checked) {
-    const width = parseInt(button.value);
-    const height = width;
-    const size = new Vector2(width, height);
-    simulationCanvas.resize(size);
-  }
-}
-
 function onPointerCancel(event) {
   const index = ongoingTouchIndexById(event.pointerId);
   if (index >= 0) {
@@ -231,3 +220,16 @@ const pause = new PlayButton({
   onChange: paused => simulationCanvas.setPaused(paused),
   paused: false,
 });
+
+const canvasWidth = document.getElementById("canvas-width");
+const canvasHeight = document.getElementById("canvas-height");
+
+document
+  .getElementById("canvas-size")
+  .addEventListener("submit", (event) => {
+    event.preventDefault();
+    const width = parseInt(canvasWidth.value);
+    const height = parseInt(canvasHeight.value);
+    const size = new Vector2(width, height);
+    simulationCanvas.resize(size);
+  });
