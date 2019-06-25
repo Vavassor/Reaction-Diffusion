@@ -16,8 +16,7 @@ export default class FlowSim {
     const density = 1.0;
     const gl = spec.gl;
     const glo = spec.glo;
-    const height = spec.canvasSize.height;
-    const width = spec.canvasSize.width;
+    const simSize = spec.canvasSize;
 
     const advectFragmentShader = glo.createShader(gl.FRAGMENT_SHADER, advectFsSource);
     const basicVertexShader = glo.createShader(gl.VERTEX_SHADER, basicVsSource);
@@ -35,7 +34,7 @@ export default class FlowSim {
     gl.useProgram(advectProgram);
     glo.loadVertexData(advectProgram);
     gl.uniform1f(gl.getUniformLocation(advectProgram, "delta_time"), deltaTime);
-    gl.uniform2f(gl.getUniformLocation(advectProgram, "texture_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(advectProgram, "texture_size"), simSize.elements);
     gl.uniform1i(gl.getUniformLocation(advectProgram, "input_texture"), 0);
     gl.uniform1i(gl.getUniformLocation(advectProgram, "velocity_field"), 1);
     gl.uniformMatrix4fv(gl.getUniformLocation(advectProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
@@ -51,12 +50,12 @@ export default class FlowSim {
     gl.uniform1f(gl.getUniformLocation(divergenceProgram, "delta_time"), deltaTime);
     gl.uniform1f(gl.getUniformLocation(divergenceProgram, "density"), density);
     gl.uniform1i(gl.getUniformLocation(divergenceProgram, "velocity_field"), 0);
-    gl.uniform2f(gl.getUniformLocation(divergenceProgram, "velocity_field_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(divergenceProgram, "velocity_field_size"), simSize.elements);
     gl.uniformMatrix4fv(gl.getUniformLocation(divergenceProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
 
     gl.useProgram(pressureProgram);
     glo.loadVertexData(pressureProgram);
-    gl.uniform2f(gl.getUniformLocation(pressureProgram, "field_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(pressureProgram, "field_size"), simSize.elements);
     gl.uniform1i(gl.getUniformLocation(pressureProgram, "divergence_field"), 0);
     gl.uniform1i(gl.getUniformLocation(pressureProgram, "pressure_field"), 1);
     gl.uniformMatrix4fv(gl.getUniformLocation(pressureProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
@@ -65,7 +64,7 @@ export default class FlowSim {
     glo.loadVertexData(subtractPressureGradientProgram);
     gl.uniform1f(gl.getUniformLocation(subtractPressureGradientProgram, "delta_time"), deltaTime);
     gl.uniform1f(gl.getUniformLocation(subtractPressureGradientProgram, "density"), density);
-    gl.uniform2f(gl.getUniformLocation(subtractPressureGradientProgram, "field_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(subtractPressureGradientProgram, "field_size"), simSize.elements);
     gl.uniform1i(gl.getUniformLocation(subtractPressureGradientProgram, "velocity_field"), 0);
     gl.uniform1i(gl.getUniformLocation(subtractPressureGradientProgram, "pressure_field"), 1);
     gl.uniformMatrix4fv(gl.getUniformLocation(subtractPressureGradientProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
@@ -79,19 +78,16 @@ export default class FlowSim {
     };
 
     const divergenceFieldSpec = {
-      height: height,
-      width: width,
+      size: simSize,
     };
 
     const pressureFieldSpec = {
-      height: height,
-      width: width,
+      size: simSize,
     };
 
     const velocityFieldSpec = {
-      contents: ImageDraw.createVectorFieldFloat32(width, height),
-      height: height,
-      width: width,
+      contents: ImageDraw.createVectorFieldFloat32(simSize),
+      size: simSize,
     };
 
     const textures = {
@@ -127,7 +123,7 @@ export default class FlowSim {
     this.textures = textures;
   }
 
-  resize(width, height) {
+  resize(size) {
     const advectProgram = this.programs.advect;
     const divergenceProgram = this.programs.divergence;
     const gl = this.gl;
@@ -135,27 +131,27 @@ export default class FlowSim {
     const subtractPressureGradientProgram = this.programs.subtractPressureGradient;
     const textures = this.textures;
 
-    textures.divergence.update(width, height, null);
+    textures.divergence.update(size, null);
 
-    textures.pressure[0].update(width, height, null);
-    textures.pressure[1].update(width, height, null);
+    textures.pressure[0].update(size, null);
+    textures.pressure[1].update(size, null);
 
-    const velocityContent = ImageDraw.createVectorFieldFloat32(width, height);
-    textures.velocityField[0].update(width, height, velocityContent);
-    textures.velocityField[1].update(width, height, velocityContent);
-    textures.velocityField[2].update(width, height, velocityContent);
+    const velocityContent = ImageDraw.createVectorFieldFloat32(size);
+    textures.velocityField[0].update(size, velocityContent);
+    textures.velocityField[1].update(size, velocityContent);
+    textures.velocityField[2].update(size, velocityContent);
 
     gl.useProgram(advectProgram);
-    gl.uniform2f(gl.getUniformLocation(advectProgram, "texture_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(advectProgram, "texture_size"), size.elements);
     
     gl.useProgram(divergenceProgram);
-    gl.uniform2f(gl.getUniformLocation(divergenceProgram, "velocity_field_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(divergenceProgram, "velocity_field_size"), size.elements);
 
     gl.useProgram(pressureProgram);
-    gl.uniform2f(gl.getUniformLocation(pressureProgram, "field_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(pressureProgram, "field_size"), size.elements);
 
     gl.useProgram(subtractPressureGradientProgram);
-    gl.uniform2f(gl.getUniformLocation(subtractPressureGradientProgram, "field_size"), width, height);
+    gl.uniform2fv(gl.getUniformLocation(subtractPressureGradientProgram, "field_size"), size.elements);
   }
 
   advectVelocity() {

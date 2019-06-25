@@ -13,26 +13,25 @@ function smoothstep(a, b, x) {
 
 /**
  * Draws a red rectangle with a square of red-green noise in the middle.
- * @param {number} width - the width of the rectangle
- * @param {number} height - the height of the rectangle
+ * @param {Vector2} size - the dimensions of the rectangle
  * @return {Float32Array} - an interleaved array of RGBA pixels
  */
-export function createCenteredNoiseSquare(width, height) {
-  const pattern = new Array(width * height);
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      pattern[(width * y) + x] = Math.random() < 0.3;
+export function createCenteredNoiseSquare(size) {
+  const pattern = new Array(size.x * size.y);
+  for (let y = 0; y < size.y; y++) {
+    for (let x = 0; x < size.x; x++) {
+      pattern[(size.x * y) + x] = Math.random() < 0.3;
     }
   }
 
-  const state = new Float32Array(4 * width * height);
+  const state = new Float32Array(4 * size.x * size.y);
   const squareSide = 10;
 
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const i = 4 * ((width * y) + x);
+  for (let y = 0; y < size.y; y++) {
+    for (let x = 0; x < size.x; x++) {
+      const i = 4 * ((size.x * y) + x);
       
-      if (pattern[Math.floor(y / squareSide) * width + Math.floor(x / squareSide)]) {
+      if (pattern[Math.floor(y / squareSide) * size.x + Math.floor(x / squareSide)]) {
         state[i] = 0.5 + Math.random() * 0.02 - 0.01;
         state[i + 1] = 0.25 + Math.random() * 0.02 - 0.01;
       } else {
@@ -96,13 +95,13 @@ export function createChecker(width, height, squareWidth) {
   return pixels;
 }
 
-export function createColorChecker(width, height) {
-  const pixels = new Uint8Array(3 * width * height);
+export function createColorChecker(size) {
+  const pixels = new Uint8Array(3 * size.x * size.y);
   const squareWidth = 10;
 
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const pixelIndex = 3 * ((width * y) + x);
+  for (let y = 0; y < size.y; y++) {
+    for (let x = 0; x < size.x; x++) {
+      const pixelIndex = 3 * ((size.x * y) + x);
       const squareX = Math.floor(x / squareWidth);
       const squareY = Math.floor(y / squareWidth);
       const redCheck = ((squareX % 3) ^ (squareY % 3)) & 1;
@@ -119,20 +118,18 @@ export function createColorChecker(width, height) {
 
 /**
  * Draws a 2D vector field stored in the red and green channels.
- * @param {number} width - the width of the rectangle
- * @param {number} height - the height of the rectangle
+ * @param {Vector2} size - the dimensions of the rectangle
  * @return {Uint8Array} - an interleaved array of RGB pixels
  */
-export function createVectorField(width, height) {
-  const field = new Uint8Array(3 * width * height); 
+export function createVectorField(size) {
+  const field = new Uint8Array(3 * size.x * size.y);
+  const frequency = 2.0 / Math.min(size.x, size.y);
   
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const pixelIndex = 3 * ((width * y) + x);
-      const frequencyX = 2.0 * (1.0 / width);
-      const frequencyY = 2.0 * (1.0 / height);
-      const directionX = Math.sin(2.0 * Math.PI * frequencyY * y);
-      const directionY = Math.sin(2.0 * Math.PI * frequencyX * x);
+  for (let y = 0; y < size.y; y++) {
+    for (let x = 0; x < size.x; x++) {
+      const pixelIndex = 3 * ((size.x * y) + x);
+      const directionX = Math.sin(2.0 * Math.PI * frequency * y);
+      const directionY = Math.sin(2.0 * Math.PI * frequency * x);
       field[pixelIndex] = Math.floor(255 * ((0.5 * directionX) + 0.5));
       field[pixelIndex + 1] = Math.floor(255 * ((0.5 * directionY) + 0.5));
     }
@@ -143,20 +140,19 @@ export function createVectorField(width, height) {
 
 /**
  * Draws a 2D vector field stored in the red and green channels.
- * @param {number} width - the width of the rectangle
- * @param {number} height - the height of the rectangle
+ * @param {Vector2} size - the dimensions of the rectangle
  * @return {Float32Array} - an interleaved array of RGBA pixels
  */
-export function createVectorFieldFloat32(width, height) {
-  const field = new Float32Array(4 * width * height);
+export function createVectorFieldFloat32(size) {
+  const field = new Float32Array(4 * size.x * size.y);
+
+  const frequency = 2.0 / Math.min(size.x, size.y);
   
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const pixelIndex = 4 * ((width * y) + x);
-      const frequencyX = 2.0 * (1.0 / width);
-      const frequencyY = 2.0 * (1.0 / height);
-      const directionX = Math.sin(2.0 * Math.PI * frequencyY * y);
-      const directionY = Math.sin(2.0 * Math.PI * frequencyX * x);
+  for (let y = 0; y < size.y; y++) {
+    for (let x = 0; x < size.x; x++) {
+      const pixelIndex = 4 * ((size.x * y) + x);
+      const directionX = Math.sin(2.0 * Math.PI * frequency * y);
+      const directionY = Math.sin(2.0 * Math.PI * frequency * x);
       field[pixelIndex] = directionX;
       field[pixelIndex + 1] = directionY;
     }
@@ -167,17 +163,16 @@ export function createVectorFieldFloat32(width, height) {
 
 /**
  * Draws a rectangle of red and green waves.
- * @param {number} width - the width of the rectangle
- * @param {number} height - the height of the rectangle
+ * @param {Vector2} size - the dimensions of the rectangle
  * @return {Uint8Array} - an interleaved array of RGB pixels
  */
-export function createWaves(width, height) {
-  const pattern = new Uint8Array(3 * width * height);
-  const side = width / 5;
+export function createWaves(size) {
+  const pattern = new Uint8Array(3 * size.x * size.y);
+  const side = Math.min(size.x, size.y) / 5;
   
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const pixelIndex = 3 * ((width * y) + x);
+  for (let y = 0; y < size.y; y++) {
+    for (let x = 0; x < size.x; x++) {
+      const pixelIndex = 3 * ((size.x * y) + x);
       const patternX = x / side;
       const patternY = y / side;
       const waveA = 0.25 * (Math.sin(Math.PI * patternX) + Math.sin(Math.PI * patternY)) + 0.5;

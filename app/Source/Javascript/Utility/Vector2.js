@@ -20,6 +20,10 @@ export default class Vector2 {
     return this.elements[1];
   }
 
+  toString() {
+    return `⟨${this.x}, ${this.y}⟩`;
+  }
+
   static multiply(s, v) {
     return new Vector2(s * v.x, s * v.y);
   }

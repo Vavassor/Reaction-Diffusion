@@ -4,11 +4,13 @@ import Alert from "./Components/Alert";
 import Color from "./Utility/Color";
 import ColorControl from "./Components/ColorControl";
 import FileSaver from "file-saver";
+import PlayButton from "./Components/PlayButton";
 import * as Range from "./Utility/Range";
 import SimulationCanvas, {brushState, displayImage} from "./Components/SimulationCanvas";
 import Slider2d from "./Components/Slider2d";
 import SlideSwitch from "./Components/SlideSwitch";
 import Tablist from "./Components/Tablist";
+import Vector2 from "./Utility/Vector2";
 import Vector3 from "./Utility/Vector3";
 
 import "../Stylesheets/main.css";
@@ -33,30 +35,6 @@ function getPositionInCanvas(pageX, pageY) {
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
   return new Vector3(scaleX * x, scaleY * y, 0);
-}
-
-function onCanvasSizeChange(event) {
-  const button = event.currentTarget;
-  const checked = button.checked;
-  if (checked) {
-    const width = parseInt(button.value);
-    const height = width;
-    simulationCanvas.resize(width, height);
-  }
-}
-
-function onPauseClick(event) {
-  simulationCanvas.togglePause();
-
-  const button = event.currentTarget;
-  const pause = (button.getAttribute("aria-label") === "pause");
-  if (pause) {
-    button.setAttribute("aria-label", "play");
-    button.textContent = "▶";
-  } else {
-    button.setAttribute("aria-label", "pause");
-    button.textContent = "❙❙";
-  }
 }
 
 function onPointerCancel(event) {
@@ -227,9 +205,7 @@ const tablist = new Tablist(tablistSpec);
 
 document
   .getElementById("clear")
-  .addEventListener("click", (event) => {
-    simulationCanvas.clear();
-  });
+  .addEventListener("click", event => simulationCanvas.clear());
 
 document
   .getElementById("download")
@@ -239,14 +215,38 @@ document
     }, "image/png");
   });
 
-document
-  .getElementById("pause")
-  .addEventListener("click", onPauseClick);
+const pause = new PlayButton({
+  id: "pause",
+  onChange: paused => simulationCanvas.setPaused(paused),
+  paused: false,
+});
 
-document
-  .getElementById("canvas-size-small")
-  .addEventListener("change", onCanvasSizeChange);
+const canvasSize = document.getElementById("canvas-size");
+const canvasWidth = document.getElementById("canvas-width");
+const canvasHeight = document.getElementById("canvas-height");
+const canvasWrapper = document.getElementById("canvas-wrapper");
+const canvasWrapperWrapper = document.getElementById("canvas-wrapper-wrapper");
 
-document
-  .getElementById("canvas-size-large")
-  .addEventListener("change", onCanvasSizeChange);
+canvasSize.addEventListener("submit", (event) => {
+  event.preventDefault();
+
+  const passedValidation = canvasSize.checkValidity();
+  canvasSize.classList.add("was-validated");
+
+  if (!passedValidation) {
+    return false;
+  }
+
+  const width = parseInt(canvasWidth.value);
+  const height = parseInt(canvasHeight.value);
+  const size = new Vector2(width, height);
+  simulationCanvas.resize(size);
+
+  const aspectRatio = size.y / size.x;
+  const paddingPercentage = 100.0 * aspectRatio;
+  canvasWrapper.style.paddingTop = paddingPercentage.toPrecision(3) + "%";
+
+  const inverseAspectRatio = size.x / size.y;
+  const wrapperWidth = 85 * inverseAspectRatio;
+  canvasWrapperWrapper.style.width = wrapperWidth.toPrecision(3) + "vh";
+});

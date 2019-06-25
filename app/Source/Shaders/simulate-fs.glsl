@@ -14,6 +14,13 @@ const vec2 diffusion = vec2(0.2, 0.1);
 const float tau = 6.28318530718;
 const float TIMESTEP = 1.0;
 
+// WebGL 1.0 doesn't support use of the wrapping parameter GL_REPEAT for
+// non-power-of-two texture sizes. This manually implements that feature.
+vec4 sample_wrap(sampler2D input_sampler, vec2 texcoord)
+{
+    return texture2D(input_sampler, fract(texcoord));
+}
+
 void main()
 {
     vec2 center = gl_FragCoord.xy;
@@ -33,14 +40,14 @@ void main()
     }
 
     vec2 value = texture2D(state, center / state_size).xy;
-    vec2 northeast = texture2D(state, (center + vec2(1.0, 1.0)) / state_size).xy;
-    vec2 southeast = texture2D(state, (center + vec2(1.0, -1.0)) / state_size).xy;
-    vec2 southwest = texture2D(state, (center + vec2(-1.0, -1.0)) / state_size).xy;
-    vec2 northwest = texture2D(state, (center + vec2(-1.0, 1.0)) / state_size).xy;
-    vec2 north = texture2D(state, (center + vec2(0.0, 1.0)) / state_size).xy;
-    vec2 east = texture2D(state, (center + vec2(1.0, 0.0)) / state_size).xy;
-    vec2 south = texture2D(state, (center + vec2(0.0, -1.0)) / state_size).xy;
-    vec2 west = texture2D(state, (center + vec2(-1.0, 0.0)) / state_size).xy;
+    vec2 northeast = sample_wrap(state, (center + vec2(1.0, 1.0)) / state_size).xy;
+    vec2 southeast = sample_wrap(state, (center + vec2(1.0, -1.0)) / state_size).xy;
+    vec2 southwest = sample_wrap(state, (center + vec2(-1.0, -1.0)) / state_size).xy;
+    vec2 northwest = sample_wrap(state, (center + vec2(-1.0, 1.0)) / state_size).xy;
+    vec2 north = sample_wrap(state, (center + vec2(0.0, 1.0)) / state_size).xy;
+    vec2 east = sample_wrap(state, (center + vec2(1.0, 0.0)) / state_size).xy;
+    vec2 south = sample_wrap(state, (center + vec2(0.0, -1.0)) / state_size).xy;
+    vec2 west = sample_wrap(state, (center + vec2(-1.0, 0.0)) / state_size).xy;
 
     float dxx;
     float dxy;
@@ -50,7 +57,7 @@ void main()
         vec2 scale = vec2(0.7, 0.2);
         vec2 direction = 2.0 * texture2D(orientation_map, center / state_size).xy - 1.0;
         float direction_length = length(direction);
-        if (direction_length == 0.0)
+        if(direction_length == 0.0)
         {
             direction = vec2(0.0, 0.0);
         }

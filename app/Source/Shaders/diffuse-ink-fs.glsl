@@ -9,17 +9,22 @@ const float diffusion = 0.05;
 const float flow_rate = 1.0;
 const float TIMESTEP = 1.0;
 
+vec4 sample_wrap(sampler2D input_sampler, vec2 texcoord)
+{
+    return texture2D(input_sampler, fract(texcoord));
+}
+
 vec4 diffuse(vec2 center, vec2 texel_size)
 {
     vec4 value = texture2D(ink, center);
-    vec4 northeast = texture2D(ink, center + texel_size * vec2(1.0, 1.0));
-    vec4 southeast = texture2D(ink, center + texel_size * vec2(1.0, -1.0));
-    vec4 southwest = texture2D(ink, center + texel_size * vec2(-1.0, -1.0));
-    vec4 northwest = texture2D(ink, center + texel_size * vec2(-1.0, 1.0));
-    vec4 north = texture2D(ink, center + texel_size * vec2(0.0, 1.0));
-    vec4 east = texture2D(ink, center + texel_size * vec2(1.0, 0.0));
-    vec4 south = texture2D(ink, center + texel_size * vec2(0.0, -1.0));
-    vec4 west = texture2D(ink, center + texel_size * vec2(-1.0, 0.0));
+    vec4 northeast = sample_wrap(ink, center + texel_size * vec2(1.0, 1.0));
+    vec4 southeast = sample_wrap(ink, center + texel_size * vec2(1.0, -1.0));
+    vec4 southwest = sample_wrap(ink, center + texel_size * vec2(-1.0, -1.0));
+    vec4 northwest = sample_wrap(ink, center + texel_size * vec2(-1.0, 1.0));
+    vec4 north = sample_wrap(ink, center + texel_size * vec2(0.0, 1.0));
+    vec4 east = sample_wrap(ink, center + texel_size * vec2(1.0, 0.0));
+    vec4 south = sample_wrap(ink, center + texel_size * vec2(0.0, -1.0));
+    vec4 west = sample_wrap(ink, center + texel_size * vec2(-1.0, 0.0));
 
     float db = diffusion * flow_rate;
 

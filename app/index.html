@@ -11,7 +11,11 @@
     <div class="canvas-panel">
       <div id="canvas-alert" class="alert display-none" role="alert"></div>
 
-      <canvas id="canvas" class="paint-canvas"></canvas>
+      <div id="canvas-wrapper-wrapper" class="canvas-wrapper-wrapper">
+        <div id="canvas-wrapper" class="canvas-wrapper">
+          <canvas id="canvas" class="paint-canvas"></canvas>
+        </div>
+      </div>
 
       <div class="canvas-controls">
         <button id="clear" class="button-control" type="button">Clear</button>
@@ -22,7 +26,7 @@
 
     <div class="control-panel">
       <div class="form-group">
-        <div id="style-picker-label" class="control-label">Style</div>
+        <div id="style-picker-label" class="control-label">Growth Pattern</div>
         <div id="style-picker" class="slider-2d" tabindex="0" aria-labelledby="style-picker-label">
           <div class="slider-2d-box">
             <div id="style-picker-bounds" class="slider-2d-bounds">
@@ -46,7 +50,7 @@
       </div>
 
       <div class="form-group">
-        <label class="control-label" for="iterations-per-frame">Iterations Per Frame</label>
+        <label class="control-label" for="iterations-per-frame">Simulation Speed</label>
         <input
           id="iterations-per-frame"
           class="form-control range"
@@ -106,16 +110,36 @@
         >
       </div>
 
-      <fieldset>
-        <legend>Canvas Size</legend>
-        <div>
-          <input id="canvas-size-small" type="radio" name="canvas-size" value="256" checked>
-          <label for="canvas-size-small">256</label>
-
-          <input id="canvas-size-large" type="radio" name="canvas-size" value="512">
-          <label for="canvas-size-large">512</label>
+      <h2>Canvas Size</h2>
+      <form id="canvas-size" novalidate>
+        <div class="form-group">
+          <label class="control-label" for="canvas-width">Width</label>
+          <input
+            id="canvas-width"
+            class="form-control"
+            value="256"
+            max="1024"
+            min="1"
+            type="number"
+            required
+          >
         </div>
-      </fieldset>
+
+        <div class="form-group">
+          <label class="control-label" for="canvas-height">Height</label>
+          <input
+            id="canvas-height"
+            class="form-control"
+            value="256"
+            max="1024"
+            min="1"
+            type="number"
+            required
+          >
+        </div>
+
+        <button class="button-control" type="submit">Resize</button>
+      </form>
 
       <h2>Display</h2>
       <div class="tablist" role="tablist">
