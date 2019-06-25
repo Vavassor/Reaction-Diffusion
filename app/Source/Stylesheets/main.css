@@ -32,6 +32,17 @@ main {
   padding: .375rem .75rem;
 }
 
+.canvas-wrapper {
+  padding-top: 100%;
+  position: relative;
+}
+
+.canvas-wrapper-wrapper {
+  margin: 0 auto;
+  max-width: 100%;
+  width: 85vh;
+}
+
 .canvas-controls {
   margin: auto;
   max-width: 85vh;
@@ -175,10 +186,11 @@ main {
 .paint-canvas {
   border: .1em solid #000000;
   display: block;
-  height: auto;
+  height: 100%;
+  left: 0;
   margin: auto;
-  max-height: 85vh;
-  max-width: 85vh;
+  position: absolute;
+  top: 0;
   touch-action: none;
   user-select: none;
   width: 100%;

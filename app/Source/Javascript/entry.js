@@ -223,13 +223,25 @@ const pause = new PlayButton({
 
 const canvasWidth = document.getElementById("canvas-width");
 const canvasHeight = document.getElementById("canvas-height");
+const canvasWrapper = document.getElementById("canvas-wrapper");
+const canvasWrapperWrapper = document.getElementById("canvas-wrapper-wrapper");
 
 document
   .getElementById("canvas-size")
   .addEventListener("submit", (event) => {
     event.preventDefault();
+
     const width = parseInt(canvasWidth.value);
     const height = parseInt(canvasHeight.value);
     const size = new Vector2(width, height);
+
     simulationCanvas.resize(size);
+
+    const aspectRatio = size.y / size.x;
+    const paddingPercentage = 100.0 * aspectRatio;
+    canvasWrapper.style.paddingTop = paddingPercentage.toPrecision(3) + "%";
+
+    const inverseAspectRatio = size.x / size.y;
+    const wrapperWidth = 85 * inverseAspectRatio;
+    canvasWrapperWrapper.style.width = wrapperWidth.toPrecision(3) + "vh";
   });
