@@ -402,6 +402,10 @@ main {
   color: #ffffff;
 }
 
+.was-validated input:invalid {
+  border: 1px solid red;
+}
+
 
 #brush-color {
   background-color: #ffffff;

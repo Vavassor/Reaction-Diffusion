@@ -221,27 +221,32 @@ const pause = new PlayButton({
   paused: false,
 });
 
+const canvasSize = document.getElementById("canvas-size");
 const canvasWidth = document.getElementById("canvas-width");
 const canvasHeight = document.getElementById("canvas-height");
 const canvasWrapper = document.getElementById("canvas-wrapper");
 const canvasWrapperWrapper = document.getElementById("canvas-wrapper-wrapper");
 
-document
-  .getElementById("canvas-size")
-  .addEventListener("submit", (event) => {
-    event.preventDefault();
+canvasSize.addEventListener("submit", (event) => {
+  event.preventDefault();
 
-    const width = parseInt(canvasWidth.value);
-    const height = parseInt(canvasHeight.value);
-    const size = new Vector2(width, height);
+  const passedValidation = canvasSize.checkValidity();
+  canvasSize.classList.add("was-validated");
 
-    simulationCanvas.resize(size);
+  if (!passedValidation) {
+    return false;
+  }
 
-    const aspectRatio = size.y / size.x;
-    const paddingPercentage = 100.0 * aspectRatio;
-    canvasWrapper.style.paddingTop = paddingPercentage.toPrecision(3) + "%";
+  const width = parseInt(canvasWidth.value);
+  const height = parseInt(canvasHeight.value);
+  const size = new Vector2(width, height);
+  simulationCanvas.resize(size);
 
-    const inverseAspectRatio = size.x / size.y;
-    const wrapperWidth = 85 * inverseAspectRatio;
-    canvasWrapperWrapper.style.width = wrapperWidth.toPrecision(3) + "vh";
-  });
+  const aspectRatio = size.y / size.x;
+  const paddingPercentage = 100.0 * aspectRatio;
+  canvasWrapper.style.paddingTop = paddingPercentage.toPrecision(3) + "%";
+
+  const inverseAspectRatio = size.x / size.y;
+  const wrapperWidth = 85 * inverseAspectRatio;
+  canvasWrapperWrapper.style.width = wrapperWidth.toPrecision(3) + "vh";
+});
