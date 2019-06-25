@@ -4,15 +4,16 @@ import Alert from "./Components/Alert";
 import Color from "./Utility/Color";
 import ColorControl from "./Components/ColorControl";
 import FileSaver from "file-saver";
+import PlayButton from "./Components/PlayButton";
 import * as Range from "./Utility/Range";
 import SimulationCanvas, {brushState, displayImage} from "./Components/SimulationCanvas";
 import Slider2d from "./Components/Slider2d";
 import SlideSwitch from "./Components/SlideSwitch";
 import Tablist from "./Components/Tablist";
+import Vector2 from "./Utility/Vector2";
 import Vector3 from "./Utility/Vector3";
 
 import "../Stylesheets/main.css";
-import Vector2 from "./Utility/Vector2";
 
 let simulationCanvas;
 let canvas;
@@ -44,20 +45,6 @@ function onCanvasSizeChange(event) {
     const height = width;
     const size = new Vector2(width, height);
     simulationCanvas.resize(size);
-  }
-}
-
-function onPauseClick(event) {
-  simulationCanvas.togglePause();
-
-  const button = event.currentTarget;
-  const pause = (button.getAttribute("aria-label") === "pause");
-  if (pause) {
-    button.setAttribute("aria-label", "play");
-    button.textContent = "▶";
-  } else {
-    button.setAttribute("aria-label", "pause");
-    button.textContent = "❙❙";
   }
 }
 
@@ -229,9 +216,7 @@ const tablist = new Tablist(tablistSpec);
 
 document
   .getElementById("clear")
-  .addEventListener("click", (event) => {
-    simulationCanvas.clear();
-  });
+  .addEventListener("click", event => simulationCanvas.clear());
 
 document
   .getElementById("download")
@@ -241,14 +226,8 @@ document
     }, "image/png");
   });
 
-document
-  .getElementById("pause")
-  .addEventListener("click", onPauseClick);
-
-document
-  .getElementById("canvas-size-small")
-  .addEventListener("change", onCanvasSizeChange);
-
-document
-  .getElementById("canvas-size-large")
-  .addEventListener("change", onCanvasSizeChange);
+const pause = new PlayButton({
+  id: "pause",
+  onChange: paused => simulationCanvas.setPaused(paused),
+  paused: false,
+});

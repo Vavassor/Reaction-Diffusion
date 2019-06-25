@@ -404,6 +404,10 @@ export default class SimulationCanvas {
     this.iterationsPerFrame = iterationsPerFrame;
   }
 
+  setPaused(paused) {
+    this.paused = paused;
+  }
+
   setRates(killRate, feedRate) {
     const x = feedRate;
     const y = killRate;
@@ -591,9 +595,5 @@ export default class SimulationCanvas {
       brush.positions = [];
       brush.strokeStepStart = 0.0;
     }
-  }
-
-  togglePause() {
-    this.paused = !this.paused;
   }
 }

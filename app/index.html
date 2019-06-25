@@ -106,16 +106,20 @@
         >
       </div>
 
-      <fieldset>
-        <legend>Canvas Size</legend>
-        <div>
-          <input id="canvas-size-small" type="radio" name="canvas-size" value="256" checked>
-          <label for="canvas-size-small">256</label>
-
-          <input id="canvas-size-large" type="radio" name="canvas-size" value="512">
-          <label for="canvas-size-large">512</label>
+      <h2>Canvas Size</h2>
+      <form novalidate>
+        <div class="form-group">
+          <label class="control-label" for="canvas-width">Width</label>
+          <input id="canvas-width" class="form-control" max="1024" min="1" step="1" type="number">
         </div>
-      </fieldset>
+
+        <div class="form-group">
+          <label class="control-label" for="canvas-height">Height</label>
+          <input id="canvas-height" class="form-control" max="1024" min="1" step="1" type="number">
+        </div>
+
+        <button id="submit-canvas-size" class="button-control" type="button">Resize</button>
+      </form>
 
       <h2>Display</h2>
       <div class="tablist" role="tablist">
