@@ -33,6 +33,13 @@ export default class Color {
   static black() {
     return new Color(0, 0, 0);
   }
+
+  static fromHex(string) {
+    const r = parseInt(string.substring(0, 2), 16) / 255;
+    const g = parseInt(string.substring(2, 4), 16) / 255;
+    const b = parseInt(string.substring(4, 6), 16) / 255;
+    return new Color(r, g, b);
+  }
   
   /**
    * Converts a color from HSV to RGB color space.

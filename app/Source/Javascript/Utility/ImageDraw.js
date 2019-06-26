@@ -3,6 +3,7 @@
  * @desc Image drawing utilities.
  */
 
+import Color from "./Color";
 import * as Range from "./Range";
 
 /** Computes a hermite interpolation between two values. */
@@ -98,18 +99,23 @@ export function createChecker(width, height, squareWidth) {
 export function createColorChecker(size) {
   const pixels = new Uint8Array(3 * size.x * size.y);
   const squareWidth = 10;
+  const colors = [
+    Color.fromHex("3f167d"),
+    Color.fromHex("b3074f"),
+    Color.fromHex("e65005"),
+    Color.fromHex("ffade5"),
+  ];
 
   for (let y = 0; y < size.y; y++) {
     for (let x = 0; x < size.x; x++) {
       const pixelIndex = 3 * ((size.x * y) + x);
       const squareX = Math.floor(x / squareWidth);
       const squareY = Math.floor(y / squareWidth);
-      const redCheck = ((squareX % 3) ^ (squareY % 3)) & 1;
-      const greenCheck = ((squareX % 3) ^ ((squareY + 1) % 3)) & 1;
-      const blueCheck = (((squareX + 1) % 3) ^ (squareY % 3)) & 1;
-      pixels[pixelIndex] = 255 * redCheck;
-      pixels[pixelIndex + 1] = 255 * greenCheck;
-      pixels[pixelIndex + 2] = 255 * blueCheck;
+      const colorIndex = ((squareY & 1) << 1) | (squareX & 1);
+      const color = colors[colorIndex];
+      pixels[pixelIndex] = Math.floor(255 * color.r);
+      pixels[pixelIndex + 1] = Math.floor(255 * color.g);
+      pixels[pixelIndex + 2] = Math.floor(255 * color.b);
     }
   }
 
