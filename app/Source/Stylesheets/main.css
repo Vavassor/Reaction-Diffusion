@@ -40,12 +40,12 @@ main {
 .canvas-wrapper-wrapper {
   margin: 0 auto;
   max-width: 100%;
-  width: 85vh;
+  width: 85vmin;
 }
 
 .canvas-controls {
   margin: auto;
-  max-width: 85vh;
+  max-width: 85vmin;
   padding-top: 1rem;
   width: 100%;
 }
@@ -421,7 +421,7 @@ main {
     grid-template-areas:
       ". canvas ."
       ". controls .";
-    grid-template-columns: auto 600px auto;
+    grid-template-columns: auto 1fr auto;
   }
 
   .control-panel {
@@ -434,7 +434,7 @@ main {
   main {
     grid-template-areas:
       ". canvas controls .";
-    grid-template-columns: auto 600px 300px auto;
+    grid-template-columns: auto 2fr 1fr auto;
   }
 
   .control-panel {
