@@ -7,9 +7,11 @@ main {
   display: grid;
   grid-template-areas:
     "canvas"
+    "menu"
     "controls";
   grid-template-columns: 1fr;
   row-gap: 1em;
+  height: 100vh;
 }
 
 
@@ -32,27 +34,27 @@ main {
   padding: .375rem .75rem;
 }
 
+.canvas {
+  border: .1em solid #000000;
+  display: block;
+  margin: 0 auto;
+  touch-action: none;
+  user-select: none;
+}
+
 .canvas-wrapper {
-  padding-top: 100%;
-  position: relative;
+  background-color: #7f7f7f;
+  height: 100%;
 }
 
 .canvas-wrapper-wrapper {
   margin: 0 auto;
-  max-width: 100%;
-  width: 85vmin;
-}
-
-.canvas-controls {
-  margin: auto;
-  max-width: 85vmin;
-  padding-top: 1rem;
-  width: 100%;
+  max-height: 85vh;
+  max-width: 85vw;
 }
 
 .canvas-panel {
   grid-area: canvas;
-  padding: 1rem;
 }
 
 .color-control {
@@ -80,6 +82,7 @@ main {
 .control-panel {
   border-top: .1em solid #000000;
   grid-area: controls;
+  overflow: auto;
   padding: 1em;
 }
 
@@ -183,16 +186,10 @@ main {
   -webkit-appearance: none;
 }
 
-.paint-canvas {
-  border: .1em solid #000000;
-  display: block;
-  height: 100%;
-  left: 0;
-  margin: auto;
-  position: absolute;
-  top: 0;
-  touch-action: none;
-  user-select: none;
+.menu-panel {
+  grid-area: menu;
+  margin: 0 auto;
+  padding: .5rem;
   width: 100%;
 }
 
@@ -419,9 +416,11 @@ main {
 @media (min-width: 600px) {
   main {
     grid-template-areas:
-      ". canvas ."
-      ". controls .";
-    grid-template-columns: auto 1fr auto;
+      "menu menu"
+      "canvas controls";
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr auto;
+    row-gap: 0;
   }
 
   .control-panel {
@@ -433,8 +432,10 @@ main {
 @media (min-width: 900px) {
   main {
     grid-template-areas:
-      ". canvas controls .";
-    grid-template-columns: auto 2fr 1fr auto;
+      "menu menu"
+      "canvas controls";
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr auto;
   }
 
   .control-panel {
