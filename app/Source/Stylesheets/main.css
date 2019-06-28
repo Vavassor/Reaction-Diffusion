@@ -1,6 +1,7 @@
 body, html {
-  padding: 0;
+  height: 100%;
   margin: 0;
+  padding: 0;
 }
 
 main {
@@ -10,8 +11,9 @@ main {
     "menu"
     "controls";
   grid-template-columns: 1fr;
-  row-gap: 1em;
-  height: 100vh;
+  grid-template-rows: 1fr auto 1fr;
+  height: 100%;
+  width: 100%;
 }
 
 
@@ -43,7 +45,8 @@ main {
 }
 
 .canvas-wrapper {
-  background-color: #7f7f7f;
+  align-items: center;
+  display: flex;
   height: 100%;
 }
 
@@ -54,7 +57,9 @@ main {
 }
 
 .canvas-panel {
+  background-color: #7f7f7f;
   grid-area: canvas;
+  overflow: auto;
 }
 
 .color-control {
@@ -187,10 +192,10 @@ main {
 }
 
 .menu-panel {
+  box-shadow: 0 .25rem .5rem rgba(0, 0, 0, 0.5);
   grid-area: menu;
-  margin: 0 auto;
   padding: .5rem;
-  width: 100%;
+  z-index: 2;
 }
 
 .popover {
@@ -420,7 +425,6 @@ main {
       "canvas controls";
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr auto;
-    row-gap: 0;
   }
 
   .control-panel {
