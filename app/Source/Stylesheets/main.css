@@ -50,12 +50,6 @@ main {
   height: 100%;
 }
 
-.canvas-wrapper-wrapper {
-  margin: 0 auto;
-  max-height: 85vh;
-  max-width: 85vw;
-}
-
 .canvas-panel {
   background-color: #7f7f7f;
   grid-area: canvas;

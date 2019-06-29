@@ -17,6 +17,7 @@ import "../Stylesheets/main.css";
 
 let simulationCanvas;
 let canvas;
+let canvasWrapper;
 let ongoingTouches = [];
 
 
@@ -85,15 +86,40 @@ function ongoingTouchIndexById(id) {
   return ongoingTouches.findIndex(touch => touch.identifier === id);
 }
 
+function resetZoom(canvasSize) {
+  const wrapperRect = canvasWrapper.getBoundingClientRect();
+  const wrapperAspectRatio = wrapperRect.width / wrapperRect.height;
+  const inverseWrapperAspectRatio = wrapperRect.height / wrapperRect.width;
+
+  const aspectRatio = canvasSize.y / canvasSize.x;
+  const inverseAspectRatio = canvasSize.x / canvasSize.y;
+
+  let widthPercentage;
+  let heightPercentage;
+
+  if (canvasSize.x > canvasSize.y) {
+    widthPercentage = 95.0;
+    heightPercentage = 95.0 * aspectRatio * wrapperAspectRatio;
+  } else {
+    widthPercentage = 95.0 * inverseAspectRatio * inverseWrapperAspectRatio;
+    heightPercentage = 95.0;
+  }
+  
+  canvas.style.width = widthPercentage.toPrecision(3) + "%";
+  canvas.style.height = heightPercentage.toPrecision(3) + "%";
+}
+
 // Entrypoint..................................................................
 
 const canvasAlert = new Alert({
   id: "canvas-alert",
 });
 
+const initialSize = new Vector2(256, 256);
+
 canvas = document.getElementById("canvas");
 try {
-  simulationCanvas = new SimulationCanvas(canvas, 256, 256);
+  simulationCanvas = new SimulationCanvas(canvas, initialSize.x, initialSize.y);
 } catch (exception) {
   canvasAlert.show(exception);
 }
@@ -224,8 +250,7 @@ const pause = new PlayButton({
 const canvasSize = document.getElementById("canvas-size");
 const canvasWidth = document.getElementById("canvas-width");
 const canvasHeight = document.getElementById("canvas-height");
-const canvasWrapper = document.getElementById("canvas-wrapper");
-const canvasWrapperWrapper = document.getElementById("canvas-wrapper-wrapper");
+canvasWrapper = document.getElementById("canvas-wrapper");
 
 canvasSize.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -242,15 +267,12 @@ canvasSize.addEventListener("submit", (event) => {
   const size = new Vector2(width, height);
   simulationCanvas.resize(size);
 
-  // const aspectRatio = size.y / size.x;
-  // const paddingPercentage = 100.0 * aspectRatio;
-  // canvasWrapper.style.paddingTop = paddingPercentage.toPrecision(3) + "%";
-
-  // const viewportWidth = document.documentElement.clientWidth;
-  // const viewportHeight = document.documentElement.clientHeight;
-  // const inverseAspectRatio = size.x / size.y;
-  // const viewportAspectRatio = viewportWidth / viewportHeight;
-  // const wrapperWidth = 85 * inverseAspectRatio * viewportAspectRatio;
-  // const unit = (viewportWidth < viewportHeight === size.x < size.y) ? "vw" : "vh";
-  // canvasWrapperWrapper.style.width = wrapperWidth.toPrecision(3) + unit;
+  resetZoom(size);
 });
+
+window.addEventListener("resize", (event) => {
+  const size = new Vector2(canvas.width, canvas.height);
+  resetZoom(size);
+});
+
+resetZoom(initialSize);
