@@ -182,7 +182,7 @@ export default class SimulationCanvas {
     }
     
     this.brush = {
-      color: Color.white(),
+      color: Color.fromHex("00ffcc"),
       endStrokeNextFrame: false,
       position: new Vector3(-16, 32, 0),
       positions: [],

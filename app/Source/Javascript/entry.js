@@ -242,11 +242,15 @@ canvasSize.addEventListener("submit", (event) => {
   const size = new Vector2(width, height);
   simulationCanvas.resize(size);
 
-  const aspectRatio = size.y / size.x;
-  const paddingPercentage = 100.0 * aspectRatio;
-  canvasWrapper.style.paddingTop = paddingPercentage.toPrecision(3) + "%";
+  // const aspectRatio = size.y / size.x;
+  // const paddingPercentage = 100.0 * aspectRatio;
+  // canvasWrapper.style.paddingTop = paddingPercentage.toPrecision(3) + "%";
 
-  const inverseAspectRatio = size.x / size.y;
-  const wrapperWidth = 85 * inverseAspectRatio;
-  canvasWrapperWrapper.style.width = wrapperWidth.toPrecision(3) + "vh";
+  // const viewportWidth = document.documentElement.clientWidth;
+  // const viewportHeight = document.documentElement.clientHeight;
+  // const inverseAspectRatio = size.x / size.y;
+  // const viewportAspectRatio = viewportWidth / viewportHeight;
+  // const wrapperWidth = 85 * inverseAspectRatio * viewportAspectRatio;
+  // const unit = (viewportWidth < viewportHeight === size.x < size.y) ? "vw" : "vh";
+  // canvasWrapperWrapper.style.width = wrapperWidth.toPrecision(3) + unit;
 });
