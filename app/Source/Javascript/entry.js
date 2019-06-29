@@ -86,10 +86,12 @@ function ongoingTouchIndexById(id) {
   return ongoingTouches.findIndex(touch => touch.identifier === id);
 }
 
-function resetZoom(canvasSize) {
+function resetZoom() {
+  const canvasSize = new Vector2(canvas.width, canvas.height);
+
   const wrapperRect = canvasWrapper.getBoundingClientRect();
-  const wrapperAspectRatio = wrapperRect.width / wrapperRect.height;
-  const inverseWrapperAspectRatio = wrapperRect.height / wrapperRect.width;
+  const wrapperAspectRatio = wrapperRect.height / wrapperRect.width;
+  const inverseWrapperAspectRatio = wrapperRect.width / wrapperRect.height;
 
   const aspectRatio = canvasSize.y / canvasSize.x;
   const inverseAspectRatio = canvasSize.x / canvasSize.y;
@@ -97,11 +99,11 @@ function resetZoom(canvasSize) {
   let widthPercentage;
   let heightPercentage;
 
-  if (canvasSize.x > canvasSize.y) {
+  if (aspectRatio < wrapperAspectRatio) {
     widthPercentage = 95.0;
-    heightPercentage = 95.0 * aspectRatio * wrapperAspectRatio;
+    heightPercentage = 95.0 * aspectRatio * inverseWrapperAspectRatio;
   } else {
-    widthPercentage = 95.0 * inverseAspectRatio * inverseWrapperAspectRatio;
+    widthPercentage = 95.0 * inverseAspectRatio * wrapperAspectRatio;
     heightPercentage = 95.0;
   }
   
@@ -267,12 +269,11 @@ canvasSize.addEventListener("submit", (event) => {
   const size = new Vector2(width, height);
   simulationCanvas.resize(size);
 
-  resetZoom(size);
+  resetZoom();
 });
 
 window.addEventListener("resize", (event) => {
-  const size = new Vector2(canvas.width, canvas.height);
-  resetZoom(size);
+  resetZoom();
 });
 
-resetZoom(initialSize);
+resetZoom();
