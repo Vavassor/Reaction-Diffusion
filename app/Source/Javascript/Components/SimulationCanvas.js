@@ -426,6 +426,21 @@ export default class SimulationCanvas {
     this.update.feedRate = x;
   }
 
+  setInkTexture(image) {
+    const size = new Vector2(image.width, image.height);
+    this.textures.ink[0].update(size, image);
+  }
+
+  setOrientationMap(image) {
+    const size = new Vector2(image.width, image.height);
+    this.textures.orientationMap.update(size, image);
+  }
+
+  setStyleMap(image) {
+    const size = new Vector2(image.width, image.height);
+    this.textures.styleMap.update(size, image);
+  }
+
   start() {
     const frame = () => {
       this.step();

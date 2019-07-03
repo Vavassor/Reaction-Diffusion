@@ -50,16 +50,31 @@ export default class Texture {
    * This implicitly binds the texture as a side-effect.
    * 
    * @param {Vector2} size - the dimensions of the content
+   * @param {ArrayBufferView|HTMLImageElement|ImageBitmap} content - the content
    */
-  update(size, content) {
-    const format = this.format;
+  update(size, content) {    
     const gl = this.gl;
-    const internalFormat = this.internalFormat;
-    const type = this.type;
 
     this.size = size;
-    
     this.bind(0);
-    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, size.x, size.y, 0, format, type, content);
+
+    if (content instanceof HTMLImageElement
+        || content instanceof ImageBitmap) {
+      const internalFormat = gl.RGBA;
+      const format = gl.RGBA;
+      const type = gl.UNSIGNED_BYTE;
+  
+      this.format = format;
+      this.internalFormat = internalFormat;
+      this.type = type;
+
+      gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, format, type, content);
+    } else if (content instanceof ArrayBufferView) {
+      const format = this.format;
+      const internalFormat = this.internalFormat;
+      const type = this.type;
+
+      gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, size.x, size.y, 0, format, type, content);
+    }
   }
 }

@@ -4,6 +4,7 @@ import Alert from "./Components/Alert";
 import Color from "./Utility/Color";
 import ColorControl from "./Components/ColorControl";
 import FileSaver from "file-saver";
+import * as ImageLoader from "./Utility/ImageLoader";
 import PlayButton from "./Components/PlayButton";
 import * as Range from "./Utility/Range";
 import SimulationCanvas, {brushState, displayImage} from "./Components/SimulationCanvas";
@@ -248,6 +249,32 @@ const pause = new PlayButton({
   onChange: paused => simulationCanvas.setPaused(paused),
   paused: false,
 });
+
+// Input Image.................................................................
+
+const inputImageFile = document.getElementById("input-image-file");
+
+document
+  .getElementById("input-image")
+  .addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    if (inputImageFile.files.length === 0) {
+      return false;
+    }
+    
+    const file = inputImageFile.files[0];
+    
+    ImageLoader.loadFromFile(file)
+      .then((image) => {
+        simulationCanvas.setInkTexture(image);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  });
+
+// Canvas Size.................................................................
 
 const canvasSize = document.getElementById("canvas-size");
 const canvasWidth = document.getElementById("canvas-width");
