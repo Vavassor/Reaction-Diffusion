@@ -59,31 +59,6 @@
         >
       </div>
 
-      <h2>Import Image</h2>
-      <form id="import-image" novalidate>
-        <div class="form-group">
-          <label class="control-label" for="import-image-map">Map</label>
-          <select id="import-image-map" class="form-control" required>
-            <option value="ink">Ink</option>
-            <option value="orientation-map">Orientation Map</option>
-            <option value="style-map">Style Map</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="control-label" for="import-image-file">Image File</label>
-          <input
-            id="import-image-file"
-            class="form-control"
-            type="file"
-            accept="image/png,image/jpeg"
-            required
-          >
-        </div>
-
-        <button class="button-control" type="submit">Import</button>
-      </form>
-
       <div class="form-group">
         <button id="apply-flow-map" class="slide-switch" type="button" role="switch" aria-checked="false">
           <div class="slide-switch-handle"></div>
@@ -161,6 +136,31 @@
         </div>
 
         <button class="button-control" type="submit">Resize</button>
+      </form>
+
+      <h2>Import Image</h2>
+      <form id="import-image" novalidate>
+        <div class="form-group">
+          <label class="control-label" for="import-image-map">Map</label>
+          <select id="import-image-map" class="form-control" required>
+            <option value="ink">Ink</option>
+            <option value="orientation-map">Orientation Map</option>
+            <option value="style-map">Style Map</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label" for="import-image-file">Image File</label>
+          <input
+            id="import-image-file"
+            class="form-control"
+            type="file"
+            accept="image/png,image/jpeg"
+            required
+          >
+        </div>
+
+        <button class="button-control" type="submit">Import</button>
       </form>
 
       <h2>Display</h2>
