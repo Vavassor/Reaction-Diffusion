@@ -15,6 +15,7 @@ export default class Texture {
 
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minifyFilter);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magnifyFilter);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -50,7 +51,7 @@ export default class Texture {
    * This implicitly binds the texture as a side-effect.
    * 
    * @param {Vector2} size - the dimensions of the content
-   * @param {ArrayBufferView|HTMLImageElement|ImageBitmap} content - the content
+   * @param {Float32Array|HTMLImageElement|ImageBitmap|Uint8Array} content - the content
    */
   update(size, content) {    
     const gl = this.gl;
@@ -69,12 +70,15 @@ export default class Texture {
       this.type = type;
 
       gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, format, type, content);
-    } else if (content instanceof ArrayBufferView) {
+    } else if (content instanceof Uint8Array
+        || content instanceof Float32Array) {
       const format = this.format;
       const internalFormat = this.internalFormat;
       const type = this.type;
 
       gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, size.x, size.y, 0, format, type, content);
+    } else if (content) {
+      throw new Error("The content type is unsupported.");
     }
   }
 }
