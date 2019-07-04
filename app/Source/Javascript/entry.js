@@ -4,6 +4,7 @@ import Alert from "./Components/Alert";
 import Color from "./Utility/Color";
 import ColorControl from "./Components/ColorControl";
 import FileSaver from "file-saver";
+import * as ImageLoader from "./Utility/ImageLoader";
 import PlayButton from "./Components/PlayButton";
 import * as Range from "./Utility/Range";
 import SimulationCanvas, {brushState, displayImage} from "./Components/SimulationCanvas";
@@ -248,6 +249,46 @@ const pause = new PlayButton({
   onChange: paused => simulationCanvas.setPaused(paused),
   paused: false,
 });
+
+// Import Image................................................................
+
+const importImageFile = document.getElementById("import-image-file");
+const importImageMap = document.getElementById("import-image-map");
+
+document
+  .getElementById("import-image")
+  .addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    if (importImageFile.files.length === 0) {
+      return false;
+    }
+    
+    const file = importImageFile.files[0];
+    const map = importImageMap.value;
+    
+    ImageLoader.loadFromFile(file)
+      .then((image) => {
+        switch (map) {
+          case "ink":
+            simulationCanvas.setInkTexture(image);
+            break;
+
+          case "orientation-map":
+            simulationCanvas.setOrientationMap(image);
+            break;
+
+          case "style-map":
+            simulationCanvas.setStyleMap(image);
+            break;
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  });
+
+// Canvas Size.................................................................
 
 const canvasSize = document.getElementById("canvas-size");
 const canvasWidth = document.getElementById("canvas-width");
