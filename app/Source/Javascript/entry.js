@@ -250,24 +250,38 @@ const pause = new PlayButton({
   paused: false,
 });
 
-// Input Image.................................................................
+// Import Image................................................................
 
-const inputImageFile = document.getElementById("input-image-file");
+const importImageFile = document.getElementById("import-image-file");
+const importImageMap = document.getElementById("import-image-map");
 
 document
-  .getElementById("input-image")
+  .getElementById("import-image")
   .addEventListener("submit", (event) => {
     event.preventDefault();
 
-    if (inputImageFile.files.length === 0) {
+    if (importImageFile.files.length === 0) {
       return false;
     }
     
-    const file = inputImageFile.files[0];
+    const file = importImageFile.files[0];
+    const map = importImageMap.value;
     
     ImageLoader.loadFromFile(file)
       .then((image) => {
-        simulationCanvas.setInkTexture(image);
+        switch (map) {
+          case "ink":
+            simulationCanvas.setInkTexture(image);
+            break;
+
+          case "orientation-map":
+            simulationCanvas.setOrientationMap(image);
+            break;
+
+          case "style-map":
+            simulationCanvas.setStyleMap(image);
+            break;
+        }
       })
       .catch((error) => {
         console.error(error);
