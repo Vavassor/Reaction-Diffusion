@@ -131,10 +131,12 @@ export default class FlowSim {
     const subtractPressureGradientProgram = this.programs.subtractPressureGradient;
     const textures = this.textures;
 
-    textures.divergence.update(size, null);
+    const divergenceContent = ImageDraw.createBlackness(size);
+    textures.divergence.update(size, divergenceContent);
 
-    textures.pressure[0].update(size, null);
-    textures.pressure[1].update(size, null);
+    const pressureContent = divergenceContent;
+    textures.pressure[0].update(size, pressureContent);
+    textures.pressure[1].update(size, pressureContent);
 
     const velocityContent = ImageDraw.createVectorFieldFloat32(size);
     textures.velocityField[0].update(size, velocityContent);

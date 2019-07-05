@@ -207,7 +207,6 @@ export default class SimulationCanvas {
     this.iterationsPerFrame = 16;
     this.nextFrameChange = {
       clear: false,
-      resize: false,
     };
     this.pageIndex = 0;
     this.paused = false;
@@ -303,6 +302,7 @@ export default class SimulationCanvas {
     const camera = this.camera;
     const canvas = this.canvas;
     const canvasTextureProgram = this.programs.canvasTexture;
+    const diffuseInkProgram = this.programs.diffuseInk;
     const displayProgram = this.programs.display;
     const gl = this.gl;
     const simulateProgram = this.programs.simulate;
@@ -324,13 +324,16 @@ export default class SimulationCanvas {
 
     const stateContents = ImageDraw.createCenteredNoiseSquare(size);
     textures.state[0].update(size, stateContents);
-    textures.state[1].update(size, null);
+    textures.state[1].update(size, stateContents);
 
     const styleContent = ImageDraw.createWaves(size);
     textures.styleMap.update(size, styleContent);
 
     gl.useProgram(canvasTextureProgram);
     gl.uniform2fv(gl.getUniformLocation(canvasTextureProgram, "image_dimensions"), size.elements);
+
+    gl.useProgram(diffuseInkProgram);
+    gl.uniform2fv(gl.getUniformLocation(diffuseInkProgram, "texture_size"), size.elements);
 
     gl.useProgram(displayProgram);
     gl.uniform2fv(gl.getUniformLocation(displayProgram, "state_size"), size.elements);
