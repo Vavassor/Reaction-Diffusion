@@ -12,6 +12,22 @@ function smoothstep(a, b, x) {
   return t * t * (3.0 - (2.0 * t));
 }
 
+export function createBlackness(size) {
+  const pixels = new Float32Array(4 * size.x * size.y);
+
+  for (let y = 0; y < size.y; y++) {
+    for (let x = 0; x < size.x; x++) {
+      const pixelIndex = 4 * ((size.x * y) + x);
+      pixels[pixelIndex] = 0.0;
+      pixels[pixelIndex + 1] = 0.0;
+      pixels[pixelIndex + 2] = 0.0;
+      pixels[pixelIndex + 3] = 0.0;
+    }
+  }
+
+  return pixels;
+}
+
 /**
  * Draws a red rectangle with a square of red-green noise in the middle.
  * @param {Vector2} size - the dimensions of the rectangle
