@@ -2,8 +2,12 @@
 
 /** A program in WebGL. */
 export default class ShaderProgram {
-  constructor(gl, spec) {
-    const handle = spec.handle;
+  constructor(glo, spec) {
+    const gl = glo.gl;
+    const fragmentShader = spec.shaders.fragment;
+    const vertexShader = spec.shaders.vertex;
+    
+    const handle = glo.createAndLinkProgram(vertexShader, fragmentShader);
     
     let uniformLocations = {};
     for (const uniformName of spec.uniforms) {

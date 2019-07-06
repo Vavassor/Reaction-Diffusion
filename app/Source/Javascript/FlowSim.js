@@ -25,14 +25,11 @@ export default class FlowSim {
     const pressureShader = glo.createShader(gl.FRAGMENT_SHADER, pressureFsSource);
     const subtractPressureGradientShader = glo.createShader(gl.FRAGMENT_SHADER, subtractPressureGradientFsSource);
 
-    const advectProgramHandle = glo.createAndLinkProgram(basicVertexShader, advectFragmentShader);
-    const bfeccProgramHandle = glo.createAndLinkProgram(basicVertexShader, bfeccFragmentShader);
-    const divergenceProgramHandle = glo.createAndLinkProgram(basicVertexShader, divergenceShader);
-    const pressureProgramHandle = glo.createAndLinkProgram(basicVertexShader, pressureShader);
-    const subtractPressureGradientProgramHandle = glo.createAndLinkProgram(basicVertexShader, subtractPressureGradientShader);
-
     const advectProgram = glo.createShaderProgram({
-      handle: advectProgramHandle,
+      shaders: {
+        vertex: basicVertexShader,
+        fragment: advectFragmentShader,
+      },
       uniforms: [
         "delta_time",
         "texture_size",
@@ -43,7 +40,10 @@ export default class FlowSim {
     });
 
     const bfeccProgram = glo.createShaderProgram({
-      handle: bfeccProgramHandle,
+      shaders: {
+        vertex: basicVertexShader,
+        fragment: bfeccFragmentShader,
+      },
       uniforms: [
         "velocity_field",
         "compensation_field",
@@ -52,7 +52,10 @@ export default class FlowSim {
     });
 
     const divergenceProgram = glo.createShaderProgram({
-      handle: divergenceProgramHandle,
+      shaders: {
+        vertex: basicVertexShader,
+        fragment: divergenceShader,
+      },
       uniforms: [
         "delta_time",
         "density",
@@ -63,7 +66,10 @@ export default class FlowSim {
     });
 
     const pressureProgram = glo.createShaderProgram({
-      handle: pressureProgramHandle,
+      shaders: {
+        vertex: basicVertexShader,
+        fragment: pressureShader,
+      },
       uniforms: [
         "field_size",
         "divergence_field",
@@ -73,7 +79,10 @@ export default class FlowSim {
     });
 
     const subtractPressureGradientProgram = glo.createShaderProgram({
-      handle: subtractPressureGradientProgramHandle,
+      shaders: {
+        vertex: basicVertexShader,
+        fragment: subtractPressureGradientShader,
+      },
       uniforms: [
         "delta_time",
         "density",

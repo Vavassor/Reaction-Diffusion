@@ -70,9 +70,7 @@ export default class Glo {
   }
 
   createShaderProgram(spec) {
-    const program = new ShaderProgram(this.gl, spec);
-    this.setUpVertexLayout(program.handle);
-    return program;
+    return new ShaderProgram(this, spec);
   }
 
   createTexture(spec) {
