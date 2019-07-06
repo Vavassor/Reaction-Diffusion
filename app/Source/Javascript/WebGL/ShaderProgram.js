@@ -15,27 +15,38 @@ export default class ShaderProgram {
     this.uniformLocations = uniformLocations;
   }
 
+  assertUniformExists(name) {
+    const uniformLocations = this.uniformLocations;
+    if (!uniformLocations.hasOwnProperty(name)) {
+      throw new Error(`The uniform ${name} does not exist.`);
+    }
+  }
+
   setUniform1f(name, value) {
     const gl = this.gl;
     const uniformLocations = this.uniformLocations;
+    this.assertUniformExists(name);
     gl.uniform1f(uniformLocations[name], value);
   }
 
   setUniform1i(name, value) {
     const gl = this.gl;
     const uniformLocations = this.uniformLocations;
+    this.assertUniformExists(name);
     gl.uniform1i(uniformLocations[name], value);
   }
 
   setUniform2fv(name, value) {
     const gl = this.gl;
     const uniformLocations = this.uniformLocations;
+    this.assertUniformExists(name);
     gl.uniform2fv(uniformLocations[name], value);
   }
 
   setUniformMatrix4fv(name, value) {
     const gl = this.gl;
     const uniformLocations = this.uniformLocations;
+    this.assertUniformExists(name);
     gl.uniformMatrix4fv(uniformLocations[name], false, value);
   }
 
