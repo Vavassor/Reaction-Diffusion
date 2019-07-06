@@ -8,10 +8,15 @@ export default class ShaderProgram {
     const vertexShader = spec.shaders.vertex;
     
     const handle = glo.createAndLinkProgram(vertexShader, fragmentShader);
+    glo.setUpVertexLayout(handle);
     
     let uniformLocations = {};
     for (const uniformName of spec.uniforms) {
-      uniformLocations[uniformName] = gl.getUniformLocation(handle, uniformName);
+      const location = gl.getUniformLocation(handle, uniformName);
+      if (!location) {
+        throw new Error(`The location of uniform ${uniformName} was not found`);
+      }
+      uniformLocations[uniformName] = location;
     }
 
     this.gl = gl;

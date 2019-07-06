@@ -314,7 +314,7 @@ export default class FlowSim {
     const gl = this.gl;
     const textures = this.textures;
 
-    gl.useProgram(displayFieldProgram);
+    displayFieldProgram.use();
     textures.velocityField[0].bind(0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
