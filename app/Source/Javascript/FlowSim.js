@@ -25,28 +25,39 @@ export default class FlowSim {
     const pressureShader = glo.createShader(gl.FRAGMENT_SHADER, pressureFsSource);
     const subtractPressureGradientShader = glo.createShader(gl.FRAGMENT_SHADER, subtractPressureGradientFsSource);
 
-    const advectProgram = glo.createAndLinkProgram(basicVertexShader, advectFragmentShader);
+    const advectProgramHandle = glo.createAndLinkProgram(basicVertexShader, advectFragmentShader);
     const bfeccProgram = glo.createAndLinkProgram(basicVertexShader, bfeccFragmentShader);
     const divergenceProgram = glo.createAndLinkProgram(basicVertexShader, divergenceShader);
     const pressureProgram = glo.createAndLinkProgram(basicVertexShader, pressureShader);
     const subtractPressureGradientProgram = glo.createAndLinkProgram(basicVertexShader, subtractPressureGradientShader);
 
-    gl.useProgram(advectProgram);
-    glo.loadVertexData(advectProgram);
-    gl.uniform1f(gl.getUniformLocation(advectProgram, "delta_time"), deltaTime);
-    gl.uniform2fv(gl.getUniformLocation(advectProgram, "texture_size"), simSize.elements);
-    gl.uniform1i(gl.getUniformLocation(advectProgram, "input_texture"), 0);
-    gl.uniform1i(gl.getUniformLocation(advectProgram, "velocity_field"), 1);
-    gl.uniformMatrix4fv(gl.getUniformLocation(advectProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
+    const advectProgramSpec = {
+      handle: advectProgramHandle,
+      uniforms: [
+        "delta_time",
+        "texture_size",
+        "input_texture",
+        "velocity_field",
+        "model_view_projection",
+      ],
+    };
+    const advectProgram = glo.createShaderProgram(advectProgramSpec);
+
+    advectProgram.use();
+    advectProgram.setUniform1f("delta_time", deltaTime);
+    advectProgram.setUniform2fv("texture_size", simSize.elements);
+    advectProgram.setUniform1i("input_texture", 0);
+    advectProgram.setUniform1i("velocity_field", 1);
+    advectProgram.setUniformMatrix4fv("model_view_projection", Matrix4.identity().transpose.float32Array);
 
     gl.useProgram(bfeccProgram);
-    glo.loadVertexData(bfeccProgram);
+    glo.setUpVertexLayout(bfeccProgram);
     gl.uniform1i(gl.getUniformLocation(bfeccProgram, "velocity_field"), 0);
     gl.uniform1i(gl.getUniformLocation(bfeccProgram, "compensation_field"), 1);
     gl.uniformMatrix4fv(gl.getUniformLocation(bfeccProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
 
     gl.useProgram(divergenceProgram);
-    glo.loadVertexData(divergenceProgram);
+    glo.setUpVertexLayout(divergenceProgram);
     gl.uniform1f(gl.getUniformLocation(divergenceProgram, "delta_time"), deltaTime);
     gl.uniform1f(gl.getUniformLocation(divergenceProgram, "density"), density);
     gl.uniform1i(gl.getUniformLocation(divergenceProgram, "velocity_field"), 0);
@@ -54,14 +65,14 @@ export default class FlowSim {
     gl.uniformMatrix4fv(gl.getUniformLocation(divergenceProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
 
     gl.useProgram(pressureProgram);
-    glo.loadVertexData(pressureProgram);
+    glo.setUpVertexLayout(pressureProgram);
     gl.uniform2fv(gl.getUniformLocation(pressureProgram, "field_size"), simSize.elements);
     gl.uniform1i(gl.getUniformLocation(pressureProgram, "divergence_field"), 0);
     gl.uniform1i(gl.getUniformLocation(pressureProgram, "pressure_field"), 1);
     gl.uniformMatrix4fv(gl.getUniformLocation(pressureProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
 
     gl.useProgram(subtractPressureGradientProgram);
-    glo.loadVertexData(subtractPressureGradientProgram);
+    glo.setUpVertexLayout(subtractPressureGradientProgram);
     gl.uniform1f(gl.getUniformLocation(subtractPressureGradientProgram, "delta_time"), deltaTime);
     gl.uniform1f(gl.getUniformLocation(subtractPressureGradientProgram, "density"), density);
     gl.uniform2fv(gl.getUniformLocation(subtractPressureGradientProgram, "field_size"), simSize.elements);
@@ -143,8 +154,8 @@ export default class FlowSim {
     textures.velocityField[1].update(size, velocityContent);
     textures.velocityField[2].update(size, velocityContent);
 
-    gl.useProgram(advectProgram);
-    gl.uniform2fv(gl.getUniformLocation(advectProgram, "texture_size"), size.elements);
+    advectProgram.use();
+    advectProgram.setUniform2fv("texture_size", size.elements);
     
     gl.useProgram(divergenceProgram);
     gl.uniform2fv(gl.getUniformLocation(divergenceProgram, "velocity_field_size"), size.elements);
@@ -164,14 +175,14 @@ export default class FlowSim {
     const gl = this.gl;
     const textures = this.textures;
 
-    gl.useProgram(advectProgram);
+    advectProgram.use();
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[1]);
     textures.velocityField[0].bind(0);
     textures.velocityField[0].bind(1);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
    
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[2]);
-    gl.uniform1f(gl.getUniformLocation(advectProgram, "delta_time"), -deltaTime);
+    advectProgram.setUniform1f("delta_time", -deltaTime);
     textures.velocityField[1].bind(0);
     textures.velocityField[1].bind(1);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -182,8 +193,8 @@ export default class FlowSim {
     textures.velocityField[2].bind(1);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
-    gl.useProgram(advectProgram);
-    gl.uniform1f(gl.getUniformLocation(advectProgram, "delta_time"), deltaTime);
+    advectProgram.use();
+    advectProgram.setUniform1f("delta_time", deltaTime);
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.velocityField[2]);
     textures.velocityField[1].bind(0);
     textures.velocityField[1].bind(1);
@@ -238,7 +249,7 @@ export default class FlowSim {
     const gl = this.gl;
     const textures = this.textures;
 
-    gl.useProgram(advectProgram);
+    advectProgram.use();
     gl.bindFramebuffer(gl.FRAMEBUFFER, outputFramebuffer);
     inputTexture.bind(0);
     textures.velocityField[0].bind(1);

@@ -7,7 +7,7 @@ import diffuseInkFsSource from "../../Shaders/diffuse-ink-fs.glsl";
 import displayFsSource from "../../Shaders/display-fs.glsl";
 import displayFieldFsSource from "../../Shaders/display-field-fs.glsl";
 import FlowSim from "../FlowSim";
-import Glo from "../Utility/Glo";
+import Glo from "../WebGL/Glo";
 import * as ImageDraw from "../Utility/ImageDraw";
 import Matrix4 from "../Utility/Matrix4";
 import passthroughVsSource from "../../Shaders/passthrough-vs.glsl";
@@ -51,6 +51,7 @@ export default class SimulationCanvas {
     this.glo = glo;
 
     glo.checkCompatibility();
+    glo.loadVertexData();
 
     const basicVertexShader = glo.createShader(gl.VERTEX_SHADER, basicVsSource);
     const passthroughVertexShader = glo.createShader(gl.VERTEX_SHADER, passthroughVsSource);
@@ -71,37 +72,37 @@ export default class SimulationCanvas {
     const simulateProgram = glo.createAndLinkProgram(passthroughVertexShader, simulateShader);
 
     gl.useProgram(brushProgram);
-    glo.loadVertexData(brushProgram);
+    glo.setUpVertexLayout(brushProgram);
     gl.uniform1i(gl.getUniformLocation(brushProgram, "brush_shape"), 0);
 
     gl.useProgram(brushCutoutProgram);
-    glo.loadVertexData(brushCutoutProgram);
+    glo.setUpVertexLayout(brushCutoutProgram);
     gl.uniform1i(gl.getUniformLocation(brushCutoutProgram, "brush_shape"), 0);
 
     gl.useProgram(canvasTextureProgram);
-    glo.loadVertexData(canvasTextureProgram);
+    glo.setUpVertexLayout(canvasTextureProgram);
     gl.uniform2fv(gl.getUniformLocation(canvasTextureProgram, "image_dimensions"), simSize.elements);
     gl.uniform1i(gl.getUniformLocation(canvasTextureProgram, "image"), 0);
 
     gl.useProgram(diffuseInkProgram);
-    glo.loadVertexData(diffuseInkProgram);
+    glo.setUpVertexLayout(diffuseInkProgram);
     gl.uniform2fv(gl.getUniformLocation(diffuseInkProgram, "texture_size"), simSize.elements);
     gl.uniform1i(gl.getUniformLocation(diffuseInkProgram, "ink"), 0);
     gl.uniformMatrix4fv(gl.getUniformLocation(diffuseInkProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
 
     gl.useProgram(displayProgram);
-    glo.loadVertexData(displayProgram);
+    glo.setUpVertexLayout(displayProgram);
     gl.uniform1i(gl.getUniformLocation(displayProgram, "state"), 0);
     gl.uniform1i(gl.getUniformLocation(displayProgram, "ink"), 1);
     gl.uniform2fv(gl.getUniformLocation(displayProgram, "state_size"), simSize.elements);
 
     gl.useProgram(displayFieldProgram);
-    glo.loadVertexData(displayFieldProgram);
+    glo.setUpVertexLayout(displayFieldProgram);
     gl.uniform1i(gl.getUniformLocation(displayFieldProgram, "field"), 0);
     gl.uniformMatrix4fv(gl.getUniformLocation(displayFieldProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
 
     gl.useProgram(simulateProgram);
-    glo.loadVertexData(simulateProgram);
+    glo.setUpVertexLayout(simulateProgram);
     gl.uniform2fv(gl.getUniformLocation(simulateProgram, "state_size"), simSize.elements);
     gl.uniform1i(gl.getUniformLocation(simulateProgram, "state"), 0);
     gl.uniform1i(gl.getUniformLocation(simulateProgram, "style_map"), 1);
