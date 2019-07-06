@@ -63,21 +63,45 @@ export default class SimulationCanvas {
     const displayFieldShader = glo.createShader(gl.FRAGMENT_SHADER, displayFieldFsSource);
     const simulateShader = glo.createShader(gl.FRAGMENT_SHADER, simulateFsSource);
 
-    const brushProgram = glo.createAndLinkProgram(basicVertexShader, brushFragmentShader);
-    const brushCutoutProgram = glo.createAndLinkProgram(basicVertexShader, brushCutoutShader);
+    const brushProgram = glo.createShaderProgram({
+      shaders: {
+        vertex: basicVertexShader,
+        fragment: brushFragmentShader,
+      },
+      uniforms: [
+        "brush_shape",
+        "brush_color",
+        "model_view_projection",
+      ],
+    });
+
+    const brushCutoutProgram = glo.createShaderProgram({
+      shaders: {
+        vertex: basicVertexShader,
+        fragment: brushCutoutShader,
+      },
+      uniforms: [
+        "brush_shape",
+        "brush_color",
+        "model_view_projection",
+      ],
+    });
+
     const canvasTextureProgram = glo.createAndLinkProgram(passthroughVertexShader, canvasTextureShader);
     const diffuseInkProgram = glo.createAndLinkProgram(basicVertexShader, diffuseInkShader);
     const displayProgram = glo.createAndLinkProgram(passthroughVertexShader, displayShader);
     const displayFieldProgram = glo.createAndLinkProgram(basicVertexShader, displayFieldShader);
     const simulateProgram = glo.createAndLinkProgram(passthroughVertexShader, simulateShader);
 
-    gl.useProgram(brushProgram);
-    glo.setUpVertexLayout(brushProgram);
-    gl.uniform1i(gl.getUniformLocation(brushProgram, "brush_shape"), 0);
+    brushProgram.use();
+    brushProgram.setUniform1i("brush_shape", 0);
+    brushProgram.setUniform4fv("brush_color", Color.black().toRgba());
+    brushProgram.setUniformMatrix4fv("model_view_projection", Matrix4.identity().transpose.float32Array);
 
-    gl.useProgram(brushCutoutProgram);
-    glo.setUpVertexLayout(brushCutoutProgram);
-    gl.uniform1i(gl.getUniformLocation(brushCutoutProgram, "brush_shape"), 0);
+    brushCutoutProgram.use();
+    brushCutoutProgram.setUniform1i("brush_shape", 0);
+    brushCutoutProgram.setUniform4fv("brush_color", Color.black().toRgba());
+    brushCutoutProgram.setUniformMatrix4fv("model_view_projection", Matrix4.identity().transpose.float32Array);
 
     gl.useProgram(canvasTextureProgram);
     glo.setUpVertexLayout(canvasTextureProgram);
@@ -244,16 +268,16 @@ export default class SimulationCanvas {
     let stepStart = 0.0;
 
     if (brush.state === brushState.DOWN && brush.positions.length > 1) {
-      gl.useProgram(brushProgram);
+      brushProgram.use();
       textures.brushShape.bind(0);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor.toRgba());
+      brushProgram.setUniform4fv("brush_color", brushColor.toRgba());
       stepStart = this.drawBrushStroke(brushProgram);
     }
 
     if (brush.endStrokeNextFrame && brush.positions.length > 0) {
-      gl.useProgram(brushProgram);
+      brushProgram.use();
       textures.brushShape.bind(0);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor.toRgba());
+      brushProgram.setUniform4fv("brush_color", brushColor.toRgba());
       this.drawBrushDot(brush.positions[0], brushProgram);
     }
 
@@ -269,7 +293,7 @@ export default class SimulationCanvas {
     const model = Matrix4.multiply(translation, dilation);
     const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
 
-    gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+    brushProgram.setUniformMatrix4fv("model_view_projection", modelViewProjection.transpose.float32Array);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
@@ -592,10 +616,10 @@ export default class SimulationCanvas {
         || this.brush.state === brushState.HOVERING) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      gl.useProgram(brushProgram);
+      brushProgram.use();
       textures.brushShape.bind(0);
-      gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 0.5]);
+      brushProgram.setUniformMatrix4fv("model_view_projection", modelViewProjection.transpose.float32Array);
+      brushProgram.setUniform4fv("brush_color", [0.0, 1.0, 0.0, 0.5]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       gl.disable(gl.BLEND);
     }

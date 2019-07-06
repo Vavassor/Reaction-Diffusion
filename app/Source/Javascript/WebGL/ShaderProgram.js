@@ -47,6 +47,13 @@ export default class ShaderProgram {
     gl.uniform2fv(uniformLocations[name], value);
   }
 
+  setUniform4fv(name, value) {
+    const gl = this.gl;
+    const uniformLocations = this.uniformLocations;
+    this.assertUniformExists(name);
+    gl.uniform4fv(uniformLocations[name], value);
+  }
+
   setUniformMatrix4fv(name, value) {
     const gl = this.gl;
     const uniformLocations = this.uniformLocations;
