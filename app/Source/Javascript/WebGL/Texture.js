@@ -1,4 +1,4 @@
-/** @module Color */
+/** @module Texture */
 
 /** A collection of one or more images of the same format in WebGL. */
 export default class Texture {

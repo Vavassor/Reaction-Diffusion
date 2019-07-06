@@ -1,6 +1,7 @@
-import Texture from "../Texture";
-
 /** @module Glo */
+
+import ShaderProgram from "./ShaderProgram";
+import Texture from "./Texture";
 
 /** A WebGL utility class to separate out some of the boilerplate. */
 export default class Glo {
@@ -68,11 +69,15 @@ export default class Glo {
     return shader;
   }
 
+  createShaderProgram(spec) {
+    return new ShaderProgram(this, spec);
+  }
+
   createTexture(spec) {
     return new Texture(this.gl, spec);
   }
 
-  loadVertexData(program) {
+  loadVertexData() {
     const gl = this.gl;
 
     const data = new Float32Array(
@@ -85,7 +90,11 @@ export default class Glo {
     );
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-  
+  }
+
+  setUpVertexLayout(program) {
+    const gl = this.gl;
+
     const position = gl.getAttribLocation(program, "position");
     const texcoord = gl.getAttribLocation(program, "texcoord");
     

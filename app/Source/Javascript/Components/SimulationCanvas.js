@@ -7,7 +7,7 @@ import diffuseInkFsSource from "../../Shaders/diffuse-ink-fs.glsl";
 import displayFsSource from "../../Shaders/display-fs.glsl";
 import displayFieldFsSource from "../../Shaders/display-field-fs.glsl";
 import FlowSim from "../FlowSim";
-import Glo from "../Utility/Glo";
+import Glo from "../WebGL/Glo";
 import * as ImageDraw from "../Utility/ImageDraw";
 import Matrix4 from "../Utility/Matrix4";
 import passthroughVsSource from "../../Shaders/passthrough-vs.glsl";
@@ -51,6 +51,7 @@ export default class SimulationCanvas {
     this.glo = glo;
 
     glo.checkCompatibility();
+    glo.loadVertexData();
 
     const basicVertexShader = glo.createShader(gl.VERTEX_SHADER, basicVsSource);
     const passthroughVertexShader = glo.createShader(gl.VERTEX_SHADER, passthroughVsSource);
@@ -62,50 +63,128 @@ export default class SimulationCanvas {
     const displayFieldShader = glo.createShader(gl.FRAGMENT_SHADER, displayFieldFsSource);
     const simulateShader = glo.createShader(gl.FRAGMENT_SHADER, simulateFsSource);
 
-    const brushProgram = glo.createAndLinkProgram(basicVertexShader, brushFragmentShader);
-    const brushCutoutProgram = glo.createAndLinkProgram(basicVertexShader, brushCutoutShader);
-    const canvasTextureProgram = glo.createAndLinkProgram(passthroughVertexShader, canvasTextureShader);
-    const diffuseInkProgram = glo.createAndLinkProgram(basicVertexShader, diffuseInkShader);
-    const displayProgram = glo.createAndLinkProgram(passthroughVertexShader, displayShader);
-    const displayFieldProgram = glo.createAndLinkProgram(basicVertexShader, displayFieldShader);
-    const simulateProgram = glo.createAndLinkProgram(passthroughVertexShader, simulateShader);
+    const brushProgram = glo.createShaderProgram({
+      shaders: {
+        vertex: basicVertexShader,
+        fragment: brushFragmentShader,
+      },
+      uniforms: [
+        "brush_shape",
+        "brush_color",
+        "model_view_projection",
+      ],
+    });
 
-    gl.useProgram(brushProgram);
-    glo.loadVertexData(brushProgram);
-    gl.uniform1i(gl.getUniformLocation(brushProgram, "brush_shape"), 0);
+    const brushCutoutProgram = glo.createShaderProgram({
+      shaders: {
+        vertex: basicVertexShader,
+        fragment: brushCutoutShader,
+      },
+      uniforms: [
+        "brush_shape",
+        "brush_color",
+        "model_view_projection",
+      ],
+    });
 
-    gl.useProgram(brushCutoutProgram);
-    glo.loadVertexData(brushCutoutProgram);
-    gl.uniform1i(gl.getUniformLocation(brushCutoutProgram, "brush_shape"), 0);
+    const canvasTextureProgram = glo.createShaderProgram({
+      shaders: {
+        vertex: passthroughVertexShader,
+        fragment: canvasTextureShader,
+      },
+      uniforms: [
+        "image_dimensions",
+        "image",
+      ],
+    });
 
-    gl.useProgram(canvasTextureProgram);
-    glo.loadVertexData(canvasTextureProgram);
-    gl.uniform2fv(gl.getUniformLocation(canvasTextureProgram, "image_dimensions"), simSize.elements);
-    gl.uniform1i(gl.getUniformLocation(canvasTextureProgram, "image"), 0);
+    const diffuseInkProgram = glo.createShaderProgram({
+      shaders: {
+        vertex: basicVertexShader,
+        fragment: diffuseInkShader,
+      },
+      uniforms: [
+        "texture_size",
+        "ink",
+        "model_view_projection",
+      ],
+    });
 
-    gl.useProgram(diffuseInkProgram);
-    glo.loadVertexData(diffuseInkProgram);
-    gl.uniform2fv(gl.getUniformLocation(diffuseInkProgram, "texture_size"), simSize.elements);
-    gl.uniform1i(gl.getUniformLocation(diffuseInkProgram, "ink"), 0);
-    gl.uniformMatrix4fv(gl.getUniformLocation(diffuseInkProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
+    const displayProgram = glo.createShaderProgram({
+      shaders: {
+        vertex: passthroughVertexShader,
+        fragment: displayShader,
+      },
+      uniforms: [
+        "state",
+        "ink",
+        "state_size",
+        "background_color",
+      ],
+    });
 
-    gl.useProgram(displayProgram);
-    glo.loadVertexData(displayProgram);
-    gl.uniform1i(gl.getUniformLocation(displayProgram, "state"), 0);
-    gl.uniform1i(gl.getUniformLocation(displayProgram, "ink"), 1);
-    gl.uniform2fv(gl.getUniformLocation(displayProgram, "state_size"), simSize.elements);
+    const displayFieldProgram = glo.createShaderProgram({
+      shaders: {
+        vertex: basicVertexShader,
+        fragment: displayFieldShader,
+      },
+      uniforms: [
+        "field",
+        "model_view_projection",
+      ],
+    });
+    
+    const simulateProgram = glo.createShaderProgram({
+      shaders: {
+        vertex: passthroughVertexShader,
+        fragment: simulateShader,
+      },
+      uniforms: [
+        "state_size",
+        "state",
+        "style_map",
+        "orientation_map",
+        "canvas_feed_rate",
+        "flow_rate",
+        "canvas_kill_rate",
+        "apply_orientation_map",
+        "apply_style_map",
+      ],
+    });
 
-    gl.useProgram(displayFieldProgram);
-    glo.loadVertexData(displayFieldProgram);
-    gl.uniform1i(gl.getUniformLocation(displayFieldProgram, "field"), 0);
-    gl.uniformMatrix4fv(gl.getUniformLocation(displayFieldProgram, "model_view_projection"), false, Matrix4.identity().transpose.float32Array);
+    brushProgram.use();
+    brushProgram.setUniform1i("brush_shape", 0);
+    brushProgram.setUniform4fv("brush_color", Color.black().toRgba());
+    brushProgram.setUniformMatrix4fv("model_view_projection", Matrix4.identity().transpose.float32Array);
 
-    gl.useProgram(simulateProgram);
-    glo.loadVertexData(simulateProgram);
-    gl.uniform2fv(gl.getUniformLocation(simulateProgram, "state_size"), simSize.elements);
-    gl.uniform1i(gl.getUniformLocation(simulateProgram, "state"), 0);
-    gl.uniform1i(gl.getUniformLocation(simulateProgram, "style_map"), 1);
-    gl.uniform1i(gl.getUniformLocation(simulateProgram, "orientation_map"), 2);
+    brushCutoutProgram.use();
+    brushCutoutProgram.setUniform1i("brush_shape", 0);
+    brushCutoutProgram.setUniform4fv("brush_color", Color.black().toRgba());
+    brushCutoutProgram.setUniformMatrix4fv("model_view_projection", Matrix4.identity().transpose.float32Array);
+
+    canvasTextureProgram.use();
+    canvasTextureProgram.setUniform2fv("image_dimensions", simSize.elements);
+    canvasTextureProgram.setUniform1i("image", 0);
+
+    diffuseInkProgram.use();
+    diffuseInkProgram.setUniform2fv("texture_size", simSize.elements);
+    diffuseInkProgram.setUniform1i("ink", 0);
+    diffuseInkProgram.setUniformMatrix4fv("model_view_projection", Matrix4.identity().transpose.float32Array);
+
+    displayProgram.use();
+    displayProgram.setUniform1i("state", 0);
+    displayProgram.setUniform1i("ink", 1);
+    displayProgram.setUniform2fv("state_size", simSize.elements);
+
+    displayFieldProgram.use();
+    displayFieldProgram.setUniform1i("field", 0);
+    displayFieldProgram.setUniformMatrix4fv("model_view_projection", Matrix4.identity().transpose.float32Array);
+
+    simulateProgram.use();
+    simulateProgram.setUniform2fv("state_size", simSize.elements);
+    simulateProgram.setUniform1i("state", 0);
+    simulateProgram.setUniform1i("style_map", 1);
+    simulateProgram.setUniform1i("orientation_map", 2);
 
     const brushShapeSpec = {
       contents: ImageDraw.createCircle(64),
@@ -174,7 +253,7 @@ export default class SimulationCanvas {
       ],
     };
 
-    gl.useProgram(simulateProgram);
+    simulateProgram.use();
     gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.state[0]);
     const status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
     if (status !== gl.FRAMEBUFFER_COMPLETE) {
@@ -237,22 +316,21 @@ export default class SimulationCanvas {
 
   drawBrush(brushColor, brushProgram) {
     const brush = this.brush;
-    const gl = this.gl;
     const textures = this.textures;
 
     let stepStart = 0.0;
 
     if (brush.state === brushState.DOWN && brush.positions.length > 1) {
-      gl.useProgram(brushProgram);
+      brushProgram.use();
       textures.brushShape.bind(0);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor.toRgba());
+      brushProgram.setUniform4fv("brush_color", brushColor.toRgba());
       stepStart = this.drawBrushStroke(brushProgram);
     }
 
     if (brush.endStrokeNextFrame && brush.positions.length > 0) {
-      gl.useProgram(brushProgram);
+      brushProgram.use();
       textures.brushShape.bind(0);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), brushColor.toRgba());
+      brushProgram.setUniform4fv("brush_color", brushColor.toRgba());
       this.drawBrushDot(brush.positions[0], brushProgram);
     }
 
@@ -268,7 +346,7 @@ export default class SimulationCanvas {
     const model = Matrix4.multiply(translation, dilation);
     const modelViewProjection = Matrix4.multiply(this.camera.projection, model);
 
-    gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
+    brushProgram.setUniformMatrix4fv("model_view_projection", modelViewProjection.transpose.float32Array);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
@@ -304,7 +382,6 @@ export default class SimulationCanvas {
     const canvasTextureProgram = this.programs.canvasTexture;
     const diffuseInkProgram = this.programs.diffuseInk;
     const displayProgram = this.programs.display;
-    const gl = this.gl;
     const simulateProgram = this.programs.simulate;
     const textures = this.textures;
 
@@ -329,17 +406,17 @@ export default class SimulationCanvas {
     const styleContent = ImageDraw.createWaves(size);
     textures.styleMap.update(size, styleContent);
 
-    gl.useProgram(canvasTextureProgram);
-    gl.uniform2fv(gl.getUniformLocation(canvasTextureProgram, "image_dimensions"), size.elements);
+    canvasTextureProgram.use();
+    canvasTextureProgram.setUniform2fv("image_dimensions", size.elements);
 
-    gl.useProgram(diffuseInkProgram);
-    gl.uniform2fv(gl.getUniformLocation(diffuseInkProgram, "texture_size"), size.elements);
+    diffuseInkProgram.use();
+    diffuseInkProgram.setUniform2fv("texture_size", size.elements);
 
-    gl.useProgram(displayProgram);
-    gl.uniform2fv(gl.getUniformLocation(displayProgram, "state_size"), size.elements);
+    displayProgram.use();
+    displayProgram.setUniform2fv("state_size", size.elements);
 
-    gl.useProgram(simulateProgram);
-    gl.uniform2fv(gl.getUniformLocation(simulateProgram, "state_size"), size.elements);
+    simulateProgram.use();
+    simulateProgram.setUniform2fv("state_size", size.elements);
 
     this.flowSim.resize(size);
   }
@@ -489,7 +566,7 @@ export default class SimulationCanvas {
 
     if (!this.paused && !this.update.applyFlowMap) {
       gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffers.ink[1]);
-      gl.useProgram(diffuseInkProgram);
+      diffuseInkProgram.use();
       textures.ink[0].bind(0);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
 
@@ -503,13 +580,13 @@ export default class SimulationCanvas {
 
     // Simulation Phase
     if (!this.paused) {
-      gl.useProgram(simulateProgram);
-
-      gl.uniform1f(gl.getUniformLocation(simulateProgram, "canvas_feed_rate"), this.update.feedRate);
-      gl.uniform1f(gl.getUniformLocation(simulateProgram, "flow_rate"), this.update.flowRate);
-      gl.uniform1f(gl.getUniformLocation(simulateProgram, "canvas_kill_rate"), this.update.killRate);
-      gl.uniform1i(gl.getUniformLocation(simulateProgram, "apply_orientation_map"), this.update.applyOrientationMap);
-      gl.uniform1i(gl.getUniformLocation(simulateProgram, "apply_style_map"), this.update.applyStyleMap);
+      simulateProgram.use();
+      
+      simulateProgram.setUniform1f("canvas_feed_rate", this.update.feedRate);
+      simulateProgram.setUniform1f("flow_rate", this.update.flowRate);
+      simulateProgram.setUniform1f("canvas_kill_rate", this.update.killRate);
+      simulateProgram.setUniform1i("apply_orientation_map", this.update.applyOrientationMap);
+      simulateProgram.setUniform1i("apply_style_map", this.update.applyStyleMap);
     
       for (let i = 0; i <= this.iterationsPerFrame; i++) {
         textures.state[i % 2].bind(0);
@@ -555,26 +632,26 @@ export default class SimulationCanvas {
     // Display Phase
     switch (this.displayImage) {
       case displayImage.INK:
-        gl.useProgram(canvasTextureProgram);
+        canvasTextureProgram.use();
         textures.ink[0].bind(0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
 
       case displayImage.ORIENTATION_MAP:
-        gl.useProgram(canvasTextureProgram);
+        canvasTextureProgram.use();
         textures.orientationMap.bind(0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
 
       case displayImage.STYLE_MAP:
-        gl.useProgram(canvasTextureProgram);
+        canvasTextureProgram.use();
         textures.styleMap.bind(0);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         break;
 
       case displayImage.SIMULATION_STATE: {
-        gl.useProgram(displayProgram);
-        gl.uniform4fv(gl.getUniformLocation(displayProgram, "background_color"), this.update.backgroundColor.toRgba());
+        displayProgram.use();
+        displayProgram.setUniform4fv("background_color", this.update.backgroundColor.toRgba());
         textures.state[0].bind(0);
         textures.ink[0].bind(1);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
@@ -591,10 +668,10 @@ export default class SimulationCanvas {
         || this.brush.state === brushState.HOVERING) {
       gl.enable(gl.BLEND);
       gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-      gl.useProgram(brushProgram);
+      brushProgram.use();
       textures.brushShape.bind(0);
-      gl.uniformMatrix4fv(gl.getUniformLocation(brushProgram, "model_view_projection"), false, modelViewProjection.transpose.float32Array);
-      gl.uniform4fv(gl.getUniformLocation(brushProgram, "brush_color"), [0.0, 1.0, 0.0, 0.5]);
+      brushProgram.setUniformMatrix4fv("model_view_projection", modelViewProjection.transpose.float32Array);
+      brushProgram.setUniform4fv("brush_color", [0.0, 1.0, 0.0, 0.5]);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       gl.disable(gl.BLEND);
     }
