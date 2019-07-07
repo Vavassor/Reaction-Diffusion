@@ -8,7 +8,7 @@ main {
   display: grid;
   grid-template-areas:
     "canvas"
-    "menu"
+    "canvas-controls"
     "controls";
   grid-template-columns: 1fr;
   grid-template-rows: 1fr auto 1fr;
@@ -23,6 +23,27 @@ main {
   color: #570d0d;
   margin-bottom: 1rem;
   padding: 1rem;
+}
+
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  padding: .25rem;
+}
+
+.bar .button-control {
+  margin: .25rem;
+}
+
+.bar-control-label {
+  margin-right: .25rem;
+}
+
+.bar-group {
+  align-items: center;
+  display: flex;
+  padding-left: .5rem;
+  padding-right: .5rem;
 }
 
 .button-control {
@@ -54,6 +75,12 @@ main {
   background-color: #7f7f7f;
   grid-area: canvas;
   overflow: auto;
+}
+
+.canvas-control-panel {
+  border-top: .1rem solid #000000;
+  grid-area: canvas-controls;
+  z-index: 2;
 }
 
 .color-control {
@@ -183,13 +210,6 @@ main {
   margin-top: -.25rem;
   width: .75rem;
   -webkit-appearance: none;
-}
-
-.menu-panel {
-  box-shadow: 0 .25rem .5rem rgba(0, 0, 0, 0.5);
-  grid-area: menu;
-  padding: .5rem;
-  z-index: 2;
 }
 
 .popover {
@@ -415,8 +435,8 @@ main {
 @media (min-width: 600px) {
   main {
     grid-template-areas:
-      "menu menu"
-      "canvas controls";
+      "canvas controls"
+      "canvas-controls controls";
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr auto;
   }
@@ -430,8 +450,8 @@ main {
 @media (min-width: 900px) {
   main {
     grid-template-areas:
-      "menu menu"
-      "canvas controls";
+      "canvas controls"
+      "canvas-controls controls";
     grid-template-columns: 2fr 1fr;
     grid-template-rows: 1fr auto;
   }
